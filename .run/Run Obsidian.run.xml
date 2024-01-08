@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Obsidian" type="NodeJSConfigurationType" application-parameters="--remote-debugging-port=9222" path-to-node="/Applications/Obsidian.app/Contents/MacOS/Obsidian" node-parameters="." working-dir="$PROJECT_DIR$">
+    <method v="2" />
+  </configuration>
+</component>

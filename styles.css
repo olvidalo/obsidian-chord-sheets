@@ -1,0 +1,226 @@
+.chord-sheet-chord-name {
+	text-align: center;
+	color: var(--text-accent);
+	font-weight: bold;
+	font-family: var(--font-monospace);
+}
+
+.chord-sheet-chord-line .chord-sheet-chord-name {
+	cursor: default;
+	position: relative;
+	z-index: 100;
+
+	/* increase touch target on mobile */
+	padding: 5px;
+	margin: -5px;
+}
+
+
+
+/* Chord Boxes */
+.chord-sheet-chord-box svg {
+	margin-top: -10%;
+	margin-bottom: -5%;
+}
+
+.chord-sheet-position-chooser {
+	display: flex;
+	justify-content: center;
+	font-size: var(--font-ui-smaller);
+	margin-top: -10px;
+}
+
+.chord-sheet-btn-prev-position, .chord-sheet-btn-next-position {
+	margin: 0 0.25rem;
+}
+
+.chord-sheet-pos-btn-enabled {
+	color: var(--link-color);
+	text-decoration: var(--link-decoration);
+	cursor: pointer;
+}
+
+
+/* Chord Popup */
+
+.chord-sheet-chord-popup {
+	background: var(--background-primary);
+	border: var(--border-border-style);
+}
+
+.chord-sheet-chord-popup .chord-sheet-chord-name {
+	text-align: center;
+	margin-bottom: -10px;
+	font-size: var(--font-ui-small);
+}
+
+
+/* Chord Blocks */
+.chord-sheet-block-start ~ .code-block-flair,
+.chord-sheet-block-start .code-block-flair/*,
+.markdown-source-view.mod-cm6 .cm-fold-indidcator*/ {
+	display: none !important;
+}
+
+.chord-sheet-chord-overview-container + .chord-sheet-block-start {
+	border-top-left-radius: 0 !important;
+	border-top-right-radius: 0 !important;
+}
+
+.markdown-source-view.mod-cm6 .cm-content > .chord-sheet-chord-overview-container[contenteditable=false] {
+	/* CodeMirror sets this property to paint, resulting in a
+	gap between chord overview and the rest of the block */
+	contain: none !important;
+}
+
+.chord-sheet-chord-overview-container {
+	white-space: normal;
+
+	.chord-sheet-chord-overview {
+		display: flex;
+		flex-wrap: wrap;
+		padding-top: 1rem;
+
+		white-space: normal;
+
+		background-color: var(--code-background);
+		border-top-left-radius: var(--code-radius);
+		border-top-right-radius: var(--code-radius);
+	}
+
+	.chord-sheet-chord-name {
+		font-size: var(--code-size);
+	}
+
+	.chord-sheet-chord-diagram {
+		margin-bottom: 1rem;
+	}
+
+	.chord-sheet-chord-overview svg {
+		margin-top: -15%;
+	}
+}
+
+pre.chord-sheet-chord-block-preview {
+
+	.chord-sheet-chord-overview {
+		margin-right: calc(-1 * var(--size-4-4));
+		margin-left: calc(-1 * var(--size-4-4));
+	}
+
+	.chord-sheet-chord-line {
+		font-size: var(--code-size);
+	}
+}
+
+.chord-sheet-tools-container, .chord {
+	display: flex;
+	position: relative;
+	z-index: 10;
+
+	user-select: none;
+	container-type: inline-size;
+}
+
+.chord-sheet-tools {
+	display: inline-flex;
+	right: var(--size-2-1);
+	top: var(--size-2-1);
+
+	white-space: normal;
+	font-size: var(--font-ui-small);
+}
+
+.chord-sheet-tools-container.with-chord-overview .chord-sheet-tools {
+	right: var(--size-4-4);
+	top: -4px;
+}
+
+
+@container (min-width: 400px) {
+	.chord-sheet-tools {
+		position: absolute;
+	}
+}
+
+.chord-sheet-tools select, .chord-sheet-tools button {
+	height: calc(var(--input-height) * 0.75);
+	font-size: var(--font-ui-small);
+}
+
+.chord-sheet-transpose-control {
+	display: flex;
+	white-space: nowrap;
+	align-items: center;
+
+	background-color: var(--interactive-normal);
+	box-shadow: var(--input-shadow);
+	border-radius: var(--button-radius);
+
+	margin-right: 6px;
+
+	> * {
+		padding-left: 12px;
+		padding-right: 12px;
+	}
+}
+
+.chord-sheet-transpose-control button {
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.chord-sheet-transpose-control button.chord-sheet-transpose-down  {
+	border-start-start-radius: var(--button-radius);
+	border-end-start-radius: var(--button-radius);
+	border-inline-end: var(--border-border-style);
+}
+
+.chord-sheet-transpose-control button.chord-sheet-transpose-up {
+	border-start-end-radius: var(--button-radius);
+	border-end-end-radius: var(--button-radius);
+	border-inline-start: var(--border-border-style);
+}
+
+.chord-sheet-transpose-control button:not(:hover) {
+	background-color: rgba(0, 0, 0, 0);
+}
+
+.chord-sheet-transpose-label {
+	color: var(--text-muted);
+}
+
+/* Autoscroll controls */
+.chord-sheet-autoscroll-control {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	padding-right: var(--size-4-5);
+	border-bottom: 1px solid var(--divider-color);
+    border-top: 1px solid var(--divider-color);
+	height: 1.6rem;
+
+	color: var(--text-muted);
+	font-size: var(--file-header-font-size);
+
+	.slider {
+		margin-inline-start: 0.4rem;
+	}
+}
+
+
+/* DEBUG */
+
+.chord-sheet-block-start.debug {
+	border-top: 2px solid darkred;
+}
+
+.chord-sheet-block-end.debug {
+	border-right: 2px solid palevioletred;
+}
+
+.cm-mygutter {
+	width: 20px;
+	.S {color: darkred}
+	.E {color: palevioletred}
+}
