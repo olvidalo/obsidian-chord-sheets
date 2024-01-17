@@ -13,7 +13,7 @@ Detects and highlights chord symbols in fenced code blocks marked as `"chord"`.
 
 ![chord-blocks.png](docs/chord-blocks.png)
 
-*Note:* When copy and pasting a chord sheet from a website, paste as plain text to preserve formatting. 
+*Note:* When copy and pasting a chord sheet from a website, paste as plain text to preserve formatting (per default ⌘ + ⇧ + V on Mac and Ctrl + ⇧ + V on Windows/Linux or right click ➔ *Paste as plain text*). 
 
 ### 🎼 Chord Diagrams
 
