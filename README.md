@@ -50,7 +50,7 @@ Scroll down as you play with configurable speed.
 
 ### 🌈 Uses Theme Colors
 
-| Minimal dark                               | Minimal bright                                 | AnuPpuccin bright                                    |
+| Minimal dark                               | Minimal light                                 | AnuPpuccin light                                  |
 |--------------------------------------------|------------------------------------------------|------------------------------------------------------|
 | ![minimal-dark.png](docs/minimal-dark.png) | ![minimal-bright.png](docs/minimal-bright.png) | ![anuppuccin-bright.png](docs/anuppuccin-bright.png) |
 
@@ -67,8 +67,8 @@ and need to be set in Obsidian settings after installing the plugin.
 ### 📱Mobile Support
 
 Works well on mobile. Bring up chord diagram popups by tapping on the chord symbols.
-Can be a bit fiddly in _edit / live preview_ mode because tapping on a chord positions the caret 
-there which will bring up the keyboard. Prefer using _reading_ mode on mobile.
+Can be a bit fiddly in _edit / live preview_ mode because tapping on a chord will position the caret 
+there which brings up the keyboard. Prefer _reading_ mode on mobile.
 
 ### ⚙️ Configurability
 
@@ -95,14 +95,14 @@ Chrome remote debugging on port 9222.
 
 ## Manually installing the plugin
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/chord-sheets/` and enable the plugin in Obsidian's settings.
 
 ## Credits
 
 This plugin uses:
 
 - [Vexchords](https://github.com/0xfe/vexchords) for rendering chord diagrams.
-- [tonal](https://github.com/tonaljs/tonal) for parsing chord symbols.
+- [tonal](https://github.com/tonaljs/tonal) for parsing chord symbols, chord normalization and transposition.
 - [chords-db](https://github.com/tombatossals/chords-db) for ukulele and guitar fingerings.
 
 ## Inspiration / Alternatives
