@@ -9,7 +9,7 @@ and **reading** mode. It integrates with your **theme colors** and is **customiz
 
 ### ✨ Highlight Chord Symbols
 
-Detects and highlights chord symbols in fenced code blocks marked as `"chord"`.
+Detects and highlights chord symbols in fenced code blocks marked as ```` ```chords````.
 
 ![chord-blocks.png](docs/chord-blocks.png)
 
