@@ -3,20 +3,20 @@
 import {Editor, MarkdownFileInfo, MarkdownView, Plugin, View} from 'obsidian';
 import {Chord} from "tonal";
 import {EditorView, ViewPlugin} from "@codemirror/view";
-import {ChordToken, Instrument, transposeTonic} from "./src/chordsUtils";
-import {ChordBlockPostProcessorView} from "./src/chordBlockPostProcessorView";
-import {ChordSheetsSettings, DEFAULT_SETTINGS} from "./src/chordSheetsSettings";
+import {ChordToken, Instrument, transposeTonic} from "./chordsUtils";
+import {ChordBlockPostProcessorView} from "./chordBlockPostProcessorView";
+import {ChordSheetsSettings, DEFAULT_SETTINGS} from "./chordSheetsSettings";
 import {ChangeSpec, Extension} from "@codemirror/state";
 import {
 	chordSheetEditorPlugin,
 	ChordSheetsViewPlugin,
 	TransposeEventDetail
-} from "./src/editor-extension/chordSheetsViewPlugin";
-import {InstrumentChangeEventDetail} from "./src/editor-extension/chordBlockToolsWidget";
-import {AutoscrollControl} from "./src/autoscrollControl";
-import {ChordSheetsSettingTab} from "./src/chordSheetsSettingTab";
-import {IChordSheetsPlugin} from "./src/chordSheetsPluginInterface";
-import {chordSheetsEditorExtension} from "./src/editor-extension/chordSheetsEditorExtension";
+} from "./editor-extension/chordSheetsViewPlugin";
+import {InstrumentChangeEventDetail} from "./editor-extension/chordBlockToolsWidget";
+import {AutoscrollControl} from "./autoscrollControl";
+import {ChordSheetsSettingTab} from "./chordSheetsSettingTab";
+import {IChordSheetsPlugin} from "./chordSheetsPluginInterface";
+import {chordSheetsEditorExtension} from "./editor-extension/chordSheetsEditorExtension";
 
 
 export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlugin {
