@@ -2,7 +2,7 @@
 	"id": "chord-sheets",
 	"name": "Chord Sheets",
 	"minAppVersion": "0.15.0",
-	"description": "Work with chord sheets (chords over lyrics) in Obsidian: Chord diagrams, transpose, autoscroll and more. Works in live preview and reading mode.",
+	"description": "Work with chord sheets (chords over lyrics) in your Vault: Chord diagrams, transpose, autoscroll and more. Works in live preview and reading mode.",
 	"author": "Marcel Schaeben",
 	"authorUrl": "https://github.com/olvidalo",
 	"isDesktopOnly": false,
