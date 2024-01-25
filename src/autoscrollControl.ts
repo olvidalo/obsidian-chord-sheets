@@ -33,7 +33,7 @@ export class AutoscrollControl extends Component {
 			.setValue(this._speed)
 			.onChange(value => this._speed = value);
 
-		this.intervalId = setInterval(() => {
+		this.intervalId = window.setInterval(() => {
 			const scrollIncrease = 0.7 + (this._speed - 1) * 0.2;
 			if (this.view.getMode() === "preview") {
 				this.view.previewMode.applyScroll(this.view.previewMode.getScroll() + scrollIncrease * 0.05);
