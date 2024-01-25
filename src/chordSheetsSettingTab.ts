@@ -22,13 +22,11 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Chord blocks'});
-
 		const chordOverviewOptions: Record<ShowChordOverviewSetting, string> = {
-			"never": "never",
-			"edit": "in edit mode",
-			"preview": "in reading mode",
-			"always": "always"
+			"never": "Never",
+			"edit": "In edit mode",
+			"preview": "In reading mode",
+			"always": "Always"
 		};
 		new Setting(containerEl)
 			.setName('Show chord overview')
@@ -43,10 +41,10 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 				}));
 
 		const hoverChordDiagramsOptions: Record<ShowChordDiagramsOnHoverSetting, string> = {
-			"never": "never",
-			"edit": "in edit mode",
-			"preview": "in reading mode",
-			"always": "always"
+			"never": "Never",
+			"edit": "In edit mode",
+			"preview": "In reading mode",
+			"always": "Always"
 		};
 		new Setting(containerEl)
 			.setName('Show chord diagrams on hover')
@@ -138,7 +136,7 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 			);
 
 
-		containerEl.createEl('h2', {text: 'Chord block controls in edit mode'});
+		new Setting(containerEl).setName('Chord block controls in live preview mode').setHeading();
 
 		new Setting(containerEl)
 			.setName('Show transpose control')
@@ -162,7 +160,8 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 					this.plugin.applyNewSettingsToEditors();
 				}));
 
-		containerEl.createEl('h2', {text: 'Autoscroll'});
+		new Setting(containerEl).setName('Autoscroll').setHeading();
+
 
 		new Setting(containerEl)
 			.setName('Autoscroll default speed')
@@ -177,13 +176,13 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 			);
 
 		const showAutoscrollButtonOptions: Record<ShowAutoscrollButtonSetting, string> = {
-			never: "never",
-			"chord-blocks": "when document has chord blocks",
-			always: "always"
+			never: "Never",
+			"chord-blocks": "When note has chord blocks",
+			always: "Always"
 		};
 		new Setting(containerEl)
 			.setName('Show autoscroll view action button')
-			.setDesc('Set to \'always\' if you want to use autoscroll for all documents or \'never\' if you don\'t want to use autoscroll.')
+			.setDesc('Set to \'Always\' if you want to use autoscroll for all documents or \'Never\' if you don\'t want to use autoscroll.')
 			.addDropdown(dropdown => dropdown
 				.addOptions(showAutoscrollButtonOptions)
 				.setValue(this.plugin.settings.showAutoscrollButton)
@@ -195,7 +194,7 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 			);
 
 
-		containerEl.createEl('h2', {text: 'Other'});
+		new Setting(containerEl).setName('Advanced').setHeading();
 
 		new Setting(containerEl)
 			.setName('Debug mode')
