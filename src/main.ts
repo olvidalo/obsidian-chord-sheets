@@ -108,7 +108,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		// Register editor commands
 
 		this.addCommand({
-			id: 'chord-sheet-instrument-change-default',
+			id: 'block-instrument-change-default',
 			name: `Change instrument for the current chord block to the default instrument (${(this.settings.defaultInstrument)})`,
 			editorCheckCallback: (checking: boolean, _editor: Editor, view: MarkdownView)  => {
 				return this.changeInstrumentCommand(view, this.editorPlugin, checking, null);
@@ -116,7 +116,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		});
 
 		this.addCommand({
-			id: 'chord-sheet-instrument-change-ukulele',
+			id: 'block-instrument-change-ukulele',
 			name: 'Change instrument for the current chord block to ukulele',
 			editorCheckCallback: (checking: boolean, _editor: Editor, view: MarkdownView)  => {
 				return this.changeInstrumentCommand(view, this.editorPlugin, checking, "ukulele");
@@ -124,7 +124,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		});
 
 		this.addCommand({
-			id: 'chord-sheet-instrument-change-guitar',
+			id: 'block-instrument-change-guitar',
 			name: 'Change instrument for the current chord block to guitar',
 			editorCheckCallback: (checking: boolean, _editor: Editor, view: MarkdownView) => {
 				return this.changeInstrumentCommand(view, this.editorPlugin, checking, "guitar");
@@ -132,21 +132,21 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		});
 
 		this.addCommand({
-			id: 'chord-sheet-transpose-up',
+			id: 'transpose-block-up',
 			name: 'Transpose current chord block one semitone up',
 			editorCheckCallback: (checking: boolean, editor: Editor) =>
 				this.transposeCommand(editor, this.editorPlugin, checking, "up")
 		});
 
 		this.addCommand({
-			id: 'chord-sheet-transpose-down',
+			id: 'transpose-block-down',
 			name: 'Transpose current chord block one semitone down',
 			editorCheckCallback: (checking: boolean, editor: Editor) =>
 				this.transposeCommand(editor, this.editorPlugin, checking, "down")
 		});
 
 		this.addCommand({
-			id: 'chord-sheet-toggle-autoscroll',
+			id: 'toggle-autoscroll',
 			name: 'Toggle autoscroll',
 			checkCallback: (checking) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -163,13 +163,13 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		});
 
 		this.addCommand({
-			id: 'chord-sheet-autoscroll-increase',
+			id: 'autoscroll-increase',
 			name: 'Increase autoscroll speed',
 			editorCheckCallback: (checking: boolean) => this.adjustScrollSpeedCommand('increase', checking)
 		});
 
 		this.addCommand({
-			id: 'chord-sheet-autoscroll-decrease',
+			id: 'autoscroll-decrease',
 			name: 'Decrease autoscroll speed',
 			editorCheckCallback: (checking: boolean) => this.adjustScrollSpeedCommand('decrease', checking)
 		});
