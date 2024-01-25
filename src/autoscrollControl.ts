@@ -44,7 +44,7 @@ export class AutoscrollControl extends Component {
 					editor.scrollTo(null, scrollInfo.top + scrollIncrease);
 				}
 			}
-		}, 50) as unknown as number;
+		}, 50);
 
 		this.view.registerInterval(this.intervalId);
 	}
