@@ -92,17 +92,21 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 		// Handle obsidian events
 
-		this.app.workspace.on("file-open", () => {
-			this.stopAllAutoscrolls();
-			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-			if (view) {
-				this.updateAutoscrollButton(view);
-			}
-		});
+		this.registerEvent(
+			this.app.workspace.on("file-open", () => {
+				this.stopAllAutoscrolls();
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (view) {
+					this.updateAutoscrollButton(view);
+				}
+			})
+		);
 
-		this.app.workspace.on("editor-change", (_editor, view) => {
-			this.updateAutoscrollButton(view);
-		});
+		this.registerEvent(
+			this.app.workspace.on("editor-change", (_editor, view) => {
+				this.updateAutoscrollButton(view);
+			})
+		);
 
 
 		// Register editor commands
