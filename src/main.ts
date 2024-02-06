@@ -65,7 +65,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		// Handle chord sheet custom events sent by the editor extension
 
 		this.registerDomEvent(window, "chord-sheet-instrument-change", (event: CustomEvent<InstrumentChangeEventDetail>) => {
-			const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor;
+			const editor = this.app.workspace.activeEditor?.editor;
 			const { selectedInstrument, from } = event.detail;
 			if (editor) {
 				// @ts-expect-error, not typed
@@ -76,7 +76,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 		this.registerDomEvent(window, "chord-sheet-transpose", async (event: CustomEvent<TransposeEventDetail>) => {
 			const {direction, blockDef} = event.detail;
-			const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor;
+			const editor = this.app.workspace.activeEditor?.editor;
 
 			if (editor) {
 				// @ts-ignore
