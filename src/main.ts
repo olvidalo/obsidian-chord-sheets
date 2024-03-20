@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {Editor, MarkdownFileInfo, MarkdownView, Plugin, View} from 'obsidian';
+import {Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
 import {Chord} from "tonal";
 import {EditorView, ViewPlugin} from "@codemirror/view";
 import {ChordToken, Instrument, transposeTonic} from "./chordsUtils";
@@ -13,11 +13,13 @@ import {
 	TransposeEventDetail
 } from "./editor-extension/chordSheetsViewPlugin";
 import {InstrumentChangeEventDetail} from "./editor-extension/chordBlockToolsWidget";
-import {AutoscrollControl} from "./autoscrollControl";
+import {AutoscrollControl, SPEED_CHANGED_EVENT} from "./autoscrollControl";
 import {ChordSheetsSettingTab} from "./chordSheetsSettingTab";
 import {IChordSheetsPlugin} from "./chordSheetsPluginInterface";
 import {chordSheetsEditorExtension} from "./editor-extension/chordSheetsEditorExtension";
 
+
+const AUTOSCROLL_SPEED_PROPERTY = "autoscroll-speed";
 
 export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlugin {
 	settings: ChordSheetsSettings;
@@ -68,7 +70,6 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			const editor = this.app.workspace.activeEditor?.editor;
 			const { selectedInstrument, from } = event.detail;
 			if (editor) {
-				// @ts-expect-error, not typed
 				const editorView = editor.cm as EditorView;
 				this.changeInstrument(editorView, selectedInstrument as Instrument, from);
 			}
@@ -178,14 +179,36 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			editorCheckCallback: (checking: boolean) => this.adjustScrollSpeedCommand('decrease', checking)
 		});
 
+		this.addCommand({
+			id: 'autoscroll-save',
+			name: 'Save current autoscroll speed to frontmatter',
+			checkCallback: (checking) => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (!view?.file) {
+					return;
+				}
 
-		// Add the settings tab
+				const autoscrollControl = this.viewAutoscrollControlMap.get(view);
+				const speed = autoscrollControl?.speed ?? this.settings.autoscrollDefaultSpeed;
+
+
+				if (!checking) {
+					this.saveAutoscrollSpeed(view.file, speed);
+				}
+
+				return true;
+			}
+		})
+
+
 		this.addSettingTab(new ChordSheetsSettingTab(this.app, this));
 
+		if (!this.app.metadataTypeManager.getAssignedType(AUTOSCROLL_SPEED_PROPERTY)) {
+			this.app.metadataTypeManager.setType(AUTOSCROLL_SPEED_PROPERTY, "number");
+		}
 	}
 
 	private changeInstrumentCommand(view: MarkdownView, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean, instrument: Instrument | null) {
-		// @ts-expect-error, not typed
 		const editorView = view.editor.cm as EditorView;
 		const chordPlugin = editorView.plugin(plugin);
 		if (chordPlugin) {
@@ -203,7 +226,6 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 	}
 
 	private transposeCommand(editor: Editor, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean, direction: "up" | "down") {
-		// @ts-expect-error, not typed
 		const editorView = editor.cm as EditorView;
 		const chordPlugin = editorView.plugin(plugin);
 		if (chordPlugin) {
@@ -327,11 +349,62 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		}
 	}
 
+	private getAutoscrollSpeedFromFrontmatter(file: TFile | null): number | null {
+		if (!file) {
+			return null;
+		}
+		const frontmatterSpeedValue = this.app.metadataCache.getFileCache(file)?.frontmatter?.[AUTOSCROLL_SPEED_PROPERTY];
+		const frontmatterSpeedNumber = parseInt(frontmatterSpeedValue);
+		return frontmatterSpeedNumber && !isNaN(frontmatterSpeedNumber)
+			? frontmatterSpeedNumber
+			: null;
+	}
+
 	private startAutoscroll(view: MarkdownView) {
-		const autoscrollControl = this.viewAutoscrollControlMap.get(view)
-			?? new AutoscrollControl(view, this.settings.autoscrollDefaultSpeed);
-		this.viewAutoscrollControlMap.set(view, autoscrollControl);
+		const activeFile = view.file;
+		if (!activeFile) {
+			return;
+		}
+
+		const frontmatterSpeed = this.getAutoscrollSpeedFromFrontmatter(activeFile);
+
+		let autoscrollControl = this.viewAutoscrollControlMap.get(view);
+		if (autoscrollControl) {
+			if (frontmatterSpeed && frontmatterSpeed != autoscrollControl.speed) {
+				autoscrollControl.speed = frontmatterSpeed;
+			}
+		} else {
+			const speed = frontmatterSpeed ?? this.settings.autoscrollDefaultSpeed;
+
+			autoscrollControl = new AutoscrollControl(view, speed);
+			this.registerEvent(autoscrollControl.events.on(SPEED_CHANGED_EVENT, (newSpeed: number) => {
+				// Update the speed saved in frontmatter if needed
+
+				const file = view.file;
+				if (!file) {
+					return;
+				}
+
+				const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
+				const isSpeedInFrontmatter = frontmatter && AUTOSCROLL_SPEED_PROPERTY in frontmatter;
+
+				if (this.settings.alwaysSaveAutoscrollSpeedToFrontmatter || isSpeedInFrontmatter) {
+					this.saveAutoscrollSpeed(file, newSpeed);
+				}
+			}));
+
+			this.viewAutoscrollControlMap.set(view, autoscrollControl);
+		}
+
 		autoscrollControl.start();
+	}
+
+	private saveAutoscrollSpeed(file: TFile, newSpeed: number) {
+		this.app.fileManager.processFrontMatter(file, frontmatter => {
+			frontmatter[AUTOSCROLL_SPEED_PROPERTY] = this.app.metadataTypeManager.getAssignedType(AUTOSCROLL_SPEED_PROPERTY) === "number"
+				? newSpeed
+				: newSpeed.toString();
+		}).then();
 	}
 
 	stopAllAutoscrolls() {
@@ -347,7 +420,6 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		this.app.workspace.iterateAllLeaves(leaf => {
 			if (leaf.view.getViewType() === "markdown") {
 				const markdownView = leaf.view as MarkdownView;
-				// @ts-expect-error, not typed
 				const editorView = markdownView.editor.cm as EditorView;
 				const chordPlugin = editorView.plugin(this.editorPlugin);
 				chordPlugin?.updateSettings(this.settings);

@@ -17,6 +17,7 @@ export interface ChordSheetsSettings {
 	autoscrollDefaultSpeed: number;
 	showAutoscrollButton: ShowAutoscrollButtonSetting;
 	blockLanguageSpecifier: string;
+	alwaysSaveAutoscrollSpeedToFrontmatter: boolean;
 }
 
 export const DEFAULT_SETTINGS: ChordSheetsSettings = {
@@ -29,5 +30,6 @@ export const DEFAULT_SETTINGS: ChordSheetsSettings = {
 	diagramWidth: 100,
 	autoscrollDefaultSpeed: 10,
 	showAutoscrollButton: "chord-blocks",
-	blockLanguageSpecifier: DEFAULT_BLOCK_LANGUAGE_SPECIFIER
+	blockLanguageSpecifier: DEFAULT_BLOCK_LANGUAGE_SPECIFIER,
+	alwaysSaveAutoscrollSpeedToFrontmatter: false
 };

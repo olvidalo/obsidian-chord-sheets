@@ -48,6 +48,11 @@ Scroll down as you play with configurable speed.
 
 ![autoscroll.gif](docs/autoscroll.gif)
 
+Save your preferred scroll speed for a note by adding the `autoscroll-speed` frontmatter property. Set it manually or
+use the `Save current autoscroll speed` command to add it with the last used speed. The property will update
+automatically as you adjust the speed.
+
+
 ### 🌈 Uses Theme Colors
 
 | Minimal dark                               | Minimal light                                 | AnuPpuccin light                                  |

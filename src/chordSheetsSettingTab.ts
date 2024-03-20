@@ -2,7 +2,6 @@ import {App, debounce, PluginSettingTab, Setting} from "obsidian";
 import {Instrument} from "./chordsUtils";
 import {AUTOSCROLL_STEPS} from "./autoscrollControl";
 import {
-	DEFAULT_BLOCK_LANGUAGE_SPECIFIER,
 	ShowAutoscrollButtonSetting,
 	ShowChordDiagramsOnHoverSetting,
 	ShowChordOverviewSetting
@@ -171,6 +170,31 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 				.setDynamicTooltip()
 				.onChange(async value => {
 					this.plugin.settings.autoscrollDefaultSpeed = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		const alwaysSaveAutoscrollSpeedDescFrag = createFragment();
+		const alwaysSaveAutoscrollSpeedDescEl = alwaysSaveAutoscrollSpeedDescFrag.createSpan();
+		alwaysSaveAutoscrollSpeedDescEl.append(`
+			The plugin can read the autoscroll speed for a note from the`,
+			createEl("code", { text: "autoscroll-speed" }),
+			`property.`,
+			createEl("br"),
+			`By default, changes to the autoscroll speed are saved to a note's frontmatter only if the property is 
+			already present. Enable this setting to ensure any changes to the speed are automatically saved to the 
+			frontmatter, adding the `,
+			createEl("code", { text: "autoscroll-speed" }),
+			` property if absent.`
+		);
+
+		new Setting(containerEl)
+			.setName('Always save autoscroll speed to frontmatter')
+			.setDesc(alwaysSaveAutoscrollSpeedDescFrag)
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.alwaysSaveAutoscrollSpeedToFrontmatter)
+				.onChange(async value => {
+					this.plugin.settings.alwaysSaveAutoscrollSpeedToFrontmatter = value;
 					await this.plugin.saveSettings();
 				})
 			);
