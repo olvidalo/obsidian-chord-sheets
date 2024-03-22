@@ -1,13 +1,6 @@
 import {Chord, Note} from "tonal";
-import ChordDB, {ChordDef} from "../chord-db/chord-db";
-import * as guitarChords from "../chord-db/guitar.json";
-import * as ukuleleChords from "../chord-db/ukulele.json";
-
-export type Instrument = "guitar" | "ukulele";
-export const chordDb: Record<Instrument, ChordDB> = {
-	"guitar": guitarChords,
-	"ukulele": ukuleleChords
-};
+import {ChordDef, IChordsDB, InstrumentChords} from "@tombatossals/chords-db";
+export type Instrument = keyof IChordsDB;
 
 export interface SheetChord {
 	tonic: string,
@@ -109,15 +102,15 @@ export function transposeTonic(chordTonic: string, direction: "up" | "down") {
 	return direction === "up" ? Note.enharmonic(transposedTonic) : Note.simplify(transposedTonic);
 }
 
-export function findDbChord(chordToken: ChordToken, instrumentChordDb: ChordDB) {
+export function findDbChord(chordToken: ChordToken, instrumentChords: InstrumentChords) {
 	const tonic = chordToken.chord.tonic;
 	const tonicVariations = getTonicVariations(tonic);
 
-	const availableTonicKeys = Object.keys(instrumentChordDb.chords);
+	const availableTonicKeys = Object.keys(instrumentChords.chords);
 	const tonicKey = availableTonicKeys.find(note => tonicVariations.includes(note));
 	let dbChord: ChordDef | undefined;
 	if (tonicKey) {
-		dbChord = instrumentChordDb.chords[tonicKey].find(testChord => testChord.suffix === chordToken.chord.type || chordToken.chord.typeAliases.includes(testChord.suffix));
+		dbChord = instrumentChords.chords[tonicKey].find(testChord => testChord.suffix === chordToken.chord.type || chordToken.chord.typeAliases.includes(testChord.suffix));
 	}
 	return dbChord;
 }

@@ -27,6 +27,7 @@
 		"@codemirror/language": "^6.8.0",
 		"tippy.js": "^6.3.7",
 		"tonal": "^4.14.1",
-		"vexchords": "^1.2.0"
+		"vexchords": "^1.2.0",
+		"@tombatossals/chords-db": "https://github.com/olvidalo/chords-db"
 	}
 }

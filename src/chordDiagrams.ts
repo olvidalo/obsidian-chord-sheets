@@ -1,6 +1,6 @@
-import {ChordDef} from "../chord-db/chord-db";
-import {chordDb, chordSequenceString, ChordToken, findDbChord, Instrument} from "./chordsUtils";
-import {BarreDef, ChordBox, ChordParams} from 'vexchords';
+import {chordSequenceString, ChordToken, findDbChord, Instrument} from "./chordsUtils";
+import {BarreDef, ChordBox, ChordParams} from "vexchords";
+import ChordsDB, { ChordDef } from "@tombatossals/chords-db";
 
 function convertToVexChord(input: ChordDef, positionIndex = 0): ChordParams {
 	const position = input.positions[positionIndex];
@@ -92,7 +92,7 @@ function updateChordPosition(containerEl: HTMLElement, numPositions: number, pos
 }
 
 export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken, width = 100, position = 0) {
-	const instrumentChordDb = chordDb[instrument];
+	const instrumentChordDb = ChordsDB[instrument];
 	const numStrings = instrumentChordDb.main.strings;
 	const numFrets = instrumentChordDb.main.fretsOnChord;
 	const dbChord = findDbChord(chordToken, instrumentChordDb);
