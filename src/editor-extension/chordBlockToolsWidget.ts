@@ -1,6 +1,7 @@
 import {EditorView, WidgetType} from "@codemirror/view";
 import {Instrument} from "../chordsUtils";
 import {chordBlocksStateField} from "./chordBlocksStateField";
+import ChordsDB from "@tombatossals/chords-db";
 
 export interface InstrumentChangeEventDetail {
 	selectedInstrument: string
@@ -86,17 +87,13 @@ export class ChordBlockToolsWidget extends WidgetType {
 		const el = document.createElement("select");
 		el.classList.add("dropdown", "chord-sheet-instrument-change");
 
-		const guitarOption = document.createElement("option");
-		guitarOption.value = "guitar";
-		guitarOption.text = "Guitar";
-		guitarOption.selected = this.instrument === "guitar";
-		el.append(guitarOption);
-
-		const ukuleleOption = document.createElement("option");
-		ukuleleOption.value = "ukulele";
-		ukuleleOption.selected = this.instrument === "ukulele";
-		ukuleleOption.text = "Ukulele";
-		el.append(ukuleleOption);
+		for (const instrument of Object.keys(ChordsDB)) {
+			const option = document.createElement("option");
+			option.value = instrument;
+			option.text = instrument.charAt(0).toUpperCase() + instrument.slice(1);
+			option.selected = this.instrument === instrument;
+			el.append(option);
+		}
 
 		el.addEventListener("change", event => {
 			const target = event.target as HTMLSelectElement;

@@ -1,4 +1,4 @@
-import {ChordsDB, ChordToken, Instrument, isChordLine, tokenizeLine} from "../chordsUtils";
+import {ChordToken, Instrument, isChordLine, tokenizeLine} from "../chordsUtils";
 import {Decoration, DecorationSet, EditorView, ViewUpdate} from "@codemirror/view";
 import {
 	Compartment,
@@ -18,6 +18,7 @@ import {Tree} from "@lezer/common";
 import {ChordSheetsSettings} from "../chordSheetsSettings";
 import {ChordOverviewWidget} from "./chordOverviewWidget";
 import {ChordBlockToolsWidget} from "./chordBlockToolsWidget";
+import ChordsDB from "@tombatossals/chords-db";
 
 class ParsedUntilRangeValue extends RangeValue {
 	endSide: -1;

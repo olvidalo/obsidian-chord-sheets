@@ -86,6 +86,7 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 			.addDropdown(dropdown => dropdown
 				.addOption("guitar", "Guitar")
 				.addOption("ukulele", "Ukulele")
+				.addOption("mandolin", "Mandolin")
 				.setValue(this.plugin.settings.defaultInstrument)
 				.onChange(async (value: Instrument) => {
 					this.plugin.settings.defaultInstrument = value;

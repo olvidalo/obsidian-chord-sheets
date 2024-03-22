@@ -17,6 +17,7 @@ import {AutoscrollControl, SPEED_CHANGED_EVENT} from "./autoscrollControl";
 import {ChordSheetsSettingTab} from "./chordSheetsSettingTab";
 import {IChordSheetsPlugin} from "./chordSheetsPluginInterface";
 import {chordSheetsEditorExtension} from "./editor-extension/chordSheetsEditorExtension";
+import ChordsDB from "@tombatossals/chords-db";
 
 
 const AUTOSCROLL_SPEED_PROPERTY = "autoscroll-speed";
@@ -120,21 +121,15 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			}
 		});
 
-		this.addCommand({
-			id: 'block-instrument-change-ukulele',
-			name: 'Change instrument for the current chord block to ukulele',
-			editorCheckCallback: (checking: boolean, _editor: Editor, view: MarkdownView)  => {
-				return this.changeInstrumentCommand(view, this.editorPlugin, checking, "ukulele");
-			}
-		});
-
-		this.addCommand({
-			id: 'block-instrument-change-guitar',
-			name: 'Change instrument for the current chord block to guitar',
-			editorCheckCallback: (checking: boolean, _editor: Editor, view: MarkdownView) => {
-				return this.changeInstrumentCommand(view, this.editorPlugin, checking, "guitar");
-			}
-		});
+		for (const instrument of Object.keys(ChordsDB) as Instrument[]) {
+			this.addCommand({
+				id: `block-instrument-change-${instrument}`,
+				name: `Change instrument for the current chord block to ${instrument}`,
+				editorCheckCallback: (checking: boolean, _editor: Editor, view: MarkdownView)  => {
+					return this.changeInstrumentCommand(view, this.editorPlugin, checking, instrument);
+				}
+			});
+		}
 
 		this.addCommand({
 			id: 'transpose-block-up',
@@ -198,7 +193,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 				return true;
 			}
-		})
+		});
 
 
 		this.addSettingTab(new ChordSheetsSettingTab(this.app, this));

@@ -2,7 +2,7 @@
 
 Render and work with chord sheets (**chords over lyrics**) in your vault. This plugin brings
 UltimateGuitar-like functionality into Obsidian, featuring **chord diagrams**,
-support for **guitar** and **ukulele**, **transposition**, and **autoscroll**. Works seamlessly in **edit / live preview**
+support for **guitar**, **ukulele** and **mandolin**, **transposition**, and **autoscroll**. Works seamlessly in **edit / live preview**
 and **reading** mode. It integrates with your **theme colors** and is **customizable** to your needs.
 
 ## Features
@@ -26,7 +26,7 @@ rendered locally, no API calls to an external service required.
 
 ### 🎸 Choose Your Instrument
 
-Supports guitar and ukulele for rendering the chord diagrams. Instrument can be set globally or specified per chord block.
+Includes chord diagrams for guitar, ukulele and mandolin. The instrument can be set globally or specified per chord block.
 
 ![change-instrument.gif](docs/change-instrument.gif)
 
