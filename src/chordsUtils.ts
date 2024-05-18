@@ -102,6 +102,10 @@ export function transposeTonic(chordTonic: string, direction: "up" | "down") {
 	return direction === "up" ? Note.enharmonic(transposedTonic) : Note.simplify(transposedTonic);
 }
 
+export function enharmonicTonic(chordTonic: string) {
+	return Note.enharmonic(chordTonic);
+}
+
 export function findDbChord(chordToken: ChordToken, instrumentChords: InstrumentChords) {
 	const tonic = chordToken.chord.tonic;
 	const tonicVariations = getTonicVariations(tonic);
