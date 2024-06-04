@@ -10,7 +10,7 @@ export interface ChordSheetsSettings {
 	showChordOverview: ShowChordOverviewSetting;
 	showChordDiagramsOnHover: ShowChordDiagramsOnHoverSetting
 	showTransposeControl: boolean;
-    showHarmonicControl: boolean;
+    showEnharmonicControl: boolean;
 	showInstrumentControl: boolean;
 	debug: boolean;
 	defaultInstrument: Instrument;
@@ -25,7 +25,7 @@ export const DEFAULT_SETTINGS: ChordSheetsSettings = {
 	showChordOverview: "always",
 	showChordDiagramsOnHover: "always",
 	showTransposeControl: true,
-    showHarmonicControl: true,
+    showEnharmonicControl: true,
 	showInstrumentControl: true,
 	debug: false,
 	defaultInstrument: "guitar",
