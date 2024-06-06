@@ -160,8 +160,19 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 					this.plugin.applyNewSettingsToEditors();
 				}));
 
-		new Setting(containerEl).setName('Autoscroll').setHeading();
+		new Setting(containerEl)
+			.setName('Show enharmonic toggle control')
+			.setDesc('Toggles chords between sharp (#) and flat (b) enharmonic equivalents.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showEnharmonicToggleControl)
+				.onChange(async (value) => {
+					this.plugin.settings.showEnharmonicToggleControl = value;
+					await this.plugin.saveSettings();
+					this.plugin.applyNewSettingsToEditors();
+				}));
 
+
+		new Setting(containerEl).setName('Autoscroll').setHeading();
 
 		new Setting(containerEl)
 			.setName('Autoscroll default speed')
