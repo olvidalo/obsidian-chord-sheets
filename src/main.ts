@@ -1,17 +1,18 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
-import {Chord} from "tonal";
+import {Chord, Note} from "tonal";
 import {EditorView, ViewPlugin} from "@codemirror/view";
-import {ChordToken, Instrument, transposeTonic, enharmonicTonic} from "./chordsUtils";
+import {Instrument, transposeNote} from "./chordsUtils";
 import {ChordBlockPostProcessorView} from "./chordBlockPostProcessorView";
 import {ChordSheetsSettings, DEFAULT_SETTINGS} from "./chordSheetsSettings";
 import {ChangeSpec, Extension} from "@codemirror/state";
 import {
 	chordSheetEditorPlugin,
 	ChordSheetsViewPlugin,
-	TransposeEventDetail,
-    EnharmonicEventDetail
+	ChordTokenRange,
+	EnharmonicToggleEventDetail,
+	TransposeEventDetail
 } from "./editor-extension/chordSheetsViewPlugin";
 import {InstrumentChangeEventDetail} from "./editor-extension/chordBlockToolsWidget";
 import {AutoscrollControl, SPEED_CHANGED_EVENT} from "./autoscrollControl";
@@ -19,7 +20,6 @@ import {ChordSheetsSettingTab} from "./chordSheetsSettingTab";
 import {IChordSheetsPlugin} from "./chordSheetsPluginInterface";
 import {chordSheetsEditorExtension} from "./editor-extension/chordSheetsEditorExtension";
 import ChordsDB from "@tombatossals/chords-db";
-
 
 const AUTOSCROLL_SPEED_PROPERTY = "autoscroll-speed";
 
@@ -77,35 +77,21 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			}
 		});
 
-		this.registerDomEvent(window, "chord-sheet-transpose", async (event: CustomEvent<TransposeEventDetail>) => {
-			const {direction, blockDef} = event.detail;
-			const editor = this.app.workspace.activeEditor?.editor;
+		this.registerDomEvent(window, "chord-sheet-transpose", async (event: CustomEvent<TransposeEventDetail>) =>
+            await this.handleChordSheetEvent(
+				event,
+				(chordTokens, editorView, detail) =>
+					this.transpose(chordTokens, editorView, detail.direction)
+			)
+        );
 
-			if (editor) {
-				// @ts-ignore
-				const editorView = editor.cm as EditorView;
-				const chordPlugin = editorView?.plugin(this.editorPlugin);
-				if (chordPlugin) {
-					const chordTokens = await chordPlugin.getChordTokensForBlock(blockDef);
-					this.transpose(chordTokens, editorView, direction);
-				}
-			}
-		});
+        this.registerDomEvent(window, "chord-sheet-enharmonic-toggle", async (event: CustomEvent<EnharmonicToggleEventDetail>) =>
+            await this.handleChordSheetEvent(
+				event,
+				(chordTokens, editorView, _detail) =>
+					this.enharmonicToggle(chordTokens, editorView))
+        );
 
-        this.registerDomEvent(window, "chord-sheet-enharmonic", async (event: CustomEvent<EnharmonicEventDetail>) => {
-			const {blockDef} = event.detail;
-			const editor = this.app.workspace.activeEditor?.editor;
-
-			if (editor) {
-				// @ts-ignore
-				const editorView = editor.cm as EditorView;
-				const chordPlugin = editorView?.plugin(this.editorPlugin);
-				if (chordPlugin) {
-					const chordTokens = await chordPlugin.getChordTokensForBlock(blockDef);
-					this.enharmonic(chordTokens, editorView);
-				}
-			}
-		});
 
 
 		// Handle obsidian events
@@ -151,21 +137,21 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			id: 'transpose-block-up',
 			name: 'Transpose current chord block one semitone up',
 			editorCheckCallback: (checking: boolean, editor: Editor) =>
-				this.transposeCommand(editor, this.editorPlugin, checking, "up")
+				this.processChordsCommand(editor, this.editorPlugin, checking, this.transpose.bind(this), "up")
 		});
 
 		this.addCommand({
 			id: 'transpose-block-down',
 			name: 'Transpose current chord block one semitone down',
 			editorCheckCallback: (checking: boolean, editor: Editor) =>
-				this.transposeCommand(editor, this.editorPlugin, checking, "down")
+				this.processChordsCommand(editor, this.editorPlugin, checking, this.transpose.bind(this), "down")
 		});
 
         this.addCommand({
-			id: 'enharmonic',
-			name: 'Enharmonic current chord block',
+			id: 'enharmonic-toggle',
+			name: 'Toggle chords between sharp (#) and flat (b) enharmonic equivalents',
 			editorCheckCallback: (checking: boolean, editor: Editor) =>
-				this.enharmonicCommand(editor, this.editorPlugin, checking)
+				this.processChordsCommand(editor, this.editorPlugin, checking, this.enharmonicToggle.bind(this))
 		});
 
 		this.addCommand({
@@ -226,6 +212,23 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		}
 	}
 
+	async handleChordSheetEvent<T extends TransposeEventDetail | EnharmonicToggleEventDetail>(
+		event: CustomEvent<T>,
+		processFn: (chordTokenRange: ChordTokenRange[], editorView: EditorView, eventDetail: T) => void) {
+		const {blockDef} = event.detail;
+		const editor = this.app.workspace.activeEditor?.editor;
+
+		if (editor) {
+			// @ts-ignore
+			const editorView = editor.cm as EditorView;
+			const chordPlugin = editorView?.plugin(this.editorPlugin);
+			if (chordPlugin) {
+				const chordTokens = await chordPlugin.getChordTokensForBlock(blockDef);
+				processFn(chordTokens, editorView, event.detail);
+			}
+		}
+	}
+
 	private changeInstrumentCommand(view: MarkdownView, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean, instrument: Instrument | null) {
 		const editorView = view.editor.cm as EditorView;
 		const chordPlugin = editorView.plugin(plugin);
@@ -243,7 +246,14 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		return true;
 	}
 
-	private transposeCommand(editor: Editor, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean, direction: "up" | "down") {
+	private processChordsCommand<T extends unknown[]>(
+		editor: Editor,
+		plugin: ViewPlugin<ChordSheetsViewPlugin>,
+		checking: boolean,
+		processFn: (chordTokenRanges: ChordTokenRange[], editorView: EditorView, ...extraArgs: T) => void,
+		...processFnExtraArgs: T
+	) {
+
 		const editorView = editor.cm as EditorView;
 		const chordPlugin = editorView.plugin(plugin);
 		if (chordPlugin) {
@@ -254,33 +264,13 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 			if (!checking) {
 				chordPlugin.getChordTokensForBlock(chordSheetBlockAtCursor).then(
-					chordTokens => this.transpose(chordTokens, editorView, direction)
+					chordTokenRanges => processFn(chordTokenRanges, editorView, ...processFnExtraArgs)
 				);
 			}
 		}
 
 		return true;
 	}
-
-    private enharmonicCommand(editor: Editor, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean) {
-		const editorView = editor.cm as EditorView;
-		const chordPlugin = editorView.plugin(plugin);
-		if (chordPlugin) {
-			const chordSheetBlockAtCursor = chordPlugin.getChordSheetBlockAtCursor();
-			if (!chordSheetBlockAtCursor) {
-				return false;
-			}
-
-			if (!checking) {
-				chordPlugin.getChordTokensForBlock(chordSheetBlockAtCursor).then(
-					chordTokens => this.enharmonic(chordTokens, editorView)
-				);
-			}
-		}
-
-		return true;
-	}
-
 	private adjustScrollSpeedCommand(action: 'increase' | 'decrease', checking: boolean) {
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!view) {
@@ -320,21 +310,25 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		}
 	}
 
-	private transpose(chordTokenRanges: {from: number, to: number, chordToken: ChordToken}[], editor: EditorView, direction: "up" | "down") {
+	private processChords(
+		chordTokenRanges: ChordTokenRange[],
+		editor: EditorView,
+		processNote: (note: string) => string
+	) {
 		const changes: ChangeSpec[] = [];
 		for (const chordTokenRange of chordTokenRanges) {
 			const chordToken = chordTokenRange.chordToken;
-			const [chordTonic, chordType] = Chord.tokenize(chordToken.value);
-			const simplifiedTonic = transposeTonic(chordTonic, direction);
+			const [rootNote, chordType] = Chord.tokenize(chordToken.value);
+			const processedRootNote = processNote(rootNote);
 
 			let transposedChord;
 
-			// As tonal.js does not support slash chord, handle them manually
+			// As tonal.js does not support slash chords, handle them manually
 			if (chordType && chordType.includes('/')) {
-				const [slashChordType, afterSlash] = chordType.split('/');
-				transposedChord = simplifiedTonic + slashChordType + "/" + transposeTonic(afterSlash, direction);
+				const [slashChordType, bassNote] = chordType.split('/');
+				transposedChord = processedRootNote + slashChordType + "/" + processNote(bassNote);
 			} else {
-				transposedChord = simplifiedTonic + (chordType ?? "");
+				transposedChord = processedRootNote + (chordType ?? "");
 			}
 
 			const chordStartIndex = chordTokenRange.from;
@@ -344,28 +338,12 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		editor.plugin(this.editorPlugin)?.applyChanges(changes);
 	}
 
-    private enharmonic(chordTokenRanges: {from: number, to: number, chordToken: ChordToken}[], editor: EditorView) {
-		const changes: ChangeSpec[] = [];
-		for (const chordTokenRange of chordTokenRanges) {
-			const chordToken = chordTokenRange.chordToken;
-			const [chordTonic, chordType] = Chord.tokenize(chordToken.value);
-			const simplifiedTonic = enharmonicTonic(chordTonic);
+	private transpose(chordTokenRanges: ChordTokenRange[], editor: EditorView, direction: "up" | "down") {
+		return this.processChords(chordTokenRanges, editor, (note: string) => transposeNote(note, direction));
+	}
 
-			let enharmonizedChord;
-
-			// As tonal.js does not support slash chord, handle them manually
-			if (chordType && chordType.includes('/')) {
-				const [slashChordType, afterSlash] = chordType.split('/');
-				enharmonizedChord = simplifiedTonic + slashChordType + "/" + enharmonicTonic(afterSlash);
-			} else {
-				enharmonizedChord = simplifiedTonic + (chordType ?? "");
-			}
-
-			const chordStartIndex = chordTokenRange.from;
-			const chordEndIndex = chordTokenRange.to;
-			changes.push({from: chordStartIndex, to: chordEndIndex, insert: enharmonizedChord});
-		}
-		editor.plugin(this.editorPlugin)?.applyChanges(changes);
+    private enharmonicToggle(chordTokenRanges: ChordTokenRange[], editor: EditorView) {
+		return this.processChords(chordTokenRanges, editor, Note.enharmonic);
 	}
 
 	private toggleAutoscroll(view: MarkdownView) {

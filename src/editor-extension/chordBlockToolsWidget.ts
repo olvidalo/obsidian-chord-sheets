@@ -13,8 +13,8 @@ export class ChordBlockToolsWidget extends WidgetType {
 	constructor(
 		private instrument: Instrument,
 		private showTransposeControl: boolean,
-        private showEnharmonicControl: boolean,
 		private showInstrumentControl: boolean,
+		private showEnharmonicToggleControl: boolean,
 		private chordOverviewVisible: boolean
 	) {
 		super();
@@ -27,7 +27,7 @@ export class ChordBlockToolsWidget extends WidgetType {
 	eq(other: ChordBlockToolsWidget) {
 		return this.instrument === other.instrument
 			&& this.showTransposeControl === other.showTransposeControl
-            && this.showEnharmonicControl === other.showEnharmonicControl
+            && this.showEnharmonicToggleControl === other.showEnharmonicToggleControl
 			&& this.showInstrumentControl === other.showInstrumentControl
 			&& this.chordOverviewVisible === other.chordOverviewVisible;
 	}
@@ -60,11 +60,11 @@ export class ChordBlockToolsWidget extends WidgetType {
 			instrumentSelect && instrumentSelect.remove();
 		}
 
-        const enharmonicButton = this.getEnharmonicButton(dom);
-		if (this.showEnharmonicControl) {
-			!enharmonicButton && this.createEnharmonicButton(dom);
+        const enharmonicToggleButton = this.getEnharmonicToggleButton(dom);
+		if (this.showEnharmonicToggleControl) {
+			!enharmonicToggleButton && this.createEnharmonicToggleButton(dom);
 		} else {
-			enharmonicButton?.remove();
+			enharmonicToggleButton?.remove();
 		}
 
 		return true;
@@ -84,8 +84,8 @@ export class ChordBlockToolsWidget extends WidgetType {
 		if (this.showTransposeControl) {
 			this.createTransposeControl(containerEl);
 		}
-        if (this.showEnharmonicControl) {
-			this.createEnharmonicButton(containerEl);
+        if (this.showEnharmonicToggleControl) {
+			this.createEnharmonicToggleButton(containerEl);
 		}
 
 		if (this.showInstrumentControl) {
@@ -148,9 +148,9 @@ export class ChordBlockToolsWidget extends WidgetType {
 		containerEl.firstElementChild?.prepend(el);
 	}
 
-    private createEnharmonicButton(containerEl: HTMLElement): void {
+    private createEnharmonicToggleButton(containerEl: HTMLElement): void {
 		const el = Object.assign(document.createElement("button"), {
-			className: 'chord-sheet-enharmonic',
+			className: 'chord-sheet-enharmonic-toggle',
             textContent: 'Enharmonic'
 		});
 
@@ -165,7 +165,7 @@ export class ChordBlockToolsWidget extends WidgetType {
 		return el.querySelector(".chord-sheet-transpose-control");
 	}
 
-    private getEnharmonicButton(el: HTMLElement): HTMLSelectElement | null {
-		return el.querySelector(".chord-sheet-enharmonic");
+    private getEnharmonicToggleButton(el: HTMLElement): HTMLSelectElement | null {
+		return el.querySelector(".chord-sheet-enharmonic-toggle");
 	}
 }
