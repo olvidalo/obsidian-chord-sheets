@@ -23,16 +23,6 @@ export interface TransposeEventDetail {
 	}
 }
 
-export interface EnharmonicToggleEventDetail {
-	blockDef: {
-		from: number
-		to: number
-		value: IChordBlockRangeValue
-	}
-}
-
-export type ChordTokenRange = { from: number, to: number, chordToken: ChordToken };
-
 export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsViewPlugin, {
 	eventHandlers: {
 		click: function (event: MouseEvent, view: EditorView) {
@@ -55,25 +45,8 @@ export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsView
 					});
 					window.dispatchEvent(transposeEvent);
 				}
-			} else if (target.nodeName === "BUTTON" && target.classList.contains("chord-sheet-enharmonic-toggle")) {
-				event.stopPropagation();
-				const pos = view.posAtDOM(target);
-				const chordBlockRange = view.state.field(chordBlocksStateField).ranges.iter(pos);
-				if (chordBlockRange.value) {
-					const enharmonicToggleEvent = new CustomEvent<EnharmonicToggleEventDetail>('chord-sheet-enharmonic-toggle', {
-						detail: {
-							blockDef: {
-								from: chordBlockRange.from,
-								to: chordBlockRange.to,
-								value: chordBlockRange.value
-							}
-						}
-					});
-					window.dispatchEvent(enharmonicToggleEvent);
-				}
 			}
 		},
-        
 		mousemove: function (event: MouseEvent, view: EditorView) {
 			const {showChordDiagramsOnHover} = view.state.facet(chordSheetsConfigFacet);
 			if (
@@ -186,7 +159,7 @@ export class ChordSheetsViewPlugin implements PluginValue {
 	}
 
 	async getChordTokensForBlock(blockDef: { from: number, to: number, value: IChordBlockRangeValue }) {
-		const chordTokenRanges: ChordTokenRange[] = [];
+		const chordTokenRanges: { from: number, to: number, chordToken: ChordToken }[] = [];
 
 		let chordBlocksState: ChordBlocksState;
 		let chordBlockEnd: number;

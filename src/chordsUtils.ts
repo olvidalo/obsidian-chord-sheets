@@ -1,6 +1,5 @@
 import {Chord, Note} from "tonal";
 import {ChordDef, IChordsDB, InstrumentChords} from "@tombatossals/chords-db";
-
 export type Instrument = keyof IChordsDB;
 
 export interface SheetChord {
@@ -98,9 +97,9 @@ export function tokenizeLine(line: string): TokenizedLine | ChordLine {
 		: {tokens, wordTokens};
 }
 
-export function transposeNote(note: string, direction: "up" | "down") {
-	const transposedNote = Note.transpose(note, direction === "up" ? "2m" : "-2m");
-	return direction === "up" ? Note.enharmonic(transposedNote) : Note.simplify(transposedNote);
+export function transposeTonic(chordTonic: string, direction: "up" | "down") {
+	const transposedTonic = Note.transpose(chordTonic, direction === "up" ? "2m" : "-2m");
+	return direction === "up" ? Note.enharmonic(transposedTonic) : Note.simplify(transposedTonic);
 }
 
 export function findDbChord(chordToken: ChordToken, instrumentChords: InstrumentChords) {

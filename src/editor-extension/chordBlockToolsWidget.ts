@@ -14,7 +14,6 @@ export class ChordBlockToolsWidget extends WidgetType {
 		private instrument: Instrument,
 		private showTransposeControl: boolean,
 		private showInstrumentControl: boolean,
-		private showEnharmonicToggleControl: boolean,
 		private chordOverviewVisible: boolean
 	) {
 		super();
@@ -27,7 +26,6 @@ export class ChordBlockToolsWidget extends WidgetType {
 	eq(other: ChordBlockToolsWidget) {
 		return this.instrument === other.instrument
 			&& this.showTransposeControl === other.showTransposeControl
-            && this.showEnharmonicToggleControl === other.showEnharmonicToggleControl
 			&& this.showInstrumentControl === other.showInstrumentControl
 			&& this.chordOverviewVisible === other.chordOverviewVisible;
 	}
@@ -60,13 +58,6 @@ export class ChordBlockToolsWidget extends WidgetType {
 			instrumentSelect && instrumentSelect.remove();
 		}
 
-        const enharmonicToggleButton = this.getEnharmonicToggleButton(dom);
-		if (this.showEnharmonicToggleControl) {
-			!enharmonicToggleButton && this.createEnharmonicToggleButton(dom);
-		} else {
-			enharmonicToggleButton?.remove();
-		}
-
 		return true;
 	}
 
@@ -83,9 +74,6 @@ export class ChordBlockToolsWidget extends WidgetType {
 
 		if (this.showTransposeControl) {
 			this.createTransposeControl(containerEl);
-		}
-        if (this.showEnharmonicToggleControl) {
-			this.createEnharmonicToggleButton(containerEl);
 		}
 
 		if (this.showInstrumentControl) {
@@ -148,24 +136,11 @@ export class ChordBlockToolsWidget extends WidgetType {
 		containerEl.firstElementChild?.prepend(el);
 	}
 
-    private createEnharmonicToggleButton(containerEl: HTMLElement): void {
-		const el = Object.assign(document.createElement("button"), {
-			className: 'chord-sheet-enharmonic-toggle',
-            textContent: 'Enharmonic'
-		});
-
-		containerEl.firstElementChild?.prepend(el);
-	}
-
 	private getInstrumentSelect(el: HTMLElement): HTMLSelectElement | null {
 		return el.querySelector("select");
 	}
 
 	private getTransposeControl(el: HTMLElement): HTMLSelectElement | null {
 		return el.querySelector(".chord-sheet-transpose-control");
-	}
-
-    private getEnharmonicToggleButton(el: HTMLElement): HTMLSelectElement | null {
-		return el.querySelector(".chord-sheet-enharmonic-toggle");
 	}
 }

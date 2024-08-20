@@ -165,11 +165,7 @@ pre.chord-sheet-chord-block-preview {
 	}
 }
 
-.chord-sheet-transpose-control, .chord-sheet-enharmonic-toggle {
-	margin-right: var(--size-2-3);
-}
-
-.chord-sheet-transpose-control button, .chord-sheet-enharmonic-toggle {
+.chord-sheet-transpose-control button {
 	border-radius: 0;
 	box-shadow: none;
 }
@@ -193,7 +189,6 @@ pre.chord-sheet-chord-block-preview {
 .chord-sheet-transpose-label {
 	color: var(--text-muted);
 }
-
 
 /* Autoscroll controls */
 .chord-sheet-autoscroll-control {
