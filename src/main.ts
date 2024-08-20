@@ -282,15 +282,12 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		const changes: ChangeSpec[] = [];
 		for (const chordTokenRange of chordTokenRanges) {
 			const chordToken = chordTokenRange.chordToken;
-			const [chordTonic, chordType] = Chord.tokenize(chordToken.value);
+			const [chordTonic, chordType, bassNote] = Chord.tokenize(chordToken.value);
 			const simplifiedTonic = transposeTonic(chordTonic, direction);
 
 			let transposedChord;
-
-			// As tonal.js does not support slash chord, handle them manually
-			if (chordType && chordType.includes('/')) {
-				const [slashChordType, afterSlash] = chordType.split('/');
-				transposedChord = simplifiedTonic + slashChordType + "/" + transposeTonic(afterSlash, direction);
+			if (bassNote) {
+				transposedChord = simplifiedTonic + chordType + "/" + transposeTonic(bassNote, direction);
 			} else {
 				transposedChord = simplifiedTonic + (chordType ?? "");
 			}

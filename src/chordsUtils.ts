@@ -6,7 +6,7 @@ export interface SheetChord {
 	tonic: string,
 	type: string,
 	typeAliases: string[],
-	slash: boolean
+	bass: string | null
 }
 
 export interface Token {
@@ -63,15 +63,10 @@ export function tokenizeLine(line: string): TokenizedLine | ChordLine {
 			const tonalJsChord = Chord.get(match[1]);
 			let chord: SheetChord | null = null;
 
-			// tonal.js does not catch slash chords (like C/E)
-			if (tonalJsChord.empty && match[1].contains("/")) {
-				const [tonic, type] = Chord.tokenize(match[1]);
-				chord = {tonic, type, typeAliases: [], slash: true};
-			} else {
-				const {tonic, type, aliases: typeAliases} = tonalJsChord;
-				if (tonic != null) {
-					chord = {tonic, type, typeAliases, slash: false};
-				}
+
+			const {tonic, type, aliases: typeAliases} = tonalJsChord;
+			if (tonic != null) {
+				chord = {tonic, type, typeAliases, bass: tonalJsChord.bass || null};
 			}
 
 			const token: Token = {
@@ -108,11 +103,40 @@ export function findDbChord(chordToken: ChordToken, instrumentChords: Instrument
 
 	const availableTonicKeys = Object.keys(instrumentChords.chords);
 	const tonicKey = availableTonicKeys.find(note => tonicVariations.includes(note));
+
 	let dbChord: ChordDef | undefined;
-	if (tonicKey) {
-		dbChord = instrumentChords.chords[tonicKey].find(testChord => testChord.suffix === chordToken.chord.type || chordToken.chord.typeAliases.includes(testChord.suffix));
+
+	if (!tonicKey) {
+		return null;
 	}
-	return dbChord;
+
+	if (chordToken.chord.bass) {
+		// First priority: Exact match with bass note
+		const bassSuffix = `/${chordToken.chord.bass}`;
+		dbChord = instrumentChords.chords[tonicKey].find(
+			testChord => testChord.suffix === chordToken.chord.type + bassSuffix
+		);
+		if (dbChord) return dbChord;
+
+		// Second priority: Alias match with bass note
+		dbChord = instrumentChords.chords[tonicKey].find(
+			testChord => chordToken.chord.typeAliases.some(alias => testChord.suffix === alias + bassSuffix)
+		);
+		if (dbChord) return dbChord;
+	}
+
+	// Third priority: Exact match without bass note
+	dbChord = instrumentChords.chords[tonicKey].find(
+		testChord => testChord.suffix === chordToken.chord.type
+	);
+	if (dbChord) return dbChord;
+
+	// Fourth priority: Alias match without bass note
+	dbChord = instrumentChords.chords[tonicKey].find(
+		testChord => chordToken.chord.typeAliases.includes(testChord.suffix)
+	);
+
+	return dbChord ?? null;
 }
 
 export function uniqueChordTokens(chordTokens: ChordToken[]) {
