@@ -113,22 +113,30 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 			className: "chord-sheet-position-chooser"
 		});
 
+		const positionLabelSpan = Object.assign(document.createElement('span'), {
+			className: "chord-sheet-position-label",
+		});
+
 		const prevPositionSpan = Object.assign(document.createElement("span"), {
             className: "chord-sheet-btn-prev-position",
             textContent: "<"
         });
+
         const positionSpan = Object.assign(document.createElement("span"), {
 			className: "chord-sheet-position"
 		});
         const numPositionSpan = Object.assign(document.createElement("span"), {
-			textContent: ` / ${numPositions}`
+			textContent: `/${numPositions}`
 		});
-        const nextPositionSpan = Object.assign(document.createElement("span"), {
+		positionLabelSpan.append(positionSpan, numPositionSpan);
+
+		const nextPositionSpan = Object.assign(document.createElement("span"), {
             className: "chord-sheet-btn-next-position",
             textContent: ">"
         });
 
-        positionChooser.append(prevPositionSpan, positionSpan, numPositionSpan, nextPositionSpan);
+
+        positionChooser.append(prevPositionSpan, positionLabelSpan, nextPositionSpan);
 		containerEl.appendChild(positionChooser);
 
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion

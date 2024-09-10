@@ -58,7 +58,7 @@ export class ChordOverviewWidget extends WidgetType {
 			className: "chord-sheet-chord-overview-container"
 		});
 		const chordOverviewEl = Object.assign(document.createElement("div"), {
-			className: "chord-sheet-chord-overview"
+			className: "chord-sheet-chord-overview chord-sheet-preview-mode"
 		});
 		el.append(chordOverviewEl);
 

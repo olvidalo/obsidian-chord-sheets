@@ -27,8 +27,6 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 	}
 
 	private render() {
-		this.containerEl.addClass("chord-sheet-chord-block-preview");
-
 		if (this.containerEl.children.length > 0) {
 			this.containerEl.empty();
 		}
@@ -36,11 +34,11 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 		const lines = this.source.split("\n");
 		const chordTokens: ChordToken[] = [];
 
-
+		const codeEl = this.containerEl.createEl("code", {cls: "chord-sheet-chord-block-preview"});
 		for (const line of lines) {
 			const tokenizedLine = tokenizeLine(line);
 			if (isChordLine(tokenizedLine)) {
-				const lineDiv = this.containerEl.createDiv({
+				const lineDiv = codeEl.createDiv({
 					cls: "chord-sheet-chord-line"
 				});
 				for (const token of tokenizedLine.tokens) {
@@ -58,13 +56,13 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 					}
 				}
 			} else {
-				this.containerEl.appendChild(document.createTextNode(line + "\n"));
+				codeEl.appendChild(document.createTextNode(line + "\n"));
 			}
 		}
 
 		if (this.showChordOverview) {
 			const uniqueTokens = uniqueChordTokens(chordTokens);
-			const overviewContainerEl = this.containerEl.createDiv({cls: "chord-sheet-chord-overview-container"});
+			const overviewContainerEl = createDiv({cls: "chord-sheet-chord-overview-container"});
 			const overviewEl = overviewContainerEl.createDiv({cls: "chord-sheet-chord-overview"});
 			makeChordOverview(this.instrument, overviewEl, uniqueTokens, this.diagramWidth);
 			this.containerEl.prepend(overviewContainerEl);

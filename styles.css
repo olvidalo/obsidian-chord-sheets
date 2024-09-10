@@ -28,10 +28,16 @@
 	justify-content: center;
 	font-size: var(--font-ui-smaller);
 	margin-top: -10px;
+	padding-left: 5%;
 }
 
-.chord-sheet-btn-prev-position, .chord-sheet-btn-next-position {
-	margin: 0 0.25rem;
+.chord-sheet-position-label {
+	margin: 0 0.2rem;
+}
+
+[class^=chord-sheet-btn] {
+	color: var(--text-faint);
+	cursor: default;
 }
 
 .chord-sheet-pos-btn-enabled {
@@ -75,17 +81,24 @@
 
 .chord-sheet-chord-overview-container {
 	white-space: normal;
+	font-family: var(--font-monospace);
 
 	.chord-sheet-chord-overview {
 		display: flex;
 		flex-wrap: wrap;
-		padding-top: 1rem;
 
 		white-space: normal;
 
 		background-color: var(--code-background);
 		border-top-left-radius: var(--code-radius);
 		border-top-right-radius: var(--code-radius);
+
+		margin-inline-start: calc(-1 * var(--size-4-4));
+
+		&.chord-sheet-preview-mode {
+			padding-block-start: var(--size-4-3);
+			margin-inline-start: 0;
+		}
 	}
 
 	.chord-sheet-chord-name {
