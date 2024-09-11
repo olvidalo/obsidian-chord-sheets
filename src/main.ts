@@ -1,7 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
-import {Chord} from "tonal";
+import {Chord, ChordType} from "tonal";
 import {EditorView, ViewPlugin} from "@codemirror/view";
 import {ChordToken, Instrument, transposeTonic} from "./chordsUtils";
 import {ChordBlockPostProcessorView} from "./chordBlockPostProcessorView";
@@ -18,6 +18,7 @@ import {ChordSheetsSettingTab} from "./chordSheetsSettingTab";
 import {IChordSheetsPlugin} from "./chordSheetsPluginInterface";
 import {chordSheetsEditorExtension} from "./editor-extension/chordSheetsEditorExtension";
 import ChordsDB from "@tombatossals/chords-db";
+import {addCustomChordTypes} from "./customChordTypes";
 
 
 const AUTOSCROLL_SPEED_PROPERTY = "autoscroll-speed";
@@ -30,6 +31,8 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 	viewAutoscrollControlMap = new WeakMap<View, AutoscrollControl>();
 
 	async onload() {
+		addCustomChordTypes();
+
 		await this.loadSettings();
 
 
