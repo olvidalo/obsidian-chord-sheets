@@ -1,7 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
-import {Chord, ChordType} from "tonal";
+import {debounce, Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
+import {Chord} from "tonal";
 import {EditorView, ViewPlugin} from "@codemirror/view";
 import {ChordToken, Instrument, transposeTonic} from "./chordsUtils";
 import {ChordBlockPostProcessorView} from "./chordBlockPostProcessorView";
@@ -97,19 +97,25 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 		// Handle obsidian events
 
+		const debounceAutoscrollUpdate = debounce((view: View | MarkdownFileInfo | null) => {
+			this.stopAllAutoscrolls();
+			if (view instanceof MarkdownView) {
+				this.updateAutoscrollButton(view);
+			}
+		}, 100, false);
+
+
 		this.registerEvent(
-			this.app.workspace.on("file-open", () => {
-				this.stopAllAutoscrolls();
-				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (view) {
-					this.updateAutoscrollButton(view);
+			this.app.workspace.on("active-leaf-change", (leaf) => {
+				if (leaf?.view) {
+					debounceAutoscrollUpdate(leaf.view);
 				}
 			})
 		);
 
 		this.registerEvent(
 			this.app.workspace.on("editor-change", (_editor, view) => {
-				this.updateAutoscrollButton(view);
+				debounceAutoscrollUpdate(view);
 			})
 		);
 
