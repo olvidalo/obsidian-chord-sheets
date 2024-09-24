@@ -255,7 +255,7 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 			createEl("br"),
 			`For example, using `, createEl("code", { text: "%t" }),`means a line such as `, createEl("br"),
 			createEl("code", { text: "A Ana e a Ema estão a comer e a beber em casa.  %t" }), createEl("br"),
-			`will force disable detection and highlighting for this line.`,
+			`will disable chord detection and highlighting for this line.`,
 			createEl("br"),
 			createEl("br"),
 			`The marker must appear on the end of a line and seperated by one or more spaces from preceding line content. 
