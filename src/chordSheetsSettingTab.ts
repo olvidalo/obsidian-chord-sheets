@@ -98,6 +98,19 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 					this.plugin.applyNewSettingsToEditors();
 				}));
 
+
+		new Setting(containerEl).setName('Highlighting').setHeading();
+
+		new Setting(containerEl)
+			.setName('Highlight chord symbols')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.highlightChords)
+				.onChange(async (value) => {
+					this.plugin.settings.highlightChords = value;
+					await this.plugin.saveSettings();
+					this.plugin.applyNewSettingsToEditors();
+				}));
+
 		new Setting(containerEl).setName('Chord block controls in live preview mode').setHeading();
 
 		new Setting(containerEl)

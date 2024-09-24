@@ -39,7 +39,8 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 			textLineMarker,
 			showChordDiagramsOnHover,
 			showChordOverview,
-			diagramWidth
+			diagramWidth,
+			highlightChords
 		} = this.settings;
 
 		if (this.containerEl.children.length > 0) {
@@ -61,7 +62,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 				if (isChordLine(tokenizedLine) && isChordToken(token)) {
 					chordTokens.push(token);
 					const tokenEl = lineDiv.createSpan({
-						cls: "chord-sheet-chord-name",
+						cls: `chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}`,
 						text: token.value
 					});
 					if (showChordDiagramsOnHover) {

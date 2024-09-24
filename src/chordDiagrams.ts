@@ -48,7 +48,7 @@ export function renderChordDiagram({containerEl, chordDef, numPositions, positio
 	box.replaceChildren();
 
 	const chordNameEl = document.createElement("div");
-	chordNameEl.classList.add("chord-sheet-chord-name");
+	chordNameEl.classList.add("chord-sheet-chord-name", "chord-sheet-chord-highlight");
 	chordNameEl.innerText = chordName;
 	box.appendChild(chordNameEl);
 

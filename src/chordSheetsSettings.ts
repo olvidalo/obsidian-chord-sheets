@@ -22,6 +22,7 @@ export interface ChordSheetsSettings {
 	alwaysSaveAutoscrollSpeedToFrontmatter: boolean;
 	chordLineMarker: string;
 	textLineMarker: string;
+	highlightChords: boolean;
 }
 
 export const DEFAULT_SETTINGS: ChordSheetsSettings = {
@@ -37,5 +38,6 @@ export const DEFAULT_SETTINGS: ChordSheetsSettings = {
 	blockLanguageSpecifier: DEFAULT_BLOCK_LANGUAGE_SPECIFIER,
 	alwaysSaveAutoscrollSpeedToFrontmatter: false,
 	chordLineMarker: DEFAULT_CHORD_LINE_MARKER,
-	textLineMarker: DEFAULT_TEXT_LINE_MARKER
+	textLineMarker: DEFAULT_TEXT_LINE_MARKER,
+	highlightChords: true,
 };
