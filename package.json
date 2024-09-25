@@ -25,9 +25,10 @@
 	},
 	"dependencies": {
 		"@codemirror/language": "^6.8.0",
+		"@tombatossals/chords-db": "https://github.com/olvidalo/chords-db",
+		"escape-string-regexp": "^5.0.0",
 		"tippy.js": "^6.3.7",
 		"tonal": "^6.2.0",
-		"vexchords": "^1.2.0",
-		"@tombatossals/chords-db": "https://github.com/olvidalo/chords-db"
+		"vexchords": "^1.2.0"
 	}
 }

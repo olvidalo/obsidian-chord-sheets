@@ -5,6 +5,8 @@ export type ShowChordOverviewSetting = "never" | "edit" | "preview" | "always";
 export type ShowChordDiagramsOnHoverSetting = "never" | "edit" | "preview" | "always";
 
 export const DEFAULT_BLOCK_LANGUAGE_SPECIFIER = "chords";
+export const DEFAULT_CHORD_LINE_MARKER = "%c";
+export const DEFAULT_TEXT_LINE_MARKER = "%t";
 
 export interface ChordSheetsSettings {
 	showChordOverview: ShowChordOverviewSetting;
@@ -18,6 +20,8 @@ export interface ChordSheetsSettings {
 	showAutoscrollButton: ShowAutoscrollButtonSetting;
 	blockLanguageSpecifier: string;
 	alwaysSaveAutoscrollSpeedToFrontmatter: boolean;
+	chordLineMarker: string;
+	textLineMarker: string;
 }
 
 export const DEFAULT_SETTINGS: ChordSheetsSettings = {
@@ -31,5 +35,7 @@ export const DEFAULT_SETTINGS: ChordSheetsSettings = {
 	autoscrollDefaultSpeed: 10,
 	showAutoscrollButton: "chord-blocks",
 	blockLanguageSpecifier: DEFAULT_BLOCK_LANGUAGE_SPECIFIER,
-	alwaysSaveAutoscrollSpeedToFrontmatter: false
+	alwaysSaveAutoscrollSpeedToFrontmatter: false,
+	chordLineMarker: DEFAULT_CHORD_LINE_MARKER,
+	textLineMarker: DEFAULT_TEXT_LINE_MARKER
 };

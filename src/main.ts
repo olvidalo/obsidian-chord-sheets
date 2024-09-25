@@ -50,9 +50,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 					context.addChild(new ChordBlockPostProcessorView(
 						codeblock.parentElement!,
 						instrument as Instrument,
-						this.settings.showChordOverview === "always" || this.settings.showChordOverview === "preview",
-						this.settings.showChordDiagramsOnHover === "always" || this.settings.showChordDiagramsOnHover === "preview",
-						this.settings.diagramWidth
+						this.settings
 					));
 				}
 			}
@@ -422,6 +420,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			if (leaf.view.getViewType() === "markdown") {
 				const markdownView = leaf.view as MarkdownView;
 				const editorView = markdownView.editor.cm as EditorView;
+				markdownView.previewMode.rerender(true);
 				const chordPlugin = editorView.plugin(this.editorPlugin);
 				chordPlugin?.updateSettings(this.settings);
 			}

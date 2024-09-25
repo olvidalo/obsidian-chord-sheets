@@ -1,5 +1,7 @@
 import {Chord, Note} from "tonal";
 import {ChordDef, IChordsDB, InstrumentChords} from "@tombatossals/chords-db";
+import escapeStringRegexp from "escape-string-regexp";
+
 export type Instrument = keyof IChordsDB;
 
 export interface SheetChord {
@@ -10,7 +12,7 @@ export interface SheetChord {
 }
 
 export interface Token {
-	type: 'word' | 'chord' | 'whitespace';
+	type: 'word' | 'chord' | 'whitespace' | 'marker';
 	value: string;
 	index?: number;
 }
@@ -24,9 +26,18 @@ export function isChordToken(token: Token | null | undefined): token is ChordTok
 	return !!token && token.type === 'chord' && 'chord' in token;
 }
 
+export interface MarkerToken extends Token {
+	type: 'marker',
+}
+
+export function isMarkerToken(token: Token | null | undefined): token is MarkerToken {
+	return !!token && token.type === 'marker';
+}
+
 interface TokenizedLine {
 	tokens: Token[]
 	wordTokens: Token[]
+	markerToken?: MarkerToken | null
 }
 
 interface ChordLine extends TokenizedLine {
@@ -51,16 +62,24 @@ export function getTonicVariations(tonic: string) {
 	return tonicVariations;
 }
 
-export function tokenizeLine(line: string): TokenizedLine | ChordLine {
-	const tokenPattern = /(?<word>\S+)|(?<spaces>[^\S\n]+)/g;
+export function tokenizeLine(line: string, chordLineMarker: string, textLineMarker: string): TokenizedLine | ChordLine {
+	const chordLineMarkerPattern = escapeStringRegexp(chordLineMarker);
+	const textLineMarkerPattern = escapeStringRegexp(textLineMarker);
+
+	const tokenPattern = new RegExp(
+		`(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<word>\\S+)|(?<whitespace>\\s+)`,
+		"g");
+
 	const tokens: Token[] = [];
 	const wordTokens: Token[] = [];
 	const chordTokens: ChordToken[] = [];
+	let markerToken: MarkerToken | null = null;
 	let match: RegExpExecArray | null;
 
 	while ((match = tokenPattern.exec(line)) !== null) {
 		if (match.groups?.word) {
-			const tonalJsChord = Chord.get(match[1]);
+
+			const tonalJsChord = Chord.get(match.groups.word);
 			let chord: SheetChord | null = null;
 
 
@@ -71,7 +90,7 @@ export function tokenizeLine(line: string): TokenizedLine | ChordLine {
 
 			const token: Token = {
 				type: chord ? 'chord' : 'word',
-				value: match[1],
+				value: match.groups.word,
 				index: match.index,
 				...(chord && {chord})
 			};
@@ -80,16 +99,27 @@ export function tokenizeLine(line: string): TokenizedLine | ChordLine {
 			if (chord) {
 				chordTokens.push(token as ChordToken);
 			}
-		} else if (match.groups?.spaces) {
-			tokens.push({type: 'whitespace', value: match[2]});
+
+		} else if (match.groups?.whitespace) {
+			tokens.push({type: 'whitespace', value: match.groups.whitespace});
+		} else if (match.groups?.marker) {
+			markerToken = {
+				type: 'marker',
+				value: match.groups.marker,
+				index: match.index,
+			};
+			tokens.push(markerToken);
 		}
 	}
 
-	const isChordLine = chordTokens.length / wordTokens.length > 0.5;
+	const markerValue = markerToken?.value;
+	const isChordLine = markerValue === chordLineMarker
+		? true
+		: markerValue === textLineMarker
+			? false
+			: chordTokens.length / wordTokens.length > 0.5;
 
-	return isChordLine
-		? {tokens, wordTokens, chordTokens}
-		: {tokens, wordTokens};
+	return {tokens, wordTokens, markerToken, ...(isChordLine && { chordTokens })};
 }
 
 export function transposeTonic(chordTonic: string, direction: "up" | "down") {

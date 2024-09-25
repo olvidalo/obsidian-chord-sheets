@@ -130,6 +130,8 @@ export const chordBlocksStateField = StateField.define<ChordBlocksState>({
 			if (
 				oldSettings?.defaultInstrument !== newSettings?.defaultInstrument
 				|| oldSettings?.blockLanguageSpecifier !== newSettings?.blockLanguageSpecifier
+				|| oldSettings?.textLineMarker !== newSettings?.textLineMarker
+				|| oldSettings?.chordLineMarker !== newSettings?.chordLineMarker
 			) {
 				return initializeChordBlocksState(tr.state);
 			}
@@ -343,12 +345,12 @@ function updateChordBlocks({changes, state}: Pick<ViewUpdate & Transaction, 'cha
 		filter: () => false, filterFrom: line.from, filterTo: line.to
 	}));
 	addedLines.forEach(line => chordDecos = chordDecos.update({
-		add: chordDecosForLineAt(line)
+		add: chordDecosForLineAt(line, settings)
 	}));
 	changedChordBlockLineNumbers.forEach(lineNo => {
 		const line = state.doc.line(lineNo);
 		chordDecos = chordDecos.update({
-			filter: () => false, filterFrom: line.from, filterTo: line.to, add: chordDecosForLineAt(line)
+			filter: () => false, filterFrom: line.from, filterTo: line.to, add: chordDecosForLineAt(line, settings)
 		});
 	});
 
@@ -486,7 +488,7 @@ function parseChordBlocks(state: EditorState, from: number, to: number, parseCho
 				} else if (parseChords && (currentBlockStart !== null)) {
 					const line = state.doc.lineAt(node.from);
 					if (!processedChordLines.has(line.number)) {
-						chordDecos.push(...chordDecosForLineAt(line));
+						chordDecos.push(...chordDecosForLineAt(line, settings));
 						processedChordLines.add(line.number);
 					}
 				}
@@ -545,15 +547,15 @@ function parseChordBlocks(state: EditorState, from: number, to: number, parseCho
 }
 
 
-function chordDecosForLineAt(line: Line) {
+function chordDecosForLineAt(line: Line, {chordLineMarker, textLineMarker}: ChordSheetsSettings) {
 	const chordDecos = [];
-	const tokenizedLine = tokenizeLine(line.text);
+	const tokenizedLine = tokenizeLine(line.text, chordLineMarker, textLineMarker);
 	if (isChordLine(tokenizedLine)) {
-		const lineDeco = Decoration.line({
-			type: "line",
-			class: "chord-sheet-chord-line"
-		});
-		chordDecos.push(lineDeco.range(line.from));
+			const lineDeco = Decoration.line({
+				type: "line",
+				class: "chord-sheet-chord-line"
+			});
+			chordDecos.push(lineDeco.range(line.from));
 
 		for (const chordToken of tokenizedLine.chordTokens) {
 			const deco = Decoration.mark({
@@ -564,6 +566,16 @@ function chordDecosForLineAt(line: Line) {
 			const index = line.from + chordToken.index!;
 			chordDecos.push(deco.range(index, index + chordToken.value.length));
 		}
+	}
+
+	if (tokenizedLine.markerToken) {
+		const deco = Decoration.mark({
+			type: "marker",
+			class: "chord-sheet-line-marker",
+			token: tokenizedLine.markerToken
+		});
+		const index = line.from + tokenizedLine.markerToken.index!;
+		chordDecos.push(deco.range(index, index + tokenizedLine.markerToken.value.length));
 	}
 
 	return chordDecos;

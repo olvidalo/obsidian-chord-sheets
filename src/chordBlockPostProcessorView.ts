@@ -1,7 +1,16 @@
 import {MarkdownRenderChild} from "obsidian";
-import {ChordToken, Instrument, isChordLine, isChordToken, tokenizeLine, uniqueChordTokens} from "./chordsUtils";
+import {
+	ChordToken,
+	Instrument,
+	isChordLine,
+	isChordToken,
+	isMarkerToken,
+	tokenizeLine,
+	uniqueChordTokens
+} from "./chordsUtils";
 import tippy from "tippy.js/headless";
 import {makeChordDiagram, makeChordOverview} from "./chordDiagrams";
+import {ChordSheetsSettings} from "./chordSheetsSettings";
 
 export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 	source: string;
@@ -9,9 +18,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 	constructor(
 		containerEl: HTMLElement,
 		private instrument: Instrument,
-		private showChordOverview: boolean,
-		private showChordDiagramsOnHover: boolean,
-		private diagramWidth: number
+		private settings: ChordSheetsSettings
 	) {
 		super(containerEl);
 	}
@@ -27,6 +34,14 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 	}
 
 	private render() {
+		const {
+			chordLineMarker,
+			textLineMarker,
+			showChordDiagramsOnHover,
+			showChordOverview,
+			diagramWidth
+		} = this.settings;
+
 		if (this.containerEl.children.length > 0) {
 			this.containerEl.empty();
 		}
@@ -36,42 +51,47 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 
 		const codeEl = this.containerEl.createEl("code", {cls: "chord-sheet-chord-block-preview"});
 		for (const line of lines) {
-			const tokenizedLine = tokenizeLine(line);
-			if (isChordLine(tokenizedLine)) {
-				const lineDiv = codeEl.createDiv({
-					cls: "chord-sheet-chord-line"
-				});
-				for (const token of tokenizedLine.tokens) {
-					if (isChordToken(token)) {
-						chordTokens.push(token);
-						const tokenEl = lineDiv.createSpan({
-							cls: "chord-sheet-chord-name",
-							text: token.value
-						});
-						if (this.showChordDiagramsOnHover) {
-							this.attachChordDiagram(token, tokenEl);
-						}
-					} else {
-						lineDiv.appendChild(document.createTextNode(token.value));
+			const tokenizedLine = tokenizeLine(line, chordLineMarker, textLineMarker);
+
+			const lineDiv = codeEl.createDiv({
+				cls: "chord-sheet-chord-line"
+			});
+
+			for (const token of tokenizedLine.tokens) {
+				if (isChordLine(tokenizedLine) && isChordToken(token)) {
+					chordTokens.push(token);
+					const tokenEl = lineDiv.createSpan({
+						cls: "chord-sheet-chord-name",
+						text: token.value
+					});
+					if (showChordDiagramsOnHover) {
+						this.attachChordDiagram(token, tokenEl);
 					}
+				} else if (isMarkerToken(token)) {
+					lineDiv.createSpan({
+						cls: `chord-sheet-line-marker`,
+						text: token.value
+					});
+				} else {
+					lineDiv.appendChild(document.createTextNode(token.value));
 				}
-			} else {
-				codeEl.appendChild(document.createTextNode(line + "\n"));
 			}
 		}
 
-		if (this.showChordOverview) {
+		if (showChordOverview) {
 			const uniqueTokens = uniqueChordTokens(chordTokens);
 			const overviewContainerEl = createDiv({cls: "chord-sheet-chord-overview-container"});
 			const overviewEl = overviewContainerEl.createDiv({cls: "chord-sheet-chord-overview"});
-			makeChordOverview(this.instrument, overviewEl, uniqueTokens, this.diagramWidth);
+			makeChordOverview(this.instrument, overviewEl, uniqueTokens, diagramWidth);
 			this.containerEl.prepend(overviewContainerEl);
 		}
 	}
 
 	private attachChordDiagram(token: ChordToken, tokenEl: HTMLElement) {
 		const popper = document.createElement("div");
-		const {instrument, diagramWidth} = this;
+		const { instrument, settings } = this;
+		const { diagramWidth } = settings;
+
 		popper.classList.add("chord-sheet-chord-popup");
 
 		// noinspection JSUnusedGlobalSymbols

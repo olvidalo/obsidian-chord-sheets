@@ -1,7 +1,11 @@
-import {App, debounce, PluginSettingTab, Setting} from "obsidian";
+import {App, debounce, PluginSettingTab, Setting, TextComponent} from "obsidian";
 import {Instrument} from "./chordsUtils";
 import {AUTOSCROLL_STEPS} from "./autoscrollControl";
 import {
+	ChordSheetsSettings,
+	DEFAULT_BLOCK_LANGUAGE_SPECIFIER,
+	DEFAULT_CHORD_LINE_MARKER,
+	DEFAULT_TEXT_LINE_MARKER,
 	ShowAutoscrollButtonSetting,
 	ShowChordDiagramsOnHoverSetting,
 	ShowChordOverviewSetting
@@ -94,48 +98,6 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 					this.plugin.applyNewSettingsToEditors();
 				}));
 
-		const languageSpecifierDescFrag = createFragment();
-		const languageSpecifierDescEl = languageSpecifierDescFrag.createSpan();
-		languageSpecifierDescEl.append(`
-			The block language specifier defines the keyword for identifying chord blocks. 
-  			For example, using "chords" means blocks starting with `,
-			createEl("code", { text: "```chords" }),
-			`or `,
-			createEl("code", { text: "```chords-ukulele" }),
-			` will be treated as chord blocks. Change this to customize chord block identification.`,
-			createEl("br"),
-			createEl("br"),
-			`Only lowercase characters `,
-			createEl("code", { text: "a-z" }),
-			`are allowed.`
-		);
-		languageSpecifierDescFrag.appendChild(languageSpecifierDescEl);
-		new Setting(containerEl)
-			.setName('Block language specifier')
-			.setDesc(languageSpecifierDescFrag)
-			.addText(text => text
-				.setValue(this.plugin.settings.blockLanguageSpecifier)
-				.setPlaceholder("chords")
-				.onChange(async value => {
-					const trimmedValue = value.trim();
-					if (trimmedValue.length === 0) {
-						text.setValue("");
-					}
-
-					const isValid = /^[a-z]+$/.test(trimmedValue);
-					if (isValid) {
-						this.plugin.settings.blockLanguageSpecifier = trimmedValue;
-					} else {
-						text.setValue(this.plugin.settings.blockLanguageSpecifier);
-						return;
-					}
-
-					await this.plugin.saveSettings();
-					this.plugin.applyNewSettingsToEditors();
-				})
-			);
-
-
 		new Setting(containerEl).setName('Chord block controls in live preview mode').setHeading();
 
 		new Setting(containerEl)
@@ -218,6 +180,86 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 				})
 			);
 
+		new Setting(containerEl).setName('Chord block syntax').setHeading();
+
+
+		const languageSpecifierDescFrag = createFragment();
+		const languageSpecifierDescEl = languageSpecifierDescFrag.createSpan();
+		languageSpecifierDescEl.append(`
+			The block language specifier defines the keyword for identifying chord blocks. 
+  			For example, using "chords" means blocks starting with `,
+			createEl("code", { text: "```chords" }),
+			`or `,
+			createEl("code", { text: "```chords-ukulele" }),
+			` will be treated as chord blocks. Change this to customize chord block identification.`,
+			createEl("br"),
+			createEl("br"),
+			`Only lowercase characters `,
+			createEl("code", { text: "a-z" }),
+			`are allowed.`
+		);
+		languageSpecifierDescFrag.appendChild(languageSpecifierDescEl);
+		new Setting(containerEl)
+			.setName('Block language specifier')
+			.setDesc(languageSpecifierDescFrag)
+			.addText(text => text
+				.setValue(this.plugin.settings.blockLanguageSpecifier === DEFAULT_BLOCK_LANGUAGE_SPECIFIER ? "" : this.plugin.settings.blockLanguageSpecifier)
+				.setPlaceholder(DEFAULT_BLOCK_LANGUAGE_SPECIFIER)
+				.onChange(async value => await this.handleSyntaxSettingChange(
+					"blockLanguageSpecifier", value, text, DEFAULT_BLOCK_LANGUAGE_SPECIFIER, /^[a-z]+$/
+				))
+			);
+
+		const chordLineMarkerDescFrag = createFragment();
+		const chordLineMarkerDescEl = chordLineMarkerDescFrag.createSpan();
+		chordLineMarkerDescEl.append(`
+			Force detection of a line as a chord line when the plugin has mistakenly detected it as a text line.`,
+			createEl("br"),
+			`For example, using `, createEl("code", { text: "%c" }),`means a line such as `, createEl("br"),
+			createEl("code", { text: "Am G F (a comment that breaks chord detection) C   %c" }), createEl("br"),
+			`will force chord detection and highlighting for this line.`,
+			createEl("br"),
+			createEl("br"),
+			`The marker must appear on the end of a line and seperated by one or more spaces from preceding line content. 
+			It cannot contain spaces.`
+		);
+		chordLineMarkerDescFrag.appendChild(chordLineMarkerDescEl);
+		new Setting(containerEl)
+			.setName('Chord line marker')
+			.setDesc(chordLineMarkerDescFrag)
+			.addText(text => text
+				.setValue(this.plugin.settings.chordLineMarker === DEFAULT_CHORD_LINE_MARKER ? "" : this.plugin.settings.chordLineMarker)
+				.setPlaceholder(DEFAULT_CHORD_LINE_MARKER)
+				.onChange(async value => await this.handleSyntaxSettingChange(
+					"chordLineMarker", value, text, DEFAULT_CHORD_LINE_MARKER, /^\S+$/
+				))
+			);
+
+		const textLineMarkerDescFrag = createFragment();
+		const textLineMarkerDescEl = textLineMarkerDescFrag.createSpan();
+		textLineMarkerDescEl.append(`
+			Force detection of a line as a text line when the plugin has mistakenly detected it as a chord line.`,
+			createEl("br"),
+			`For example, using `, createEl("code", { text: "%t" }),`means a line such as `, createEl("br"),
+			createEl("code", { text: "A Ana e a Ema estão a comer e a beber em casa.  %t" }), createEl("br"),
+			`will force disable detection and highlighting for this line.`,
+			createEl("br"),
+			createEl("br"),
+			`The marker must appear on the end of a line and seperated by one or more spaces from preceding line content. 
+			It cannot contain spaces.`
+		);
+		textLineMarkerDescFrag.appendChild(textLineMarkerDescEl);
+		new Setting(containerEl)
+			.setName('Text line marker')
+			.setDesc(textLineMarkerDescFrag)
+			.addText(text => text
+				.setValue(this.plugin.settings.textLineMarker === DEFAULT_TEXT_LINE_MARKER ? "" : this.plugin.settings.textLineMarker)
+				.setPlaceholder(DEFAULT_TEXT_LINE_MARKER)
+				.onChange(async value => await this.handleSyntaxSettingChange(
+					"textLineMarker", value, text,DEFAULT_TEXT_LINE_MARKER, /^\S+$/
+				))
+
+			);
 
 		new Setting(containerEl).setName('Advanced').setHeading();
 
@@ -232,5 +274,31 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 					this.plugin.applyNewSettingsToEditors();
 				}));
 
+	}
+
+	private async handleSyntaxSettingChange(
+		key: keyof Pick<ChordSheetsSettings, 'blockLanguageSpecifier' | 'chordLineMarker' | 'textLineMarker'>,
+		value: string,
+		text: TextComponent,
+		defaultValue: string,
+		validator: RegExp
+	) {
+		const trimmedValue = value.trim();
+		text.setValue(trimmedValue);
+
+		if (trimmedValue.length === 0) {
+			this.plugin.settings[key] = defaultValue;
+		} else {
+			const isValid = validator.test(trimmedValue);
+			if (isValid) {
+				this.plugin.settings[key] = trimmedValue;
+			} else {
+				text.setValue(this.plugin.settings[key]);
+				return;
+			}
+		}
+
+		await this.plugin.saveSettings();
+		this.plugin.applyNewSettingsToEditors();
 	}
 }

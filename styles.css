@@ -2,7 +2,6 @@
 	text-align: center;
 	color: var(--text-accent);
 	font-weight: bold;
-	font-family: var(--font-monospace);
 }
 
 .chord-sheet-chord-line .chord-sheet-chord-name {
@@ -13,6 +12,10 @@
 	/* increase touch target on mobile */
 	padding: 5px;
 	margin: -5px;
+}
+
+.chord-sheet-line-marker {
+	color: var(--text-faint);
 }
 
 
@@ -114,16 +117,19 @@
 	}
 }
 
-pre.chord-sheet-chord-block-preview {
+.chord-sheet-chord-overview-container:has(+ .chord-sheet-chord-block-preview) {
+	margin-inline-end: calc(-1 * var(--size-4-4));
+}
 
+.chord-sheet-chord-block-preview {
 	.chord-sheet-chord-overview {
-		margin-right: calc(-1 * var(--size-4-4));
-		margin-left: calc(-1 * var(--size-4-4));
+		margin-inline-end: calc(-1 * var(--size-4-4));
+		margin-inline-start: calc(-1 * var(--size-4-4));
 	}
+}
 
-	.chord-sheet-chord-line {
-		font-size: var(--code-size);
-	}
+.chord-sheet-chord-block-preview .chord-sheet-chord-line {
+	min-height: calc(var(--line-height-normal) * 1em);
 }
 
 .chord-sheet-tools-container, .chord {
