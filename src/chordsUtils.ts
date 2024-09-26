@@ -12,9 +12,9 @@ export interface SheetChord {
 }
 
 export interface Token {
-	type: 'word' | 'chord' | 'whitespace' | 'marker';
+	type: 'word' | 'chord' | 'whitespace' | 'marker' | 'header';
 	value: string;
-	index?: number;
+	index: number;
 }
 
 export interface ChordToken extends Token {
@@ -34,10 +34,22 @@ export function isMarkerToken(token: Token | null | undefined): token is MarkerT
 	return !!token && token.type === 'marker';
 }
 
+export interface HeaderToken extends Token {
+	type: 'header'
+	startTag: string
+	headerName: string
+	headerNameIndex: number
+	endTag: string
+	endTagIndex: number
+}
+
+export function isHeaderToken(token: Token | null | undefined): token is HeaderToken {
+	return !!token && token.type === 'header';
+}
+
 interface TokenizedLine {
 	tokens: Token[]
 	wordTokens: Token[]
-	markerToken?: MarkerToken | null
 }
 
 interface ChordLine extends TokenizedLine {
@@ -67,15 +79,16 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 	const textLineMarkerPattern = escapeStringRegexp(textLineMarker);
 
 	const tokenPattern = new RegExp(
-		`(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<word>\\S+)|(?<whitespace>\\s+)`,
+		`(?<header>(?<=^\\s*)(\\[)([^\\]]+)(])(?=\\s*$))|(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<word>\\S+)|(?<ws>\\s+)`,
 		"g");
 
 	const tokens: Token[] = [];
 	const wordTokens: Token[] = [];
 	const chordTokens: ChordToken[] = [];
-	let markerToken: MarkerToken | null = null;
-	let match: RegExpExecArray | null;
+	let markerValue: MarkerToken['value'] | null = null;
+	let headerToken: HeaderToken | null = null;
 
+	let match: RegExpExecArray | null;
 	while ((match = tokenPattern.exec(line)) !== null) {
 		if (match.groups?.word) {
 
@@ -100,26 +113,36 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 				chordTokens.push(token as ChordToken);
 			}
 
-		} else if (match.groups?.whitespace) {
-			tokens.push({type: 'whitespace', value: match.groups.whitespace});
+		} else if (match.groups?.ws) {
+			tokens.push({ type: 'whitespace', value: match.groups.ws, index: match.index });
+
 		} else if (match.groups?.marker) {
-			markerToken = {
-				type: 'marker',
-				value: match.groups.marker,
+			markerValue = match.groups.marker;
+			tokens.push({ type: 'marker', value: markerValue, index: match.index });
+
+		} else if (match.groups?.header) {
+			const [ , , startTag, headerName, endTag] = match;
+			const headerNameIndex = match.index + startTag.length;
+			const endTagIndex = headerNameIndex + headerName.length;
+
+			headerToken = {
+				type: 'header',
+				value: match.groups.header,
 				index: match.index,
+				startTag, headerName, endTag, headerNameIndex, endTagIndex
 			};
-			tokens.push(markerToken);
+
+			tokens.push(headerToken);
 		}
 	}
 
-	const markerValue = markerToken?.value;
 	const isChordLine = markerValue === chordLineMarker
 		? true
 		: markerValue === textLineMarker
 			? false
 			: chordTokens.length / wordTokens.length > 0.5;
 
-	return {tokens, wordTokens, markerToken, ...(isChordLine && { chordTokens })};
+	return {tokens, wordTokens, ...(isChordLine && { chordTokens })};
 }
 
 export function transposeTonic(chordTonic: string, direction: "up" | "down") {

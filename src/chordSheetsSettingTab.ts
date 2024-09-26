@@ -111,6 +111,28 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 					this.plugin.applyNewSettingsToEditors();
 				}));
 
+		const highlightSectionHeadersDescFrag = createFragment();
+		const highlightSectionHeadersDescEl = highlightSectionHeadersDescFrag.createSpan();
+		highlightSectionHeadersDescEl.append(
+			`Section headers must be in square brackets and on their own line, such as:`,
+			createEl("br"),
+			createEl("code", { text: "[Verse 1]" })
+		);
+		highlightSectionHeadersDescFrag.appendChild(highlightSectionHeadersDescEl);
+
+		new Setting(containerEl)
+			.setName('Highlight section headers')
+			.setDesc(highlightSectionHeadersDescFrag)
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.highlightSectionHeaders)
+				.onChange(async (value) => {
+					this.plugin.settings.highlightSectionHeaders = value;
+					await this.plugin.saveSettings();
+					this.plugin.applyNewSettingsToEditors();
+				}));
+
+
+
 		new Setting(containerEl).setName('Chord block controls in live preview mode').setHeading();
 
 		new Setting(containerEl)

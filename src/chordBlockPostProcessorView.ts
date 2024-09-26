@@ -3,7 +3,7 @@ import {
 	ChordToken,
 	Instrument,
 	isChordLine,
-	isChordToken,
+	isChordToken, isHeaderToken,
 	isMarkerToken,
 	tokenizeLine,
 	uniqueChordTokens
@@ -40,7 +40,8 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 			showChordDiagramsOnHover,
 			showChordOverview,
 			diagramWidth,
-			highlightChords
+			highlightChords,
+			highlightSectionHeaders
 		} = this.settings;
 
 		if (this.containerEl.children.length > 0) {
@@ -73,8 +74,25 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 						cls: `chord-sheet-line-marker`,
 						text: token.value
 					});
+				} else if (highlightSectionHeaders && isHeaderToken(token)) {
+					lineDiv.addClass("chord-sheet-section-header");
+					const headerSpan = lineDiv.createSpan({
+						cls: "chord-sheet-section-header-content",
+					});
+					headerSpan.createSpan({
+						cls: `chord-sheet-section-header-tag`,
+						text: token.startTag
+					});
+					headerSpan.createSpan({
+						cls: `chord-sheet-section-header-name cm-strong`,
+                        text: token.headerName
+					});
+					headerSpan.createSpan({
+						cls: `chord-sheet-section-header-tag`,
+						text: token.endTag
+					});
 				} else {
-					lineDiv.appendChild(document.createTextNode(token.value));
+					lineDiv.append(document.createTextNode(token.value));
 				}
 			}
 		}

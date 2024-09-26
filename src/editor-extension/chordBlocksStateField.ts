@@ -1,4 +1,12 @@
-import {ChordToken, Instrument, isChordLine, tokenizeLine} from "../chordsUtils";
+import {
+	ChordToken,
+	Instrument,
+	isChordLine,
+	isChordToken,
+	isHeaderToken,
+	isMarkerToken,
+	tokenizeLine
+} from "../chordsUtils";
 import {Decoration, DecorationSet, EditorView, ViewUpdate} from "@codemirror/view";
 import {
 	Compartment,
@@ -133,7 +141,8 @@ export const chordBlocksStateField = StateField.define<ChordBlocksState>({
 				|| oldSettings?.textLineMarker !== newSettings?.textLineMarker
 				|| oldSettings?.chordLineMarker !== newSettings?.chordLineMarker
 				|| oldSettings?.highlightChords !== newSettings.highlightChords
-			) {
+				|| oldSettings?.highlightSectionHeaders !== newSettings?.highlightSectionHeaders
+		) {
 				return initializeChordBlocksState(tr.state);
 			}
 
@@ -548,9 +557,15 @@ function parseChordBlocks(state: EditorState, from: number, to: number, parseCho
 }
 
 
-function chordDecosForLineAt(line: Line, {chordLineMarker, textLineMarker, highlightChords}: ChordSheetsSettings) {
+function chordDecosForLineAt(line: Line, {
+	chordLineMarker,
+	textLineMarker,
+	highlightChords,
+	highlightSectionHeaders
+}: ChordSheetsSettings) {
 	const chordDecos = [];
 	const tokenizedLine = tokenizeLine(line.text, chordLineMarker, textLineMarker);
+
 	if (isChordLine(tokenizedLine)) {
 		if (highlightChords) {
 			const lineDeco = Decoration.line({
@@ -559,26 +574,49 @@ function chordDecosForLineAt(line: Line, {chordLineMarker, textLineMarker, highl
 			});
 			chordDecos.push(lineDeco.range(line.from));
 		}
+	}
 
-		for (const chordToken of tokenizedLine.chordTokens) {
+	for (const token of tokenizedLine.tokens) {
+		if (isChordLine(tokenizedLine) && isChordToken(token)) {
 			const deco = Decoration.mark({
 				type: "chord",
 				class: `chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}`,
-				token: chordToken
+				token
 			});
-			const index = line.from + chordToken.index!;
-			chordDecos.push(deco.range(index, index + chordToken.value.length));
-		}
-	}
+			const index = line.from + token.index;
+			chordDecos.push(deco.range(index, index + token.value.length));
 
-	if (tokenizedLine.markerToken) {
-		const deco = Decoration.mark({
-			type: "marker",
-			class: "chord-sheet-line-marker",
-			token: tokenizedLine.markerToken
-		});
-		const index = line.from + tokenizedLine.markerToken.index!;
-		chordDecos.push(deco.range(index, index + tokenizedLine.markerToken.value.length));
+		} else if (isMarkerToken(token)) {
+			const deco = Decoration.mark({
+				class: "chord-sheet-line-marker",
+				token
+			});
+			const index = line.from + token.index;
+			chordDecos.push(deco.range(index, index + token.value.length));
+
+		} else if (highlightSectionHeaders && isHeaderToken(token)) {
+			const startTagIndex = line.from + token.index;
+			const headerNameIndex = line.from + token.headerNameIndex;
+			const endTagIndex = line.from + token.endTagIndex;
+			const endIndex = endTagIndex + token.endTag.length;
+
+			chordDecos.push(
+				Decoration
+					.line({ class: "chord-sheet-section-header", token })
+					.range(line.from),
+				Decoration
+					.mark({ class: "chord-sheet-section-header-content", token })
+					.range(startTagIndex, endIndex),
+				Decoration
+					.mark({ class: "chord-sheet-section-header-tag", token })
+					.range(startTagIndex, startTagIndex + token.startTag.length),
+				Decoration
+					.mark({ class: "chord-sheet-section-header-name cm-strong", token })
+					.range(headerNameIndex, headerNameIndex + token.headerName.length),
+				Decoration.mark({ class: "chord-sheet-section-header-tag", token })
+					.range(endTagIndex, endIndex)
+			);
+		}
 	}
 
 	return chordDecos;
