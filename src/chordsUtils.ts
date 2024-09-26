@@ -14,7 +14,7 @@ export interface SheetChord {
 export interface Token {
 	type: 'word' | 'chord' | 'whitespace' | 'marker' | 'header';
 	value: string;
-	index: number;
+	index: [start: number, end: number];
 }
 
 export interface ChordToken extends Token {
@@ -37,10 +37,11 @@ export function isMarkerToken(token: Token | null | undefined): token is MarkerT
 export interface HeaderToken extends Token {
 	type: 'header'
 	startTag: string
+	startTagIndex: [start: number, end: number]
 	headerName: string
-	headerNameIndex: number
+	headerNameIndex: [start: number, end: number]
 	endTag: string
-	endTagIndex: number
+	endTagIndex: [start: number, end: number]
 }
 
 export function isHeaderToken(token: Token | null | undefined): token is HeaderToken {
@@ -80,7 +81,7 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 
 	const tokenPattern = new RegExp(
 		`(?<header>(?<=^\\s*)(\\[)([^\\]]+)(])(?=\\s*$))|(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<word>\\S+)|(?<ws>\\s+)`,
-		"g");
+		"gd");
 
 	const tokens: Token[] = [];
 	const wordTokens: Token[] = [];
@@ -90,6 +91,8 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 
 	let match: RegExpExecArray | null;
 	while ((match = tokenPattern.exec(line)) !== null) {
+		const indices = match.indices!;
+
 		if (match.groups?.word) {
 
 			const tonalJsChord = Chord.get(match.groups.word);
@@ -104,7 +107,7 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 			const token: Token = {
 				type: chord ? 'chord' : 'word',
 				value: match.groups.word,
-				index: match.index,
+				index: indices.groups!.word,
 				...(chord && {chord})
 			};
 			tokens.push(token);
@@ -114,22 +117,22 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 			}
 
 		} else if (match.groups?.ws) {
-			tokens.push({ type: 'whitespace', value: match.groups.ws, index: match.index });
+			tokens.push({ type: 'whitespace', value: match.groups.ws, index: indices.groups!.ws });
 
 		} else if (match.groups?.marker) {
 			markerValue = match.groups.marker;
-			tokens.push({ type: 'marker', value: markerValue, index: match.index });
+			tokens.push({ type: 'marker', value: markerValue, index: indices.groups!.marker });
 
 		} else if (match.groups?.header) {
 			const [ , , startTag, headerName, endTag] = match;
-			const headerNameIndex = match.index + startTag.length;
-			const endTagIndex = headerNameIndex + headerName.length;
+			const [ , , startTagIndex, headerNameIndex, endTagIndex] = indices;
 
 			headerToken = {
 				type: 'header',
 				value: match.groups.header,
-				index: match.index,
-				startTag, headerName, endTag, headerNameIndex, endTagIndex
+				index: indices.groups!.header,
+				startTag, headerName, endTag,
+				startTagIndex, headerNameIndex, endTagIndex
 			};
 
 			tokens.push(headerToken);
