@@ -29,8 +29,8 @@ import {ChordBlockToolsWidget} from "./chordBlockToolsWidget";
 import ChordsDB from "@tombatossals/chords-db";
 
 class ParsedUntilRangeValue extends RangeValue {
-	endSide: -1;
-	point: true;
+	endSide = -1;
+	point = true;
 }
 
 export interface IChordBlockRangeValue {
