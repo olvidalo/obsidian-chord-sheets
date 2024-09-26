@@ -1,12 +1,4 @@
-import {
-	ChordToken,
-	Instrument,
-	isChordLine,
-	isChordToken,
-	isHeaderToken,
-	isMarkerToken,
-	tokenizeLine
-} from "../chordsUtils";
+import {ChordToken, Instrument, isChordToken, isHeaderToken, isMarkerToken, tokenizeLine} from "../chordsUtils";
 import {Decoration, DecorationSet, EditorView, ViewUpdate} from "@codemirror/view";
 import {
 	Compartment,
@@ -569,18 +561,16 @@ function chordDecosForLineAt(line: Line, {
 	const chordDecos = [];
 	const tokenizedLine = tokenizeLine(line.text, chordLineMarker, textLineMarker);
 
-	if (isChordLine(tokenizedLine)) {
-		if (highlightChords) {
-			const lineDeco = Decoration.line({
-				type: "line",
-				class: "chord-sheet-chord-line"
-			});
-			chordDecos.push(lineDeco.range(line.from));
-		}
+	if (tokenizedLine.isChordLine && highlightChords) {
+		const lineDeco = Decoration.line({
+			type: "line",
+			class: "chord-sheet-chord-line"
+		});
+		chordDecos.push(lineDeco.range(line.from));
 	}
 
 	for (const token of tokenizedLine.tokens) {
-		if (isChordLine(tokenizedLine) && isChordToken(token)) {
+		if (isChordToken(token)) {
 			const deco = Decoration.mark({
 				type: "chord",
 				class: `chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}`,

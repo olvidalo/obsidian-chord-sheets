@@ -2,8 +2,8 @@ import {MarkdownRenderChild} from "obsidian";
 import {
 	ChordToken,
 	Instrument,
-	isChordLine,
-	isChordToken, isHeaderToken,
+	isChordToken,
+	isHeaderToken,
 	isMarkerToken,
 	tokenizeLine,
 	uniqueChordTokens
@@ -60,7 +60,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 			});
 
 			for (const token of tokenizedLine.tokens) {
-				if (isChordLine(tokenizedLine) && isChordToken(token)) {
+				if (tokenizedLine.isChordLine && isChordToken(token)) {
 					chordTokens.push(token);
 					const tokenEl = lineDiv.createSpan({
 						cls: `chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}`,
