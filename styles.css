@@ -26,8 +26,12 @@
 	color: var(--text-accent);
 }
 
-.chord-sheet-section-header-tag {
+.chord-sheet-section-header-tag, .chord-sheet-inline-chord-tag {
 	color: var(--text-faint);
+}
+
+.chord-sheet-inline-chord-aux-text {
+	font-weight: inherit;
 }
 
 

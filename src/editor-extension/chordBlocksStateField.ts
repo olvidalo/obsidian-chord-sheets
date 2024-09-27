@@ -425,8 +425,8 @@ function getChordBlockDecos(config: ChordSheetsSettings, chordBlockRanges: Range
 				blocks.push({from: iter.from, to: iter.to, value: iter.value});
 				iter.next();
 			}
-			throw e;
 		}
+		throw e;
 	}
 
 	return builder.finish();
@@ -571,13 +571,42 @@ function chordDecosForLineAt(line: Line, {
 
 	for (const token of tokenizedLine.tokens) {
 		if (isChordToken(token)) {
-			const deco = Decoration.mark({
-				type: "chord",
-				class: `chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}`,
-				token
-			});
-			const [start, end] = mapIndex(line, token.index);
-			chordDecos.push(deco.range(start, end));
+
+			chordDecos.push(
+				Decoration
+					.mark({ type: "chord", class: `chord-sheet-chord`, token })
+					.range(...(mapIndex(line, token.index)))
+			);
+
+			if (token.startTag) {
+				chordDecos.push(
+					Decoration
+						.mark({ class: `chord-sheet-inline-chord-tag` })
+						.range(...mapIndex(line, token.startTag.index))
+				);
+			}
+
+			chordDecos.push(
+				Decoration
+					.mark({ class:`chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}` })
+					.range(...mapIndex(line, token.chordSymbolIndex))
+			);
+
+			if (token.auxText) {
+				chordDecos.push(
+					Decoration
+						.mark({ class: `chord-sheet-inline-chord-aux-text`})
+						.range(...mapIndex(line, token.auxText.index))
+				);
+			}
+
+			if (token.endTag) {
+				chordDecos.push(
+					Decoration
+						.mark({ class: `chord-sheet-inline-chord-tag` })
+						.range(...mapIndex(line, token.endTag.index))
+				);
+			}
 
 		} else if (isMarkerToken(token)) {
 			const deco = Decoration.mark({
@@ -595,18 +624,18 @@ function chordDecosForLineAt(line: Line, {
 
 			chordDecos.push(
 				Decoration
-					.line({ class: "chord-sheet-section-header", token })
+					.line({ class: "chord-sheet-section-header" })
 					.range(line.from),
 				Decoration
-					.mark({ class: "chord-sheet-section-header-content", token })
+					.mark({ class: "chord-sheet-section-header-content" })
 					.range(headerStart, headerEnd),
 				Decoration
-					.mark({ class: "chord-sheet-section-header-tag", token })
+					.mark({ class: "chord-sheet-section-header-tag" })
 					.range(startTagStart, startTagEnd),
 				Decoration
-					.mark({ class: "chord-sheet-section-header-name cm-strong", token })
+					.mark({ class: "chord-sheet-section-header-name cm-strong" })
 					.range(headerNameStart, headerNameEnd),
-				Decoration.mark({ class: "chord-sheet-section-header-tag", token })
+				Decoration.mark({ class: "chord-sheet-section-header-tag" })
 					.range(endTagStart, headerEnd)
 			);
 		}

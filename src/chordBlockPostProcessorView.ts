@@ -60,14 +60,41 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 			});
 
 			for (const token of tokenizedLine.tokens) {
-				if (tokenizedLine.isChordLine && isChordToken(token)) {
+				if (isChordToken(token)) {
 					chordTokens.push(token);
-					const tokenEl = lineDiv.createSpan({
-						cls: `chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}`,
-						text: token.value
+					const chordSpan = lineDiv.createSpan({
+						cls: "chord-sheet-chord",
 					});
+
+					if (token.startTag) {
+						chordSpan.createSpan({
+							cls: `chord-sheet-inline-chord-tag`,
+							text: token.startTag.value
+						});
+					}
+
+					chordSpan.createSpan({
+						cls: `chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}`,
+						text: token.chordSymbol
+					});
+
+					if (token.auxText) {
+						chordSpan.createSpan({
+							cls: `chord-sheet-inline-chord-aux-text`,
+							text: token.auxText.value
+						});
+					}
+
+					if (token.endTag) {
+						chordSpan.createSpan({
+                            cls: `chord-sheet-inline-chord-tag`,
+                            text: token.endTag.value
+                        });
+					}
+
+
 					if (showChordDiagramsOnHover) {
-						this.attachChordDiagram(token, tokenEl);
+						this.attachChordDiagram(token, chordSpan);
 					}
 				} else if (isMarkerToken(token)) {
 					lineDiv.createSpan({

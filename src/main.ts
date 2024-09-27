@@ -289,7 +289,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		const changes: ChangeSpec[] = [];
 		for (const chordTokenRange of chordTokenRanges) {
 			const chordToken = chordTokenRange.chordToken;
-			const [chordTonic, chordType, bassNote] = Chord.tokenize(chordToken.value);
+			const [chordTonic, chordType, bassNote] = Chord.tokenize(chordToken.chordSymbol);
 			const simplifiedTonic = transposeTonic(chordTonic, direction);
 
 			let transposedChord;

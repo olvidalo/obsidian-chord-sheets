@@ -70,7 +70,7 @@ export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsView
 							const chordToken: ChordToken = deco.spec.token;
 							const dom = view.domAtPos(pos);
 							let el = dom.node.parentElement;
-							while (el && !el.classList.contains("chord-sheet-chord-name")) {
+							while (el && !el.classList.contains("chord-sheet-chord")) {
 								el = el.parentElement;
 							}
 							if (el) {

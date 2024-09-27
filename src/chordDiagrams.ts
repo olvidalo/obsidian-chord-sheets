@@ -1,6 +1,6 @@
 import {chordSequenceString, ChordToken, findDbChord, Instrument} from "./chordsUtils";
 import {BarreDef, ChordBox, ChordParams} from "vexchords";
-import ChordsDB, { ChordDef } from "@tombatossals/chords-db";
+import ChordsDB, {ChordDef} from "@tombatossals/chords-db";
 
 function convertToVexChord(input: ChordDef, positionIndex = 0): ChordParams {
 	const position = input.positions[positionIndex];
@@ -153,7 +153,7 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 					position: ++currentPosition,
 					numStrings: numStrings,
 					numFrets: numFrets,
-					chordName: chordToken.value,
+					chordName: chordToken.chordSymbol,
 					width: width
 				});
 			}
@@ -167,7 +167,7 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 					position: --currentPosition,
 					numStrings: numStrings,
 					numFrets: numFrets,
-					chordName: chordToken.value,
+					chordName: chordToken.chordSymbol,
 					width: width
 				});
 			}
@@ -180,7 +180,7 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 			position: position,
 			numStrings: numStrings,
 			numFrets: numFrets,
-			chordName: chordToken.value,
+			chordName: chordToken.chordSymbol,
 			width: width
 		});
 	}
