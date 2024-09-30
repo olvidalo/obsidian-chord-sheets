@@ -35,11 +35,12 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 		await this.loadSettings();
 
+		this.app.workspace.trigger("parse-style-settings");
+
 
 		// Register code block post processor for reading mode
 
 		this.registerMarkdownPostProcessor((element, context) => {
-
 			const codeblocks = element.querySelectorAll("code[class*=language-chords]");
 			for (let index = 0; index < codeblocks.length; index++) {
 				const codeblock = codeblocks.item(index);

@@ -1,11 +1,279 @@
+/* @settings
+
+name: Chord Sheets
+id: chord-sheets
+settings:
+	## CHORDS
+    -
+        id: chords
+        title: Chords
+        type: heading
+        level: 3
+    -
+        id: chord-highlight-color
+        title: Chord symbol color
+        description: Highlight color for chord symbols. Defaults to the current theme's accent color.
+        type: variable-themed-color
+        format: hex
+        default-light: '#'
+        default-dark: '#'
+    -
+        id: chord-highlight-font-weight
+        title: Chord symbol font weight
+        description: Font weight used for chord symbols.
+        type: variable-select
+        default: bolder
+        options:
+            - '100'
+            - '200'
+            - '300'
+            - normal
+            - '500'
+            - '600'
+            - bold
+            - '800'
+            - '900'
+            - lighter
+            - bolder
+            - inherit
+    -
+        id: chord-background-color
+        title: Chord background color
+        description: Highlight color for chord symbols. Defaults to transparent.
+        type: variable-themed-color
+        format: hex
+        default-light: '#FFFFFF00'
+        default-dark: '#00000000'
+        opacity: true;
+
+
+    ## INLINE CHORDS
+
+    -
+        id: chord-sheets-uniform-inline-style
+        title: Uniform inline chord style
+        description: |
+        	Use the styling for chord symbols for the whole inline chord. Disables independent styling of brackets and
+        	auxiliary text.
+        type: class-toggle
+    -
+        id: inline-chords-style-info
+        title: Advanced inline chord styling
+        description: |
+        	**Note**: The following settings only take effect when the *Uniform inline chord style* option is
+        	**disabled**.
+        type: info-text
+        markdown: true
+    -
+        id: inline-chord-tag-color
+        title: Inline chord bracket color
+        description: |
+        	Highlight color for the brackets of inline chords, such as [Dm]. Defaults to the current theme's faint text
+        	color.
+        type: variable-themed-color
+        format: hex
+        default-light: '#'
+        default-dark: '#'
+    -
+        id: inline-chord-bracket-font-weight
+        title: Inline chord bracket font weight
+        description: Font weight for the brackets of inline chords, such as [Dm].
+        type: variable-select
+        default: inherit
+        options:
+            - '100'
+            - '200'
+            - '300'
+            - normal
+            - '500'
+            - '600'
+            - bold
+            - '800'
+            - '900'
+            - lighter
+            - bolder
+            - inherit
+    -
+        id: inline-chord-aux-text-color
+        title: Inline chord auxiliary text color
+        description: |
+        	Highlight color for auxiliary text in inline chords, such as [Dm special]. Defaults to the current theme's
+        	normal code color`.
+        type: variable-themed-color
+        format: hex
+        default-light: '#'
+        default-dark: '#'
+    -
+        id: inline-chord-aux-text-font-weight
+        title: Inline chord auxiliary text font weight
+        description: Font weight for auxiliary text in inline chords, such as [Dm special].
+        type: variable-select
+        default: inherit
+        options:
+            - '100'
+            - '200'
+            - '300'
+            - normal
+            - '500'
+            - '600'
+            - bold
+            - '800'
+            - '900'
+            - lighter
+            - bolder
+            - inherit
+
+
+    ## HEADERS
+    -
+        id: section-headers
+        title: Section headers
+        type: heading
+        level: 3
+    -
+        id: section-header-title-color
+        title: Section title color
+        description: |
+        	Highlight color for the section title in section headers. Defaults to the current theme's highlight color.
+        type: variable-themed-color
+        format: hex
+        default-light: '#'
+        default-dark: '#'
+    -
+        id: section-header-background-color
+        title: Background color
+        description: Background color for section headers. Defaults to transparent.
+        type: variable-themed-color
+        format: hex
+        default-light: '#FFFFFF00'
+        default-dark: '#00000000'
+        opacity: true;
+    -
+        id: section-header-title-font-weight
+        title: Section title font weight
+        description: Font weight for the section title in section headers.
+        type: variable-select
+        default: bolder
+        options:
+            - '100'
+            - '200'
+            - '300'
+            - normal
+            - '500'
+            - '600'
+            - bold
+            - '800'
+            - '900'
+            - lighter
+            - bolder
+            - inherit
+    -
+        id: section-header-font-size
+        title: Font size
+        description: |
+        	The font size of the section header. Defaults to the current theme's code block font size.
+        	NOTE: you must use a full CSS font size value including units such as: 1em, 16px, 12pt etc. You can also
+        	reference a CSS variable provided by Obsidian or a theme. For example, to use the font size for 3rd level
+        	headers, use: var(--h3-size)
+        type: variable-text
+        default: ""
+
+    -
+        id: chord-sheets-uniform-header-style
+        title: Uniform section header style
+        description: |
+        	Use the styling for section header names for the whole header. Disables independent styling of header tags.
+        type: class-toggle
+    -
+        id: header-style-info
+        title: Advanced section header styling
+        description: |
+        	**Note**: The following settings only take effect when the *Uniform section header style* option is
+        	**disabled**.
+        type: info-text
+        markdown: true
+    -
+        id: section-header-tag-color
+        title: Section header tag color
+        description: |
+        	Highlight color for the opening and closing tags of section headers. Defaults to the current theme's faint
+        	text color.
+        type: variable-themed-color
+        format: hex
+        default-light: '#'
+        default-dark: '#'
+    -
+        id: section-header-tag-font-weight
+        title: Section header tag font weight
+        description: Font weight for the opening and closing tags of section headers.
+        type: variable-select
+        default: inherit
+        options:
+            - '100'
+            - '200'
+            - '300'
+            - normal
+            - '500'
+            - '600'
+            - bold
+            - '800'
+            - '900'
+            - lighter
+            - bolder
+            - inherit
+
+
+   ## LINE MARKERS
+
+    -
+        id: line-markers
+        title: Line markers
+        type: heading
+        level: 3
+    -
+        id: line-marker-color
+        title: Line marker color
+        description: |
+        	Highlight color for line markers such as %c and %t (see the plugin's settings for an explanation). Defaults
+        	to the current theme's faint text color.
+        type: variable-themed-color
+        format: hex
+        opacity: true
+        default-light: '#'
+        default-dark: '#'
+    -
+        id: line-marker-font-weight
+        title: Section title font weight
+        description: Font weight for the section title in section headers.
+        type: variable-select
+        default: inherit
+        options:
+            - '100'
+            - '200'
+            - '300'
+            - normal
+            - '500'
+            - '600'
+            - bold
+            - '800'
+            - '900'
+            - lighter
+            - bolder
+            - inherit
+*/
+
+.chord-sheet-chord-line .chord-sheet-chord {
+	background-color: var(--chord-background-color, transparent);
+}
+
 .chord-sheet-chord-name {
 	text-align: center;
 	font-family: var(--font-monospace);
 }
 
 .chord-sheet-chord-name.chord-sheet-chord-highlight {
-	color: var(--text-accent);
-	font-weight: bold;
+	color: var(--chord-highlight-color, var(--text-accent));
+	font-weight: var(--chord-highlight-font-weight, bolder);
 }
 
 .chord-sheet-chord-line .chord-sheet-chord-name {
@@ -19,20 +287,61 @@
 }
 
 .chord-sheet-line-marker {
-	color: var(--text-faint);
+	color: var(--line-marker-color, var(--text-faint));
+	font-weight: var(--line-marker-font-weight, inherit);
 }
 
-.markdown-source-view.mod-cm6 .cm-line.HyperMD-codeblock.chord-sheet-section-header, .chord-sheet-section-header {
-	color: var(--text-accent);
+code.chord-sheet-chord-block-preview {
+	font-size: unset;
+
+	> * {
+		font-size: var(--code-size);
+	}
+
+	> .chord-sheet-section-header {
+		font-size: var(--section-header-font-size, var(--code-size));
+	}
 }
 
-.chord-sheet-section-header-tag, .chord-sheet-inline-chord-tag {
-	color: var(--text-faint);
+.chord-sheet-section-header {
+	color: var(--section-header-title-color, var(--text-accent));
+	font-size: var(--section-header-font-size, var(--code-size)) !important;
+}
+
+.chord-sheet-section-header-content {
+	background-color: var(--section-header-background-color, var(--code-background));
+}
+
+.chord-sheet-section-header-name {
+	color: var(--section-header-title-color, var(--bold-color));
+	font-weight: var(--section-header-title-font-weight, bolder);
+}
+
+.chord-sheet-section-header-tag {
+	color: var(--section-header-tag-color, var(--text-faint));
+	font-weight: var(--section-header-tag-font-weight, inherit);
+}
+
+.chord-sheets-uniform-header-style .chord-sheet-section-header-tag{
+	color: var(--section-header-title-color, var(--bold-color));
+	font-weight: var(--section-header-title-font-weight, bolder);
+}
+
+.chord-sheet-inline-chord-tag {
+	color: var(--inline-chord-tag-color, var(--text-faint));
+	font-weight: var(--inline-chord-bracket-font-weight, inherit);
 }
 
 .chord-sheet-inline-chord-aux-text {
-	font-weight: inherit;
+	font-weight: var(--inline-chord-aux-text-font-weight, inherit);
+	color: var(--inline-chord-aux-text-color, var(--code-normal));
 }
+
+.chord-sheets-uniform-inline-style .chord-sheet-inline-chord-tag, .chord-sheets-uniform-inline-style .chord-sheet-inline-chord-aux-text {
+	color: var(--chord-symbol-color, var(--text-accent));
+	font-weight: var(--chord-highlight-font-weight, bolder);
+}
+
 
 
 /* Chord Boxes */
