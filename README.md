@@ -18,7 +18,8 @@ Detects and highlights chord symbols in fenced code blocks marked as ```` ```cho
 *Note:* When copy and pasting a chord sheet from a website, paste as plain text to preserve formatting (per default *⌘ + ⇧ + V* on Mac and *Ctrl + ⇧ + V* on Windows/Linux or right click ➔ *Paste as plain text*). 
 
 The plugin auto-detects chord and lyric lines. If it fails, add `%c` at the end of chord lines or `%t` for lyrics (an idea
-'borrowed' from the [Chord Lyrics](https://github.com/nevernotmove/obsidian-chordlyrics) plugin):
+'borrowed' from the [Chord Lyrics](https://github.com/nevernotmove/obsidian-chordlyrics) plugin): 
+  
 ![line-markers.png](docs/line-markers.png)
 
 
