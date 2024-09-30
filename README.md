@@ -1,6 +1,6 @@
 # Obsidian Chord Sheets
 
-Render and work with chord sheets (**chords over lyrics**) in your vault. This plugin brings
+Render and work with chord sheets (**chords over lyrics** or **inline chords** in brackets) in your vault. This plugin brings
 UltimateGuitar-like functionality into Obsidian, featuring **chord diagrams**,
 support for **guitar**, **ukulele** and **mandolin**, **transposition**, and **autoscroll**. Works seamlessly in **edit / live preview**
 and **reading** mode. It integrates with your **theme colors** and is **customizable** to your needs.
@@ -13,7 +13,14 @@ Detects and highlights chord symbols in fenced code blocks marked as ```` ```cho
 
 ![chord-blocks.png](docs/chord-blocks.png)
 
-*Note:* When copy and pasting a chord sheet from a website, paste as plain text to preserve formatting (per default ⌘ + ⇧ + V on Mac and Ctrl + ⇧ + V on Windows/Linux or right click ➔ *Paste as plain text*). 
+![inline-chords.png](docs/inline-chords.png)
+
+*Note:* When copy and pasting a chord sheet from a website, paste as plain text to preserve formatting (per default *⌘ + ⇧ + V* on Mac and *Ctrl + ⇧ + V* on Windows/Linux or right click ➔ *Paste as plain text*). 
+
+The plugin auto-detects chord and lyric lines. If it fails, add `%c` at the end of chord lines or `%t` for lyrics (an idea
+'borrowed' from the [Chord Lyrics](https://github.com/nevernotmove/obsidian-chordlyrics) plugin):
+![line-markers.png](docs/line-markers.png)
+
 
 ### 🎼 Chord Diagrams
 
@@ -59,6 +66,7 @@ automatically as you adjust the speed.
 |--------------------------------------------|------------------------------------------------|------------------------------------------------------|
 | ![minimal-dark.png](docs/minimal-dark.png) | ![minimal-bright.png](docs/minimal-bright.png) | ![anuppuccin-bright.png](docs/anuppuccin-bright.png) |
 
+To customize colors and styles, use the [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) plugin. 
 
 ### ⌨️ Editor Commands
 
@@ -77,9 +85,11 @@ there which brings up the keyboard. Prefer _reading_ mode on mobile.
 
 ### ⚙️ Configurability
 
+* Turn chord or section header **highlighting** on or off 
 * Hide certain **UI elements** (instrument and transpose controls, chord diagrams, autoscroll button) for _edit / live preview_ mode, _reading_ mode, or both. 
 * Adjust **chord diagram size** and the **default instrument** 
-* Customize the block **"language" specifier** (e.g. start a chord block with ```` ```tab````  instead of ```` ```chords````)
+* Customize the block **"language" specifier** (e.g. start a chord block with ```` ```tab````  instead of ```` ```chords````) and the **line markers** (e.g. `[c]` instead of `%c`)
+* Integrates with [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) for fine-grained customization of colors and styles
 
 ## Development
 
