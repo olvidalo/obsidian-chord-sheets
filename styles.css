@@ -123,6 +123,41 @@ settings:
             - bolder
             - inherit
 
+	## RYHTM MARKERS
+    -
+        id: rhythm-markers
+        title: Rhythm markers
+        type: heading
+        level: 3
+    -
+        id: rhythm-marker-color
+        title: Color
+        description: |
+        	Highlight color for rhythm markers in chord lines such as in "Dm / / / | % | Em / / /".
+        	Defaults to the current theme's faint text color.
+        type: variable-themed-color
+        format: hex
+        default-light: '#'
+        default-dark: '#'
+    -
+        id: rhythm-marker-font-weight
+        title: Inline chord auxiliary text font weight
+        description: Font weight for rhythm markers.
+        type: variable-select
+        default: inherit
+        options:
+            - '100'
+            - '200'
+            - '300'
+            - normal
+            - '500'
+            - '600'
+            - bold
+            - '800'
+            - '900'
+            - lighter
+            - bolder
+            - inherit
 
     ## HEADERS
     -
@@ -284,6 +319,11 @@ settings:
 	/* increase touch target on mobile */
 	padding: 5px;
 	margin: -5px;
+}
+
+.chord-sheet-rhythm-marker {
+	color: var(--rhythm-marker-color, var(--text-faint));
+	font-weight: var(--rhythm-marker-font-weight, inherit);
 }
 
 .chord-sheet-line-marker {

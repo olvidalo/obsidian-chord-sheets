@@ -131,7 +131,25 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 					this.plugin.applyNewSettingsToEditors();
 				}));
 
+		const highlightRhythmMarkersDescFrag = createFragment();
+		const highlightRhythmMarkersDescEl = highlightRhythmMarkersDescFrag.createSpan();
+		highlightRhythmMarkersDescEl.append(
+			`Highlight rhythm markers sometimes used in chord sheets such as in:`,
+			createEl("br"),
+			createEl("code", { text: "| C C/B | Am C/G | F Bb | C | % |" })
+		);
+		highlightRhythmMarkersDescFrag.appendChild(highlightRhythmMarkersDescEl);
 
+		new Setting(containerEl)
+			.setName('Highlight rhythm markers')
+			.setDesc(highlightRhythmMarkersDescFrag)
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.highlightRhythmMarkers)
+				.onChange(async (value) => {
+					this.plugin.settings.highlightRhythmMarkers = value;
+					await this.plugin.saveSettings();
+					this.plugin.applyNewSettingsToEditors();
+				}));
 
 		new Setting(containerEl).setName('Chord block controls in live preview mode').setHeading();
 

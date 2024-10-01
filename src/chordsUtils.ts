@@ -12,7 +12,7 @@ export interface SheetChord {
 }
 
 export interface Token {
-	type: 'word' | 'chord' | 'whitespace' | 'marker' | 'header';
+	type: 'word' | 'chord' | 'whitespace' | 'marker' | 'header' | 'rhythm';
 	value: string;
 	index: [start: number, end: number];
 }
@@ -32,7 +32,15 @@ export type ChordToken = Token & ChordInfo & {
 };
 
 export function isChordToken(token: Token | null | undefined): token is ChordToken {
-	return !!token && token.type === 'chord' && 'chord' in token;
+	return token?.type === 'chord' && 'chord' in token;
+}
+
+export type RhythmToken = Token & {
+	type: "rhythm"
+};
+
+export function isRhythmToken(token: Token | null | undefined): token is RhythmToken {
+	return token?.type === 'rhythm';
 }
 
 export interface MarkerToken extends Token {
@@ -82,11 +90,11 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 	const textLineMarkerPattern = escapeStringRegexp(textLineMarker);
 
 	const tokenPattern = new RegExp(
-		`(?<header>(?<=^\\s*)(\\[)([^\\]]+)(])(?=\\s*$))|(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<inline_chord>(\\[)(\\S+)([^\\[]*)(]))|(?<word>[^\\s\\[]+)|(?<ws>\\s+)`,
+		`(?<header>(?<=^\\s*)(\\[)([^\\]]+)(])(?=\\s*$))|(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<inline_chord>(\\[)(\\S+)([^\\[()]*)(]))|(?<word>([[\\]/|%]+)|[^\\s\\[]+)|(?<ws>\\s+)`,
 		"gd");
 
 	const tokens: Token[] = [];
-	const possibleChordTokens = new Map<Token, ChordInfo>;
+	const possibleChordOrRhythmTokens = new Map<Token, ChordInfo | "rhythm">;
 	let wordTokenCount: number = 0;
 	let markerValue: MarkerToken['value'] | null = null;
 	let headerToken: HeaderToken | null = null;
@@ -105,12 +113,17 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 				index
 			};
 
-			const tonalJsChord = Chord.get(groups.word);
-			const {tonic, type, aliases: typeAliases} = tonalJsChord;
-			const chord = tonic ? {tonic, type, typeAliases, bass: tonalJsChord.bass || null} : null;
+			const possibleRhythmToken = match[12];
+			if (possibleRhythmToken) {
+				possibleChordOrRhythmTokens.set(token, "rhythm");
+			} else {
+				const tonalJsChord = Chord.get(groups.word);
+				const {tonic, type, aliases: typeAliases} = tonalJsChord;
+				const chord = tonic ? {tonic, type, typeAliases, bass: tonalJsChord.bass || null} : null;
 
-			if (chord) {
-				possibleChordTokens.set(token, { chord, chordSymbol: groups.word, chordSymbolIndex: index });
+				if (chord) {
+					possibleChordOrRhythmTokens.set(token, { chord, chordSymbol: groups.word, chordSymbolIndex: index });
+				}
 			}
 
 			tokens.push(token);
@@ -170,11 +183,15 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 		? true
 		: markerValue === textLineMarker
 			? false
-			: possibleChordTokens.size / wordTokenCount > 0.5;
+			: possibleChordOrRhythmTokens.size / wordTokenCount > 0.5;
 
 	if (isChordLine) {
-		for (const [token, chordInfo] of possibleChordTokens) {
-			Object.assign(token, {type: "chord"}, chordInfo);
+		for (const [token, tokenInfo] of possibleChordOrRhythmTokens) {
+			if (tokenInfo === "rhythm") {
+				token.type = "rhythm";
+			} else {
+				Object.assign(token, {type: "chord"}, tokenInfo);
+			}
 		}
 	}
 

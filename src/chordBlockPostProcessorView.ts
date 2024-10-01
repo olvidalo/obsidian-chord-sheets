@@ -4,7 +4,7 @@ import {
 	Instrument,
 	isChordToken,
 	isHeaderToken,
-	isMarkerToken,
+	isMarkerToken, isRhythmToken,
 	tokenizeLine,
 	uniqueChordTokens
 } from "./chordsUtils";
@@ -41,7 +41,8 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 			showChordOverview,
 			diagramWidth,
 			highlightChords,
-			highlightSectionHeaders
+			highlightSectionHeaders,
+			highlightRhythmMarkers
 		} = this.settings;
 
 		if (this.containerEl.children.length > 0) {
@@ -96,6 +97,11 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 					if (showChordDiagramsOnHover) {
 						this.attachChordDiagram(token, chordSpan);
 					}
+				} else if (highlightRhythmMarkers && isRhythmToken(token)) {
+					lineDiv.createSpan({
+						cls: `chord-sheet-rhythm-marker`,
+						text: token.value
+					});
 				} else if (isMarkerToken(token)) {
 					lineDiv.createSpan({
 						cls: `chord-sheet-line-marker`,

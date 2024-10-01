@@ -1,4 +1,12 @@
-import {ChordToken, Instrument, isChordToken, isHeaderToken, isMarkerToken, tokenizeLine} from "../chordsUtils";
+import {
+	ChordToken,
+	Instrument,
+	isChordToken,
+	isHeaderToken,
+	isMarkerToken,
+	isRhythmToken,
+	tokenizeLine
+} from "../chordsUtils";
 import {Decoration, DecorationSet, EditorView, ViewUpdate} from "@codemirror/view";
 import {
 	Compartment,
@@ -134,6 +142,7 @@ export const chordBlocksStateField = StateField.define<ChordBlocksState>({
 				|| oldSettings?.chordLineMarker !== newSettings?.chordLineMarker
 				|| oldSettings?.highlightChords !== newSettings.highlightChords
 				|| oldSettings?.highlightSectionHeaders !== newSettings?.highlightSectionHeaders
+				|| oldSettings?.highlightRhythmMarkers !== newSettings?.highlightRhythmMarkers
 		) {
 				return initializeChordBlocksState(tr.state);
 			}
@@ -556,7 +565,8 @@ function chordDecosForLineAt(line: Line, {
 	chordLineMarker,
 	textLineMarker,
 	highlightChords,
-	highlightSectionHeaders
+	highlightSectionHeaders,
+	highlightRhythmMarkers
 }: ChordSheetsSettings) {
 	const chordDecos = [];
 	const tokenizedLine = tokenizeLine(line.text, chordLineMarker, textLineMarker);
@@ -607,6 +617,14 @@ function chordDecosForLineAt(line: Line, {
 						.range(...mapIndex(line, token.endTag.index))
 				);
 			}
+
+		} else if (highlightRhythmMarkers && isRhythmToken(token)) {
+			const deco = Decoration.mark({
+				class: "chord-sheet-rhythm-marker",
+				token
+			});
+			const [start, end] = mapIndex(line, token.index);
+			chordDecos.push(deco.range(start, end));
 
 		} else if (isMarkerToken(token)) {
 			const deco = Decoration.mark({
