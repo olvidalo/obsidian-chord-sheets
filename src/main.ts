@@ -420,9 +420,9 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		this.app.workspace.iterateAllLeaves(leaf => {
 			if (leaf.view.getViewType() === "markdown") {
 				const markdownView = leaf.view as MarkdownView;
-				const editorView = markdownView.editor.cm as EditorView;
-				markdownView.previewMode.rerender(true);
-				const chordPlugin = editorView.plugin(this.editorPlugin);
+				const editorView = markdownView.editor?.cm as EditorView | null;
+				markdownView.previewMode?.rerender(true);
+				const chordPlugin = editorView?.plugin(this.editorPlugin);
 				chordPlugin?.updateSettings(this.settings);
 			}
 		});
