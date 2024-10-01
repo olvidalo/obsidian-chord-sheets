@@ -85,7 +85,11 @@ export function getTonicVariations(tonic: string) {
 	return tonicVariations;
 }
 
-export function tokenizeLine(line: string, chordLineMarker: string, textLineMarker: string): TokenizedLine {
+function offsetIndex(indexArray: [number, number], offset: number): [number, number] {
+	return indexArray && [indexArray[0] + offset, indexArray[1] + offset];
+}
+
+export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: string, textLineMarker: string): TokenizedLine {
 	const chordLineMarkerPattern = escapeStringRegexp(chordLineMarker);
 	const textLineMarkerPattern = escapeStringRegexp(textLineMarker);
 
@@ -99,13 +103,18 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 	let markerValue: MarkerToken['value'] | null = null;
 	let headerToken: HeaderToken | null = null;
 
+
 	let match: RegExpExecArray | null;
 	while ((match = tokenPattern.exec(line)) !== null) {
-		const indices = match.indices!;
+		const indices = match.indices!.map(indexTuple => offsetIndex(indexTuple, lineIndex));
+		const indexGroups = Object.fromEntries(
+			Object.entries((match.indices!.groups!)).map(([group, index]) => [group, offsetIndex(index, lineIndex)])
+		);
+
 		const groups =  match.groups!;
 
 		if (groups.word) {
-			const index = indices.groups!.word;
+			const index = indexGroups.word!;
 
 			const token: Token = {
 				type: 'word',
@@ -138,7 +147,7 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 			const {tonic, type, aliases: typeAliases} = tonalJsChord;
 			const chord = tonic ? {tonic, type, typeAliases, bass: tonalJsChord.bass || null} : null;
 
-			const baseToken = { value: groups.inline_chord, index: indices.groups!.inline_chord };
+			const baseToken = { value: groups.inline_chord, index: indexGroups.inline_chord };
 
 			if (chord) {
 				const chordToken: ChordToken = {
@@ -157,11 +166,11 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 			}
 
 		} else if (groups.ws) {
-			tokens.push({ type: 'whitespace', value: groups.ws, index: indices.groups!.ws });
+			tokens.push({ type: 'whitespace', value: groups.ws, index: indexGroups.ws });
 
 		} else if (groups.marker) {
 			markerValue = groups.marker;
-			tokens.push({ type: 'marker', value: markerValue, index: indices.groups!.marker });
+			tokens.push({ type: 'marker', value: markerValue, index: indexGroups.marker });
 
 		} else if (groups.header) {
 			const { 2: startTag, 3: headerName, 4: endTag } = match;
@@ -170,7 +179,7 @@ export function tokenizeLine(line: string, chordLineMarker: string, textLineMark
 			headerToken = {
 				type: 'header',
 				value: groups.header,
-				index: indices.groups!.header,
+				index: indexGroups.header,
 				startTag, headerName, endTag,
 				startTagIndex, headerNameIndex, endTagIndex
 			};

@@ -159,7 +159,7 @@ export class ChordSheetsViewPlugin implements PluginValue {
 	}
 
 	async getChordTokensForBlock(blockDef: { from: number, to: number, value: IChordBlockRangeValue }) {
-		const chordTokenRanges: { from: number, to: number, chordToken: ChordToken }[] = [];
+		const chordTokens: ChordToken[] = [];
 
 		let chordBlocksState: ChordBlocksState;
 		let chordBlockEnd: number;
@@ -177,13 +177,13 @@ export class ChordSheetsViewPlugin implements PluginValue {
 			chordBlockEnd = blockDef.to;
 		}
 
-		chordBlocksState.chordDecos.between(blockDef.from, chordBlockEnd, (chordFrom, chordTo, value) => {
+		chordBlocksState.chordDecos.between(blockDef.from, chordBlockEnd, (_from, _to, value) => {
 			if (value.spec.type === "chord") {
-				chordTokenRanges.push({from: chordFrom, to: chordTo, chordToken: value.spec.token});
+				chordTokens.push(value.spec.token);
 			}
 		});
 
-		return chordTokenRanges;
+		return chordTokens;
 	}
 
 	hasChordBlocks(): boolean {

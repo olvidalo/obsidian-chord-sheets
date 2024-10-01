@@ -356,12 +356,12 @@ function updateChordBlocks({changes, state}: Pick<ViewUpdate & Transaction, 'cha
 		filter: () => false, filterFrom: line.from, filterTo: line.to
 	}));
 	addedLines.forEach(line => chordDecos = chordDecos.update({
-		add: chordDecosForLineAt(line, settings)
+		add: chordDecosForLine(line, settings)
 	}));
 	changedChordBlockLineNumbers.forEach(lineNo => {
 		const line = state.doc.line(lineNo);
 		chordDecos = chordDecos.update({
-			filter: () => false, filterFrom: line.from, filterTo: line.to, add: chordDecosForLineAt(line, settings)
+			filter: () => false, filterFrom: line.from, filterTo: line.to, add: chordDecosForLine(line, settings)
 		});
 	});
 
@@ -499,7 +499,7 @@ function parseChordBlocks(state: EditorState, from: number, to: number, parseCho
 				} else if (parseChords && (currentBlockStart !== null)) {
 					const line = state.doc.lineAt(node.from);
 					if (!processedChordLines.has(line.number)) {
-						chordDecos.push(...chordDecosForLineAt(line, settings));
+						chordDecos.push(...chordDecosForLine(line, settings));
 						processedChordLines.add(line.number);
 					}
 				}
@@ -557,11 +557,8 @@ function parseChordBlocks(state: EditorState, from: number, to: number, parseCho
 	return result;
 }
 
-function mapIndex(line: Line, index: [number, number]): [number, number] {
-	return [line.from + index[0], line.from + index[1]];
-}
 
-function chordDecosForLineAt(line: Line, {
+function chordDecosForLine(line: Line, {
 	chordLineMarker,
 	textLineMarker,
 	highlightChords,
@@ -569,7 +566,7 @@ function chordDecosForLineAt(line: Line, {
 	highlightRhythmMarkers
 }: ChordSheetsSettings) {
 	const chordDecos = [];
-	const tokenizedLine = tokenizeLine(line.text, chordLineMarker, textLineMarker);
+	const tokenizedLine = tokenizeLine(line.text, line.from, chordLineMarker, textLineMarker);
 
 	if (tokenizedLine.isChordLine && highlightChords) {
 		const lineDeco = Decoration.line({
@@ -585,28 +582,28 @@ function chordDecosForLineAt(line: Line, {
 			chordDecos.push(
 				Decoration
 					.mark({ type: "chord", class: `chord-sheet-chord`, token })
-					.range(...(mapIndex(line, token.index)))
-			);
+					.range(...token.index))
+			;
 
 			if (token.startTag) {
 				chordDecos.push(
 					Decoration
 						.mark({ class: `chord-sheet-inline-chord-tag` })
-						.range(...mapIndex(line, token.startTag.index))
+						.range(...token.startTag.index)
 				);
 			}
 
 			chordDecos.push(
 				Decoration
 					.mark({ class:`chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}` })
-					.range(...mapIndex(line, token.chordSymbolIndex))
+					.range(...token.chordSymbolIndex)
 			);
 
 			if (token.auxText) {
 				chordDecos.push(
 					Decoration
 						.mark({ class: `chord-sheet-inline-chord-aux-text`})
-						.range(...mapIndex(line, token.auxText.index))
+						.range(...token.auxText.index)
 				);
 			}
 
@@ -614,7 +611,7 @@ function chordDecosForLineAt(line: Line, {
 				chordDecos.push(
 					Decoration
 						.mark({ class: `chord-sheet-inline-chord-tag` })
-						.range(...mapIndex(line, token.endTag.index))
+						.range(...token.endTag.index)
 				);
 			}
 
@@ -623,7 +620,7 @@ function chordDecosForLineAt(line: Line, {
 				class: "chord-sheet-rhythm-marker",
 				token
 			});
-			const [start, end] = mapIndex(line, token.index);
+			const [start, end] = token.index;
 			chordDecos.push(deco.range(start, end));
 
 		} else if (isMarkerToken(token)) {
@@ -631,14 +628,14 @@ function chordDecosForLineAt(line: Line, {
 				class: "chord-sheet-line-marker",
 				token
 			});
-			const [start, end] = mapIndex(line, token.index);
+			const [start, end] = token.index;
 			chordDecos.push(deco.range(start, end));
 
 		} else if (highlightSectionHeaders && isHeaderToken(token)) {
-			const [headerStart, headerEnd] = mapIndex(line, token.index);
-			const [startTagStart, startTagEnd] = mapIndex(line, token.startTagIndex);
-			const [headerNameStart, headerNameEnd] = mapIndex(line, token.headerNameIndex);
-			const endTagStart = line.from + token.endTagIndex[0];
+			const [headerStart, headerEnd] = token.index;
+			const [startTagStart, startTagEnd] = token.startTagIndex;
+			const [headerNameStart, headerNameEnd] = token.headerNameIndex;
+			const endTagStart = token.endTagIndex[0];
 
 			chordDecos.push(
 				Decoration

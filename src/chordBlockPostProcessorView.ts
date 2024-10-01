@@ -4,7 +4,8 @@ import {
 	Instrument,
 	isChordToken,
 	isHeaderToken,
-	isMarkerToken, isRhythmToken,
+	isMarkerToken,
+	isRhythmToken,
 	tokenizeLine,
 	uniqueChordTokens
 } from "./chordsUtils";
@@ -49,12 +50,13 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 			this.containerEl.empty();
 		}
 
-		const lines = this.source.split("\n");
-		const chordTokens: ChordToken[] = [];
-
 		const codeEl = this.containerEl.createEl("code", {cls: "chord-sheet-chord-block-preview"});
+
+		const chordTokens: ChordToken[] = [];
+		const lines = this.source.split("\n");
+		let currentIndex = 0;
 		for (const line of lines) {
-			const tokenizedLine = tokenizeLine(line, chordLineMarker, textLineMarker);
+			const tokenizedLine = tokenizeLine(line, currentIndex, chordLineMarker, textLineMarker);
 
 			const lineDiv = codeEl.createDiv({
 				cls: "chord-sheet-chord-line"
@@ -128,6 +130,8 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 					lineDiv.append(document.createTextNode(token.value));
 				}
 			}
+
+			currentIndex = currentIndex + line.length;
 		}
 
 		if (showChordOverview) {

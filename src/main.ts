@@ -286,10 +286,9 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		}
 	}
 
-	private transpose(chordTokenRanges: {from: number, to: number, chordToken: ChordToken}[], editor: EditorView, direction: "up" | "down") {
+	private transpose(chordTokens: ChordToken[], editor: EditorView, direction: "up" | "down") {
 		const changes: ChangeSpec[] = [];
-		for (const chordTokenRange of chordTokenRanges) {
-			const chordToken = chordTokenRange.chordToken;
+		for (const chordToken of chordTokens) {
 			const [chordTonic, chordType, bassNote] = Chord.tokenize(chordToken.chordSymbol);
 			const simplifiedTonic = transposeTonic(chordTonic, direction);
 
@@ -300,9 +299,8 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 				transposedChord = simplifiedTonic + (chordType ?? "");
 			}
 
-			const chordStartIndex = chordTokenRange.from;
-			const chordEndIndex = chordTokenRange.to;
-			changes.push({from: chordStartIndex, to: chordEndIndex, insert: transposedChord});
+			const [from, to] = chordToken.chordSymbolIndex;
+			changes.push({from, to, insert: transposedChord});
 		}
 		editor.plugin(this.editorPlugin)?.applyChanges(changes);
 	}
