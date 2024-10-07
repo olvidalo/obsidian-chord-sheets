@@ -1,5 +1,5 @@
 import {Decoration, EditorView, PluginValue, ViewPlugin, ViewUpdate} from "@codemirror/view";
-import {ChordToken, isChordToken} from "../chordsUtils";
+import {ChordToken, isChordToken, SheetChord} from "../chordsUtils";
 import {ChordTooltip} from "./chordTooltip";
 import {ChordSheetsSettings} from "../chordSheetsSettings";
 import {ChangeSet, ChangeSpec} from "@codemirror/state";
@@ -21,6 +21,13 @@ export interface TransposeEventDetail {
 		to: number
 		value: IChordBlockRangeValue
 	}
+}
+
+export interface ChordRange {
+	from: number,
+	to: number,
+	value: string,
+	chord: SheetChord
 }
 
 export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsViewPlugin, {
@@ -158,8 +165,8 @@ export class ChordSheetsViewPlugin implements PluginValue {
 		return null;
 	}
 
-	async getChordTokensForBlock(blockDef: { from: number, to: number, value: IChordBlockRangeValue }) {
-		const chordTokens: ChordToken[] = [];
+	async getChordRangesForBlock(blockDef: { from: number, to: number, value: IChordBlockRangeValue }): Promise<ChordRange[]>  {
+		const chordRanges: ChordRange[] = [];
 
 		let chordBlocksState: ChordBlocksState;
 		let chordBlockEnd: number;
@@ -177,13 +184,13 @@ export class ChordSheetsViewPlugin implements PluginValue {
 			chordBlockEnd = blockDef.to;
 		}
 
-		chordBlocksState.chordDecos.between(blockDef.from, chordBlockEnd, (_from, _to, value) => {
+		chordBlocksState.chordDecos.between(blockDef.from, chordBlockEnd, (from, to, value) => {
 			if (value.spec.type === "chord") {
-				chordTokens.push(value.spec.token);
+				chordRanges.push({from, to, chord: value.spec.token.chord, value: value.spec.token.chordSymbol});
 			}
 		});
 
-		return chordTokens;
+		return chordRanges;
 	}
 
 	hasChordBlocks(): boolean {

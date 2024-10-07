@@ -1,13 +1,13 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {debounce, Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
-import {Chord} from "tonal";
 import {EditorView, ViewPlugin} from "@codemirror/view";
-import {ChordToken, Instrument, transposeTonic} from "./chordsUtils";
+import {Instrument, transposeTonic} from "./chordsUtils";
 import {ChordBlockPostProcessorView} from "./chordBlockPostProcessorView";
 import {ChordSheetsSettings, DEFAULT_SETTINGS} from "./chordSheetsSettings";
 import {ChangeSpec, Extension} from "@codemirror/state";
 import {
+	ChordRange,
 	chordSheetEditorPlugin,
 	ChordSheetsViewPlugin,
 	TransposeEventDetail
@@ -19,6 +19,7 @@ import {IChordSheetsPlugin} from "./chordSheetsPluginInterface";
 import {chordSheetsEditorExtension} from "./editor-extension/chordSheetsEditorExtension";
 import ChordsDB from "@tombatossals/chords-db";
 import {addCustomChordTypes} from "./customChordTypes";
+import {Chord} from "tonal";
 
 
 const AUTOSCROLL_SPEED_PROPERTY = "autoscroll-speed";
@@ -87,7 +88,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 				const editorView = editor.cm as EditorView;
 				const chordPlugin = editorView?.plugin(this.editorPlugin);
 				if (chordPlugin) {
-					const chordTokens = await chordPlugin.getChordTokensForBlock(blockDef);
+					const chordTokens = await chordPlugin.getChordRangesForBlock(blockDef);
 					this.transpose(chordTokens, editorView, direction);
 				}
 			}
@@ -238,7 +239,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			}
 
 			if (!checking) {
-				chordPlugin.getChordTokensForBlock(chordSheetBlockAtCursor).then(
+				chordPlugin.getChordRangesForBlock(chordSheetBlockAtCursor).then(
 					chordTokens => this.transpose(chordTokens, editorView, direction)
 				);
 			}
@@ -286,10 +287,11 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		}
 	}
 
-	private transpose(chordTokens: ChordToken[], editor: EditorView, direction: "up" | "down") {
+	private transpose(chordRanges: ChordRange[], editor: EditorView, direction: "up" | "down") {
 		const changes: ChangeSpec[] = [];
-		for (const chordToken of chordTokens) {
-			const [chordTonic, chordType, bassNote] = Chord.tokenize(chordToken.chordSymbol);
+		for (const chordRange of chordRanges) {
+			const { from, to, value } = chordRange;
+			const [chordTonic, chordType, bassNote] = Chord.tokenize(value);
 			const simplifiedTonic = transposeTonic(chordTonic, direction);
 
 			let transposedChord;
@@ -299,7 +301,6 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 				transposedChord = simplifiedTonic + (chordType ?? "");
 			}
 
-			const [from, to] = chordToken.chordSymbolIndex;
 			changes.push({from, to, insert: transposedChord});
 		}
 		editor.plugin(this.editorPlugin)?.applyChanges(changes);
