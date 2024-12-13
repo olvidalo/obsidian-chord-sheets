@@ -1,16 +1,21 @@
 import {Chord, Note} from "tonal";
 import {ChordDef, IChordsDB, InstrumentChords} from "@tombatossals/chords-db";
 import escapeStringRegexp from "escape-string-regexp";
-import {BarreDef, ChordParams} from "vexchords";
 
 export type Instrument = keyof IChordsDB;
+
+
+export interface UserDefinedChord {
+	frets: string;
+	position: number;
+}
 
 export interface SheetChord {
 	tonic: string,
 	type: string,
 	typeAliases: string[],
 	bass: string | null,
-	userDefinedChord?: ChordParams
+	userDefinedChord?: UserDefinedChord
 }
 
 export interface Token {
@@ -148,38 +153,12 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 			const baseToken = {value: groups.user_defined_chord, index: indexGroups.user_defined_chord};
 			const chord_name: string = chordSymbol.substring(0, chordSymbol.indexOf('['));
 			let frets: string = chordSymbol.substring(chordSymbol.indexOf('[') + 1, chordSymbol.indexOf(']'));
-			let pos: string = "0";
-			const barres: BarreDef[] = [];
+			let position: string = "0";
 
 			if (frets.includes('|')) {
-				pos = frets.substring(0, frets.indexOf('|'));
+				position = frets.substring(0, frets.indexOf('|'));
 				frets = frets.substring(frets.lastIndexOf('|') + 1);
 			}
-
-			const barre_positions = frets
-				.split('')
-				.map((fret, index) => (fret === '_' ? index : -1))
-				.filter(index => index !== -1);
-
-			if (barre_positions.length === 2 || barre_positions.length === 4) {
-				barres.push({
-					fromString: 6 - barre_positions[0],
-					toString: 6 - barre_positions[1] + 2,
-					fret: parseInt(frets[barre_positions[0] + 1])
-				});
-			}
-
-			if (barre_positions.length === 4) {
-				barres.push({
-					fromString: 6 - barre_positions[2] + 2,
-					toString: 6 - barre_positions[3] + 4,
-					fret: parseInt(frets[barre_positions[2] + 1])
-				});
-			}
-
-			frets = frets.replace(/_/g, '');
-			// @ts-ignore
-			const chord_frets = Array.from(frets).map((fret, index) => [6 - index, fret === "x" ? 'x' : parseInt(fret)]);
 
 			const chordToken: ChordToken = {
 				value: baseToken.value,
@@ -191,11 +170,8 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 					typeAliases: [],
 					bass: "",
 					userDefinedChord: {
-						// @ts-ignore
-						chord: chord_frets,
-						position: parseInt(pos),
-						barres: barres,
-						tuning: [],
+						frets,
+						position: parseInt(position),
 					}
 				},
 				chordSymbol: chord_name,

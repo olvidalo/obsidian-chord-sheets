@@ -1,8 +1,8 @@
-import {chordSequenceString, ChordToken, findDbChord, Instrument} from "./chordsUtils";
+import {chordSequenceString, ChordToken, findDbChord, Instrument, UserDefinedChord} from "./chordsUtils";
 import {BarreDef, ChordBox, ChordParams} from "vexchords";
 import ChordsDB, {ChordDef} from "@tombatossals/chords-db";
 
-function convertToVexChord(input: ChordDef, positionIndex = 0): ChordParams {
+function dbChordToVexChord(input: ChordDef, positionIndex = 0): ChordParams {
 	const position = input.positions[positionIndex];
 	const fingers = [...position.fingers].reverse();
 	const frets = [...position.frets].reverse();
@@ -30,9 +30,46 @@ function convertToVexChord(input: ChordDef, positionIndex = 0): ChordParams {
 	};
 }
 
+function userDefinedToVexChord({frets, position}: UserDefinedChord, numStrings: number): ChordParams {
+	const barres: BarreDef[] = [];
+
+	const barrePositions = frets
+		.split('')
+		.map((fret, index) => (fret === '_' ? index : -1))
+		.filter(index => index !== -1);
+
+	if (barrePositions.length === 2 || barrePositions.length === 4) {
+		barres.push({
+			fromString: numStrings - barrePositions[0],
+			toString: numStrings - barrePositions[1] + 2,
+			fret: parseInt(frets[barrePositions[0] + 1])
+		});
+	}
+	if (barrePositions.length === 4) {
+		barres.push({
+			fromString: numStrings - barrePositions[2] + 2,
+			toString: numStrings - barrePositions[3] + 4,
+			fret: parseInt(frets[barrePositions[2] + 1])
+		});
+	}
+
+	const chordFrets = Array
+		.from(frets.replace(/_/g, ''))
+		.map(
+			(fret, index) => [numStrings - index, fret === "x" ? "x" : parseInt(fret)]
+		);
+
+	return {
+		// @ts-ignore
+		chord: chordFrets,
+		position, barres
+
+	}
+}
+
 export function renderChordDiagram({containerEl, userDefinedChord, chordDef, numPositions, position, numStrings, numFrets, chordName, width}: {
 	containerEl: HTMLElement,
-	userDefinedChord: ChordParams | undefined,
+	userDefinedChord: UserDefinedChord | undefined,
 	chordDef: ChordDef,
 	numPositions: number,
 	position: number,
@@ -56,7 +93,10 @@ export function renderChordDiagram({containerEl, userDefinedChord, chordDef, num
 	const chordDiagram = document.createElement("div");
 	box.appendChild(chordDiagram);
 
-	const vexChord = userDefinedChord || convertToVexChord(chordDef, position);
+	const vexChord = userDefinedChord
+		? userDefinedToVexChord(userDefinedChord, numStrings)
+		: dbChordToVexChord(chordDef, position);
+
 	const chordBox = new ChordBox(chordDiagram, {
 		numStrings: numStrings,
 		numFrets: numFrets,
@@ -99,6 +139,10 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 	chordBox.addClass("chord-sheet-chord-box");
 	containerEl.appendChild(chordBox);
 
+	const instrumentChordDb = ChordsDB[instrument];
+	const numStrings = instrumentChordDb.main.strings;
+	const numFrets = instrumentChordDb.main.fretsOnChord;
+
 	if (chordToken.chord.userDefinedChord !== undefined) {
 		renderChordDiagram({
 			containerEl: containerEl,
@@ -106,16 +150,13 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 			chordDef: {key: "", suffix: "", positions: []},
 			numPositions: 1,
 			position: 0,
-			numStrings: 6,
-			numFrets: 4,
+			numStrings: numStrings,
+			numFrets: numFrets,
 			chordName: chordToken.chordSymbol,
 			width: width
 		});
 	}
 	else {
-		const instrumentChordDb = ChordsDB[instrument];
-		const numStrings = instrumentChordDb.main.strings;
-		const numFrets = instrumentChordDb.main.fretsOnChord;
 		const dbChord = findDbChord(chordToken, instrumentChordDb);
 		if (!dbChord) {
 			return;
