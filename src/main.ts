@@ -290,18 +290,20 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 	private transpose(chordRanges: ChordRange[], editor: EditorView, direction: "up" | "down") {
 		const changes: ChangeSpec[] = [];
 		for (const chordRange of chordRanges) {
-			const { from, to, value } = chordRange;
-			const [chordTonic, chordType, bassNote] = Chord.tokenize(value);
-			const simplifiedTonic = transposeTonic(chordTonic, direction);
+			if (chordRange.chord.userDefinedChord === undefined) {
+				const {from, to, value} = chordRange;
+				const [chordTonic, chordType, bassNote] = Chord.tokenize(value);
+				const simplifiedTonic = transposeTonic(chordTonic, direction);
 
-			let transposedChord;
-			if (bassNote) {
-				transposedChord = simplifiedTonic + chordType + "/" + transposeTonic(bassNote, direction);
-			} else {
-				transposedChord = simplifiedTonic + (chordType ?? "");
+				let transposedChord;
+				if (bassNote) {
+					transposedChord = simplifiedTonic + chordType + "/" + transposeTonic(bassNote, direction);
+				} else {
+					transposedChord = simplifiedTonic + (chordType ?? "");
+				}
+
+				changes.push({from, to, insert: transposedChord});
 			}
-
-			changes.push({from, to, insert: transposedChord});
 		}
 		editor.plugin(this.editorPlugin)?.applyChanges(changes);
 	}

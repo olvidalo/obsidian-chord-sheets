@@ -4,11 +4,18 @@ import escapeStringRegexp from "escape-string-regexp";
 
 export type Instrument = keyof IChordsDB;
 
+
+export interface UserDefinedChord {
+	frets: string;
+	position: number;
+}
+
 export interface SheetChord {
 	tonic: string,
 	type: string,
 	typeAliases: string[],
-	bass: string | null
+	bass: string | null,
+	userDefinedChord?: UserDefinedChord
 }
 
 export interface Token {
@@ -94,7 +101,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 	const textLineMarkerPattern = escapeStringRegexp(textLineMarker);
 
 	const tokenPattern = new RegExp(
-		`(?<header>(?<=^\\s*)(\\[)([^\\]]+)(])(?=\\s*$))|(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<inline_chord>(\\[)(\\S+)([^\\[()]*)(]))|(?<word>([[\\]/|%]+)|[^\\s\\[]+)|(?<ws>\\s+)`,
+		`(?<header>(?<=^\\s*)(\\[)([^\\]]+)(])(?=\\s*$))|(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<inline_chord>(\\[)(\\S+)([^\\[()]*)(]))|(?<user_defined_chord>([A-Z][A-Za-z0-9#()+-°/]*)(\\[)([0-9]+\\|)?([0-9x_]+)(]))|(?<word>([[\\]/|%]+)|[^\\s\\[]+)|(?<ws>\\s+)`,
 		"gd");
 
 	const tokens: Token[] = [];
@@ -102,7 +109,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 	let wordTokenCount: number = 0;
 	let markerValue: MarkerToken['value'] | null = null;
 	let headerToken: HeaderToken | null = null;
-
+	let hasUserDefinedChord = false;
 
 	let match: RegExpExecArray | null;
 	while ((match = tokenPattern.exec(line)) !== null) {
@@ -111,7 +118,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 			Object.entries((match.indices!.groups!)).map(([group, index]) => [group, offsetIndex(index, lineIndex)])
 		);
 
-		const groups =  match.groups!;
+		const groups = match.groups!;
 
 		if (groups.word) {
 			const index = indexGroups.word!;
@@ -131,40 +138,74 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 				const chord = tonic ? {tonic, type, typeAliases, bass: tonalJsChord.bass || null} : null;
 
 				if (chord) {
-					possibleChordOrRhythmTokens.set(token, { chord, chordSymbol: groups.word, chordSymbolIndex: index });
+					possibleChordOrRhythmTokens.set(token, {
+						chord,
+						chordSymbol: groups.word,
+						chordSymbolIndex: index
+					});
 				}
 			}
 
 			tokens.push(token);
 			wordTokenCount++;
+		} else if (groups.user_defined_chord) {
+			const {0: chordSymbol} = match;
+			const {0: chordSymbolIndex} = indices;
+			const baseToken = {value: groups.user_defined_chord, index: indexGroups.user_defined_chord};
+			const chord_name: string = chordSymbol.substring(0, chordSymbol.indexOf('['));
+			let frets: string = chordSymbol.substring(chordSymbol.indexOf('[') + 1, chordSymbol.indexOf(']'));
+			let position: string = "0";
+
+			if (frets.includes('|')) {
+				position = frets.substring(0, frets.indexOf('|'));
+				frets = frets.substring(frets.lastIndexOf('|') + 1);
+			}
+
+			const chordToken: ChordToken = {
+				value: baseToken.value,
+				index: baseToken.index,
+				type: "chord",
+				chord: {
+					tonic: "",
+					type: "chord",
+					typeAliases: [],
+					bass: "",
+					userDefinedChord: {
+						frets,
+						position: parseInt(position),
+					}
+				},
+				chordSymbol: chord_name,
+				chordSymbolIndex: [chordSymbolIndex[0], chordSymbolIndex[0] + chord_name.length],
+			};
+			tokens.push(chordToken);
+			hasUserDefinedChord = true;
 
 		} else if (groups.inline_chord) {
-			const { 7: startTag, 8: chordSymbol, 9: auxText, 10: endTag } = match;
-			const { 7: startTagIndex, 8: chordSymbolIndex, 9: auxTextIndex, 10: endTagIndex } = indices;
-
+			const {7: startTag, 8: chordSymbol, 9: auxText, 10: endTag} = match;
+			const {7: startTagIndex, 8: chordSymbolIndex, 9: auxTextIndex, 10: endTagIndex} = indices;
 
 			const tonalJsChord = Chord.get(chordSymbol);
 			const {tonic, type, aliases: typeAliases} = tonalJsChord;
 			const chord = tonic ? {tonic, type, typeAliases, bass: tonalJsChord.bass || null} : null;
 
-			const baseToken = { value: groups.inline_chord, index: indexGroups.inline_chord };
+			const baseToken = {value: groups.inline_chord, index: indexGroups.inline_chord};
 
 			if (chord) {
 				const chordToken: ChordToken = {
 					...baseToken,
 					type: "chord",
 					chord,
-                    startTag: {value: startTag, index: startTagIndex},
+					startTag: {value: startTag, index: startTagIndex},
 					...(auxText && {auxText: {value: auxText, index: auxTextIndex}}),
 					endTag: {value: endTag, index: endTagIndex},
-                    chordSymbol,
-                    chordSymbolIndex,
+					chordSymbol,
+					chordSymbolIndex,
 				};
 				tokens.push(chordToken);
 			} else {
 				tokens.push({type: "word", ...baseToken});
 			}
-
 		} else if (groups.ws) {
 			tokens.push({ type: 'whitespace', value: groups.ws, index: indexGroups.ws });
 
@@ -192,7 +233,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 		? true
 		: markerValue === textLineMarker
 			? false
-			: possibleChordOrRhythmTokens.size / wordTokenCount > 0.5;
+			: hasUserDefinedChord || possibleChordOrRhythmTokens.size / wordTokenCount > 0.5;
 
 	if (isChordLine) {
 		for (const [token, tokenInfo] of possibleChordOrRhythmTokens) {
@@ -256,6 +297,7 @@ export function findDbChord(chordToken: ChordToken, instrumentChords: Instrument
 
 export function uniqueChordTokens(chordTokens: ChordToken[]) {
 	const seenValues = new Set<string>();
+
 	return chordTokens.filter(token => {
 		if (!seenValues.has(token.value)) {
 			seenValues.add(token.value);
