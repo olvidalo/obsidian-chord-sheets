@@ -109,6 +109,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 	let wordTokenCount: number = 0;
 	let markerValue: MarkerToken['value'] | null = null;
 	let headerToken: HeaderToken | null = null;
+	let hasUserDefinedChord = false;
 
 	let match: RegExpExecArray | null;
 	while ((match = tokenPattern.exec(line)) !== null) {
@@ -178,6 +179,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 				chordSymbolIndex: [chordSymbolIndex[0], chordSymbolIndex[0] + chord_name.length],
 			};
 			tokens.push(chordToken);
+			hasUserDefinedChord = true;
 
 		} else if (groups.inline_chord) {
 			const {7: startTag, 8: chordSymbol, 9: auxText, 10: endTag} = match;
@@ -231,7 +233,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 		? true
 		: markerValue === textLineMarker
 			? false
-			: possibleChordOrRhythmTokens.size / wordTokenCount > 0.5;
+			: hasUserDefinedChord || possibleChordOrRhythmTokens.size / wordTokenCount > 0.5;
 
 	if (isChordLine) {
 		for (const [token, tokenInfo] of possibleChordOrRhythmTokens) {
