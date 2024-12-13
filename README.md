@@ -32,6 +32,11 @@ rendered locally, no API calls to an external service required.
 
 ![chord-overview.gif](docs/chord-overview.gif)
 
+### 🔨 Custom Chord Shapes
+
+Define your own chord shapes using brackets: `Bbadd13[x13333]`, `Dm6[4|x2x132]` (with capo), or `C°[x34_242_]`
+(with barre).
+
 ### 🎸 Choose Your Instrument
 
 Includes chord diagrams for guitar, ukulele and mandolin. The instrument can be set globally or specified per chord block.
