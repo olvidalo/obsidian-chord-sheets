@@ -4,7 +4,7 @@ import {
 	isChordToken,
 	isHeaderToken,
 	isMarkerToken,
-	isRhythmToken,
+	isRhythmToken, Token,
 	tokenizeLine
 } from "../chordsUtils";
 import {Decoration, DecorationSet, EditorView, ViewUpdate} from "@codemirror/view";
@@ -557,6 +557,10 @@ function parseChordBlocks(state: EditorState, from: number, to: number, parseCho
 	return result;
 }
 
+function resolveIndex(indexTuple: [number, number], token: Token): [from: number, to: number] {
+	const position = token.index[0];
+	return indexTuple && [position + indexTuple[0], position + indexTuple[1]];
+}
 
 function chordDecosForLine(line: Line, {
 	chordLineMarker,
@@ -589,21 +593,21 @@ function chordDecosForLine(line: Line, {
 				chordDecos.push(
 					Decoration
 						.mark({ class: `chord-sheet-inline-chord-tag` })
-						.range(...token.startTag.index)
+						.range(...resolveIndex(token.startTag.index, token))
 				);
 			}
 
 			chordDecos.push(
 				Decoration
 					.mark({ class:`chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}` })
-					.range(...token.chordSymbolIndex)
+					.range(...resolveIndex(token.chordSymbolIndex, token))
 			);
 
 			if (token.auxText) {
 				chordDecos.push(
 					Decoration
 						.mark({ class: `chord-sheet-inline-chord-aux-text`})
-						.range(...token.auxText.index)
+						.range(...resolveIndex(token.auxText.index, token))
 				);
 			}
 
@@ -611,7 +615,7 @@ function chordDecosForLine(line: Line, {
 				chordDecos.push(
 					Decoration
 						.mark({ class: `chord-sheet-inline-chord-tag` })
-						.range(...token.endTag.index)
+						.range(...resolveIndex(token.endTag.index, token))
 				);
 			}
 
@@ -633,9 +637,9 @@ function chordDecosForLine(line: Line, {
 
 		} else if (highlightSectionHeaders && isHeaderToken(token)) {
 			const [headerStart, headerEnd] = token.index;
-			const [startTagStart, startTagEnd] = token.startTagIndex;
-			const [headerNameStart, headerNameEnd] = token.headerNameIndex;
-			const endTagStart = token.endTagIndex[0];
+			const [startTagStart, startTagEnd] = resolveIndex(token.startTagIndex, token);
+			const [headerNameStart, headerNameEnd] = resolveIndex(token.headerNameIndex, token);
+			const endTagStart = resolveIndex(token.endTagIndex, token)[0];
 
 			chordDecos.push(
 				Decoration

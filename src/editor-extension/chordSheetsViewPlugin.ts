@@ -23,11 +23,11 @@ export interface TransposeEventDetail {
 	}
 }
 
-export interface ChordRange {
+export interface ChordSymbolRange {
 	from: number,
 	to: number,
-	value: string,
-	chord: SheetChord
+	chord: SheetChord,
+	chordSymbol: string
 }
 
 export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsViewPlugin, {
@@ -165,8 +165,8 @@ export class ChordSheetsViewPlugin implements PluginValue {
 		return null;
 	}
 
-	async getChordRangesForBlock(blockDef: { from: number, to: number, value: IChordBlockRangeValue }): Promise<ChordRange[]>  {
-		const chordRanges: ChordRange[] = [];
+	async getChordSymbolRangesForBlock(blockDef: { from: number, to: number, value: IChordBlockRangeValue }): Promise<ChordSymbolRange[]>  {
+		const chordRanges: ChordSymbolRange[] = [];
 
 		let chordBlocksState: ChordBlocksState;
 		let chordBlockEnd: number;
@@ -184,9 +184,15 @@ export class ChordSheetsViewPlugin implements PluginValue {
 			chordBlockEnd = blockDef.to;
 		}
 
-		chordBlocksState.chordDecos.between(blockDef.from, chordBlockEnd, (from, to, value) => {
+		chordBlocksState.chordDecos.between(blockDef.from, chordBlockEnd, (from, _to, value) => {
 			if (value.spec.type === "chord") {
-				chordRanges.push({from, to, chord: value.spec.token.chord, value: value.spec.token.chordSymbol});
+				const chordToken = value.spec.token as ChordToken;
+				chordRanges.push({
+					from: from + chordToken.chordSymbolIndex[0],
+					to: from + chordToken.chordSymbolIndex[1],
+					chordSymbol: chordToken.chordSymbol,
+					chord: chordToken.chord
+				});
 			}
 		});
 

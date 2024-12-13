@@ -96,12 +96,16 @@ function offsetIndex(indexArray: [number, number], offset: number): [number, num
 	return indexArray && [indexArray[0] + offset, indexArray[1] + offset];
 }
 
+function relativeIndex(indexArray: [number, number], matchIndex: number): [number, number] {
+	return indexArray && [indexArray[0] - matchIndex, indexArray[1] - matchIndex];
+}
+
 export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: string, textLineMarker: string): TokenizedLine {
 	const chordLineMarkerPattern = escapeStringRegexp(chordLineMarker);
 	const textLineMarkerPattern = escapeStringRegexp(textLineMarker);
 
 	const tokenPattern = new RegExp(
-		`(?<header>(?<=^\\s*)(\\[)([^\\]]+)(])(?=\\s*$))|(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<inline_chord>(\\[)(\\S+)([^\\[()]*)(]))|(?<user_defined_chord>([A-Z][A-Za-z0-9#()+-°/]*)(\\[)([0-9]+\\|)?([0-9x_]+)(]))|(?<word>([[\\]/|%]+)|[^\\s\\[]+)|(?<ws>\\s+)`,
+		`(?<header>(?<=^\\s*)(\\[)([^\\]]+)(])(?=\\s*$))|(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<inline_chord>(\\[)(\\S+)([^\\[()]*)(]))|(?<user_defined_chord>([A-Z][A-Za-z0-9#()+-°/]*)\\[(([0-9]+)\\|)?([0-9x_]+)])|(?<word>([[\\]/|%]+)|[^\\s\\[]+)|(?<ws>\\s+)`,
 		"gd");
 
 	const tokens: Token[] = [];
@@ -141,7 +145,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 					possibleChordOrRhythmTokens.set(token, {
 						chord,
 						chordSymbol: groups.word,
-						chordSymbolIndex: index
+						chordSymbolIndex: relativeIndex(index, index[0])
 					});
 				}
 			}
@@ -149,21 +153,12 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 			tokens.push(token);
 			wordTokenCount++;
 		} else if (groups.user_defined_chord) {
-			const {0: chordSymbol} = match;
-			const {0: chordSymbolIndex} = indices;
-			const baseToken = {value: groups.user_defined_chord, index: indexGroups.user_defined_chord};
-			const chord_name: string = chordSymbol.substring(0, chordSymbol.indexOf('['));
-			let frets: string = chordSymbol.substring(chordSymbol.indexOf('[') + 1, chordSymbol.indexOf(']'));
-			let position: string = "0";
-
-			if (frets.includes('|')) {
-				position = frets.substring(0, frets.indexOf('|'));
-				frets = frets.substring(frets.lastIndexOf('|') + 1);
-			}
+			const {12: chordSymbol, 14: position, 15: frets} = match;
+			const {12: chordSymbolIndex} = indices;
 
 			const chordToken: ChordToken = {
-				value: baseToken.value,
-				index: baseToken.index,
+				value: groups.user_defined_chord,
+				index: indexGroups.user_defined_chord,
 				type: "chord",
 				chord: {
 					tonic: "",
@@ -172,18 +167,20 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 					bass: "",
 					userDefinedChord: {
 						frets,
-						position: parseInt(position),
+						position: position ? parseInt(position) : 0,
 					}
 				},
-				chordSymbol: chord_name,
-				chordSymbolIndex: [chordSymbolIndex[0], chordSymbolIndex[0] + chord_name.length],
+				chordSymbol,
+				chordSymbolIndex: relativeIndex(chordSymbolIndex, indexGroups.user_defined_chord[0]),
 			};
 			tokens.push(chordToken);
 			hasUserDefinedChord = true;
 
 		} else if (groups.inline_chord) {
 			const {7: startTag, 8: chordSymbol, 9: auxText, 10: endTag} = match;
-			const {7: startTagIndex, 8: chordSymbolIndex, 9: auxTextIndex, 10: endTagIndex} = indices;
+			const {7: startTagIndex, 8: chordSymbolIndex, 9: auxTextIndex, 10: endTagIndex} = indices.map(
+				index => relativeIndex(index, indexGroups.inline_chord[0])
+			);
 
 			const tonalJsChord = Chord.get(chordSymbol);
 			const {tonic, type, aliases: typeAliases} = tonalJsChord;
@@ -215,7 +212,9 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 
 		} else if (groups.header) {
 			const { 2: startTag, 3: headerName, 4: endTag } = match;
-			const { 2: startTagIndex, 3: headerNameIndex, 4: endTagIndex } = indices;
+			const { 2: startTagIndex, 3: headerNameIndex, 4: endTagIndex } = indices.map(
+				index => relativeIndex(index, indexGroups.header[0])
+			);
 
 			headerToken = {
 				type: 'header',
@@ -248,7 +247,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 	return {tokens, isChordLine};
 }
 
-export function transposeTonic(chordTonic: string, direction: "up" | "down") {
+export function transposeNote(chordTonic: string, direction: "up" | "down") {
 	const transposedTonic = Note.transpose(chordTonic, direction === "up" ? "2m" : "-2m");
 	return direction === "up" ? Note.enharmonic(transposedTonic) : Note.simplify(transposedTonic);
 }
