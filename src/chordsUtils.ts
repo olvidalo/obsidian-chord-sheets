@@ -133,7 +133,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 				index
 			};
 
-			const possibleRhythmToken = match[12];
+			const possibleRhythmToken = match[17];
 			if (possibleRhythmToken) {
 				possibleChordOrRhythmTokens.set(token, "rhythm");
 			} else {
