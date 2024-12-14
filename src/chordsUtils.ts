@@ -105,7 +105,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 	const textLineMarkerPattern = escapeStringRegexp(textLineMarker);
 
 	const tokenPattern = new RegExp(
-		`(?<header>(?<=^\\s*)(\\[)([^\\]]+)(])(?=\\s*$))|(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<inline_chord>(\\[)(\\S+)([^\\[()]*)(]))|(?<user_defined_chord>([A-Z][A-Za-z0-9#()+-°/*]*)\\[(([0-9]+)\\|)?([0-9x_]+)])|(?<word>([[\\]/|%]+)|[^\\s\\[]+)|(?<ws>\\s+)`,
+		`(?<header>(?<=^\\s*)(\\[)([^\\]]+)(])(?=\\s*$))|(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$|(?<inline_chord>(\\[)([^\\s\\]]+)([^\\[()]*)(]))|(?<user_defined_chord>([A-Z][A-Za-z0-9#()+-°/*]*)\\[(([0-9]+)\\|)?([0-9x_]+)])|(?<word>([[\\]/|%]+)|[^\\s\\[]+)|(?<ws>\\s+)`,
 		"gd");
 
 	const tokens: Token[] = [];

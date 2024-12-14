@@ -235,6 +235,14 @@ describe('tokenizeLine', () => {
 
 		});
 
+		test('inline chords 2', () => {
+			const line = '[D]He\'s like a [G]scat[D/F#]tered [C]me[Em/B]mo[Am]ry[Bm]  [D]';
+			const { tokens } = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
+			expect(tokens.filter(isChordToken).map(token => token.value)).toEqual(
+				["[D]", "[G]", "[D/F#]", "[C]", "[Em/B]", "[Am]", "[Bm]", "[D]"]
+			);
+		});
+
 		test('should handle user-defined chords', () => {
 			const line = 'Some Am[x02210] user-defined C*4[3|x32010] chords C°[x34_24_]';
 			const { tokens } = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
