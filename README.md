@@ -146,7 +146,7 @@ This plugin uses:
 If you like this plugin and want to say thanks, here are ways to support its development:  
   
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Buy%20me%20a%20coffee-FF5E5B?style=flat-square&logo=ko-fi)](https://ko-fi.com/olvidalo)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/olvidalo?style=social)](https://github.com/sponsors/tgrosinger)
-[![Paypal](https://img.shields.io/badge/paypal-tgrosinger-yellow?style=social&logo=paypal)](https://paypal.me/tgrosinger)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/olvidalo?style=social)](https://github.com/sponsors/olvidalo)
+[![Paypal](https://img.shields.io/badge/paypal-mschaeben-yellow?style=social&logo=paypal)](https://paypal.me/mschaeben)
 
 Your support helps maintain and improve this project. Thank you!
