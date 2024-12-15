@@ -252,7 +252,7 @@ export function transposeNote(chordTonic: string, direction: "up" | "down") {
 	return direction === "up" ? Note.enharmonic(transposedTonic) : Note.simplify(transposedTonic);
 }
 
-export function enharmonicTonic(chordTonic: string) {
+export function enharmonicNote(chordTonic: string) {
 	return Note.enharmonic(chordTonic);
 }
 

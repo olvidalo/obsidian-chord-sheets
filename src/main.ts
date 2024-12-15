@@ -2,7 +2,7 @@
 
 import {debounce, Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
 import {EditorView, ViewPlugin} from "@codemirror/view";
-import {ChordToken, Instrument, transposeNote, enharmonicTonic} from "./chordsUtils";
+import {ChordToken, Instrument, transposeNote, enharmonicNote} from "./chordsUtils";
 import {ChordBlockPostProcessorView} from "./chordBlockPostProcessorView";
 import {ChordSheetsSettings, DEFAULT_SETTINGS} from "./chordSheetsSettings";
 import {ChangeSpec, Extension} from "@codemirror/state";
@@ -11,7 +11,7 @@ import {
 	chordSheetEditorPlugin,
 	ChordSheetsViewPlugin,
 	TransposeEventDetail,
-    EnharmonicEventDetail
+    EnharmonicToggleEventDetail
 } from "./editor-extension/chordSheetsViewPlugin";
 import {InstrumentChangeEventDetail} from "./editor-extension/chordBlockToolsWidget";
 import {AutoscrollControl, SPEED_CHANGED_EVENT} from "./autoscrollControl";
@@ -95,7 +95,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			}
 		});
 
-        this.registerDomEvent(window, "chord-sheet-enharmonic", async (event: CustomEvent<EnharmonicEventDetail>) => {
+        this.registerDomEvent(window, "chord-sheet-enharmonic-toggle", async (event: CustomEvent<EnharmonicToggleEventDetail>) => {
 			const {blockDef} = event.detail;
 			const editor = this.app.workspace.activeEditor?.editor;
 
@@ -105,7 +105,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 				const chordPlugin = editorView?.plugin(this.editorPlugin);
 				if (chordPlugin) {
 					const chordTokens = await chordPlugin.getChordSymbolRangesForBlock(blockDef);
-					this.enharmonic(chordTokens, editorView);
+					this.enharmonicToggle(chordTokens, editorView);
 				}
 			}
 		});
@@ -171,10 +171,10 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		});
 
         this.addCommand({
-			id: 'enharmonic',
-			name: 'Enharmonic current chord block',
+			id: 'enharmonic-toggle',
+			name: 'Enharmonically toggle chords in current block between sharp (#) and flat (b).',
 			editorCheckCallback: (checking: boolean, editor: Editor) =>
-				this.enharmonicCommand(editor, this.editorPlugin, checking)
+				this.enharmonicToggleCommand(editor, this.editorPlugin, checking)
 		});
 
 		this.addCommand({
@@ -271,7 +271,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		return true;
 	}
 
-    private enharmonicCommand(editor: Editor, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean) {
+    private enharmonicToggleCommand(editor: Editor, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean) {
 		const editorView = editor.cm as EditorView;
 		const chordPlugin = editorView.plugin(plugin);
 		if (chordPlugin) {
@@ -282,7 +282,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 			if (!checking) {
 				chordPlugin.getChordSymbolRangesForBlock(chordSheetBlockAtCursor).then(
-					chordTokens => this.enharmonic(chordTokens, editorView)
+					chordTokens => this.enharmonicToggle(chordTokens, editorView)
 				);
 			}
 		}
@@ -351,16 +351,16 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		editor.plugin(this.editorPlugin)?.applyChanges(changes);
 	}
 
-    private enharmonic(chordTokenRanges: ChordSymbolRange[], editor: EditorView) {
+    private enharmonicToggle(chordTokenRanges: ChordSymbolRange[], editor: EditorView) {
 		const changes: ChangeSpec[] = [];
 		for (const chordTokenRange of chordTokenRanges) {
 			const [chordTonic, chordType, bassNote] = Chord.tokenize(chordTokenRange.chordSymbol);
-			const simplifiedTonic = enharmonicTonic(chordTonic);
+			const simplifiedTonic = enharmonicNote(chordTonic);
 
 			let enharmonizedChord;
 
 			if (bassNote) {
-				enharmonizedChord = simplifiedTonic + chordType + "/" + enharmonicTonic(bassNote);
+				enharmonizedChord = simplifiedTonic + chordType + "/" + enharmonicNote(bassNote);
 			} else {
 				enharmonizedChord = simplifiedTonic + (chordType ?? "");
 			}
