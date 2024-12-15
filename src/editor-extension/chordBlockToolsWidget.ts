@@ -14,6 +14,7 @@ export class ChordBlockToolsWidget extends WidgetType {
 		private instrument: Instrument,
 		private showTransposeControl: boolean,
 		private showInstrumentControl: boolean,
+		private showEnharmonicControl: boolean,
 		private chordOverviewVisible: boolean
 	) {
 		super();
@@ -26,6 +27,7 @@ export class ChordBlockToolsWidget extends WidgetType {
 	eq(other: ChordBlockToolsWidget) {
 		return this.instrument === other.instrument
 			&& this.showTransposeControl === other.showTransposeControl
+            && this.showEnharmonicControl === other.showEnharmonicControl
 			&& this.showInstrumentControl === other.showInstrumentControl
 			&& this.chordOverviewVisible === other.chordOverviewVisible;
 	}
@@ -58,6 +60,13 @@ export class ChordBlockToolsWidget extends WidgetType {
 			instrumentSelect && instrumentSelect.remove();
 		}
 
+        const enharmonicButton = this.getEnharmonicButton(dom);
+		if (this.showEnharmonicControl) {
+			!enharmonicButton && this.createEnharmonicButton(dom);
+		} else {
+			enharmonicButton?.remove();
+		}
+
 		return true;
 	}
 
@@ -74,6 +83,9 @@ export class ChordBlockToolsWidget extends WidgetType {
 
 		if (this.showTransposeControl) {
 			this.createTransposeControl(containerEl);
+		}
+        if (this.showEnharmonicControl) {
+			this.createEnharmonicButton(containerEl);
 		}
 
 		if (this.showInstrumentControl) {
@@ -136,11 +148,24 @@ export class ChordBlockToolsWidget extends WidgetType {
 		containerEl.firstElementChild?.prepend(el);
 	}
 
+    private createEnharmonicButton(containerEl: HTMLElement): void {
+		const el = Object.assign(document.createElement("button"), {
+			className: 'chord-sheet-enharmonic',
+            textContent: 'Enharmonic'
+		});
+
+		containerEl.firstElementChild?.prepend(el);
+	}
+
 	private getInstrumentSelect(el: HTMLElement): HTMLSelectElement | null {
 		return el.querySelector("select");
 	}
 
 	private getTransposeControl(el: HTMLElement): HTMLSelectElement | null {
 		return el.querySelector(".chord-sheet-transpose-control");
+	}
+
+    private getEnharmonicButton(el: HTMLElement): HTMLSelectElement | null {
+		return el.querySelector(".chord-sheet-enharmonic");
 	}
 }
