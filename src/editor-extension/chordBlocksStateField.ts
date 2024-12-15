@@ -1,11 +1,5 @@
 import {
-	ChordToken,
-	Instrument,
-	isChordToken,
-	isHeaderToken,
-	isMarkerToken,
-	isRhythmToken, Token,
-	tokenizeLine
+	Instrument
 } from "../chordsUtils";
 import {Decoration, DecorationSet, EditorView, ViewUpdate} from "@codemirror/view";
 import {
@@ -27,6 +21,9 @@ import {ChordSheetsSettings} from "../chordSheetsSettings";
 import {ChordOverviewWidget} from "./chordOverviewWidget";
 import {ChordBlockToolsWidget} from "./chordBlockToolsWidget";
 import ChordsDB from "@tombatossals/chords-db";
+
+import {ChordToken, isChordToken, isHeaderToken, isMarkerToken, isRhythmToken, Token} from "../sheet-parsing/tokens";
+import {tokenizeLine} from "../sheet-parsing/tokenizeLine";
 
 class ParsedUntilRangeValue extends RangeValue {
 	endSide = -1;

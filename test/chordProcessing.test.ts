@@ -3,7 +3,9 @@ import {ChangeSet, Text} from "@codemirror/state";
 import {testingSong} from "./data/testing-song";
 import {testingSongInline} from "./data/testing-song-inline";
 import {ChordSymbolRange} from "../src/editor-extension/chordSheetsViewPlugin";
-import {isChordToken, tokenizeLine} from "../src/chordsUtils";
+
+import {isChordToken} from "../src/sheet-parsing/tokens";
+import {tokenizeLine} from "../src/sheet-parsing/tokenizeLine";
 
 export function getChordSymbolRangesForLine(line: string, lineIndex = 0): ChordSymbolRange[] {
 	const {tokens} = tokenizeLine(line, lineIndex, '%c', '%t');

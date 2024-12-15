@@ -1,5 +1,5 @@
 import {Decoration, EditorView, PluginValue, ViewPlugin, ViewUpdate} from "@codemirror/view";
-import {ChordToken, isChordToken, SheetChord} from "../chordsUtils";
+import {SheetChord} from "../chordsUtils";
 import {ChordTooltip} from "./chordTooltip";
 import {ChordSheetsSettings} from "../chordSheetsSettings";
 import {ChangeSet, ChangeSpec} from "@codemirror/state";
@@ -13,6 +13,8 @@ import {
 	IChordBlockRangeValue,
 	ifDebug
 } from "./chordBlocksStateField";
+
+import {ChordToken, isChordToken} from "../sheet-parsing/tokens";
 
 export interface TransposeEventDetail {
 	direction: "up" | "down",

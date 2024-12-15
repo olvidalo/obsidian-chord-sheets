@@ -1,17 +1,14 @@
 import {MarkdownRenderChild} from "obsidian";
 import {
-	ChordToken,
 	Instrument,
-	isChordToken,
-	isHeaderToken,
-	isMarkerToken,
-	isRhythmToken,
-	tokenizeLine,
 	uniqueChordTokens
 } from "./chordsUtils";
 import tippy from "tippy.js/headless";
 import {makeChordDiagram, makeChordOverview} from "./chordDiagrams";
 import {ChordSheetsSettings} from "./chordSheetsSettings";
+
+import {ChordToken, isChordToken, isHeaderToken, isMarkerToken, isRhythmToken} from "./sheet-parsing/tokens";
+import {tokenizeLine} from "./sheet-parsing/tokenizeLine";
 
 export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 	source: string;

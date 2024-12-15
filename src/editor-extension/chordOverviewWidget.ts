@@ -1,6 +1,8 @@
 import {EditorView, WidgetType} from "@codemirror/view";
-import {chordSequenceString, ChordToken, Instrument, uniqueChordTokens} from "../chordsUtils";
+import {chordSequenceString, Instrument, uniqueChordTokens} from "../chordsUtils";
 import {makeChordOverview} from "../chordDiagrams";
+
+import {ChordToken} from "../sheet-parsing/tokens";
 
 export class ChordOverviewWidget extends WidgetType {
 

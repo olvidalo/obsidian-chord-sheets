@@ -1,6 +1,8 @@
-import {chordSequenceString, ChordToken, findDbChord, Instrument, UserDefinedChord} from "./chordsUtils";
+import {chordSequenceString, findDbChord, Instrument, UserDefinedChord} from "./chordsUtils";
 import {BarreDef, ChordBox, ChordParams} from "vexchords";
 import ChordsDB, {ChordDef} from "@tombatossals/chords-db";
+
+import {ChordToken} from "./sheet-parsing/tokens";
 
 function dbChordToVexChord(input: ChordDef, positionIndex = 0): ChordParams {
 	const position = input.positions[positionIndex];

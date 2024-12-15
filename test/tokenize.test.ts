@@ -1,4 +1,5 @@
-import {ChordToken, isChordToken, RhythmToken, tokenizeLine} from '../src/chordsUtils';
+import {ChordToken, isChordToken, RhythmToken} from "../src/sheet-parsing/tokens";
+import {tokenizeLine} from "../src/sheet-parsing/tokenizeLine";
 
 describe('Parsing / Tokenization', () => {
 	const chordLineMarker = '%c';
