@@ -247,15 +247,6 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 	return {tokens, isChordLine};
 }
 
-export function transposeNote(chordTonic: string, direction: "up" | "down") {
-	const transposedTonic = Note.transpose(chordTonic, direction === "up" ? "2m" : "-2m");
-	return direction === "up" ? Note.enharmonic(transposedTonic) : Note.simplify(transposedTonic);
-}
-
-export function enharmonicNote(chordTonic: string) {
-	return Note.enharmonic(chordTonic);
-}
-
 export function findDbChord(chordToken: ChordToken, instrumentChords: InstrumentChords) {
 	const tonic = chordToken.chord.tonic;
 	const tonicVariations = getTonicVariations(tonic);

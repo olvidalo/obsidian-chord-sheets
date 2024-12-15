@@ -2,16 +2,16 @@
 
 import {debounce, Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
 import {EditorView, ViewPlugin} from "@codemirror/view";
-import {ChordToken, Instrument, transposeNote, enharmonicNote} from "./chordsUtils";
+import {Instrument} from "./chordsUtils";
 import {ChordBlockPostProcessorView} from "./chordBlockPostProcessorView";
 import {ChordSheetsSettings, DEFAULT_SETTINGS} from "./chordSheetsSettings";
-import {ChangeSpec, Extension} from "@codemirror/state";
+import {Extension} from "@codemirror/state";
 import {
-	ChordSymbolRange,
 	chordSheetEditorPlugin,
 	ChordSheetsViewPlugin,
-	TransposeEventDetail,
-    EnharmonicToggleEventDetail
+	ChordSymbolRange,
+	EnharmonicToggleEventDetail,
+	TransposeEventDetail
 } from "./editor-extension/chordSheetsViewPlugin";
 import {InstrumentChangeEventDetail} from "./editor-extension/chordBlockToolsWidget";
 import {AutoscrollControl, SPEED_CHANGED_EVENT} from "./autoscrollControl";
@@ -20,7 +20,7 @@ import {IChordSheetsPlugin} from "./chordSheetsPluginInterface";
 import {chordSheetsEditorExtension} from "./editor-extension/chordSheetsEditorExtension";
 import ChordsDB from "@tombatossals/chords-db";
 import {addCustomChordTypes} from "./customChordTypes";
-import {Chord} from "tonal";
+import {enharmonicToggle, transpose} from "./chordProcessing";
 
 
 const AUTOSCROLL_SPEED_PROPERTY = "autoscroll-speed";
@@ -330,45 +330,12 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 	}
 
 	private transpose(chordRanges: ChordSymbolRange[], editor: EditorView, direction: "up" | "down") {
-		const changes: ChangeSpec[] = [];
-		for (const chordRange of chordRanges) {
-			if (chordRange.chord.userDefinedChord === undefined) {
-				const {from, to, chordSymbol} = chordRange;
-				const [chordTonic, chordType, bassNote] = Chord.tokenize(chordSymbol);
-
-				const simplifiedTonic = transposeNote(chordTonic, direction);
-
-				let transposedChord;
-				if (bassNote) {
-					transposedChord = simplifiedTonic + chordType + "/" + transposeNote(bassNote, direction);
-				} else {
-					transposedChord = simplifiedTonic + (chordType ?? "");
-				}
-
-				changes.push({from: from, to: to, insert: transposedChord});
-			}
-		}
+		const changes = transpose(chordRanges, direction);
 		editor.plugin(this.editorPlugin)?.applyChanges(changes);
 	}
 
     private enharmonicToggle(chordTokenRanges: ChordSymbolRange[], editor: EditorView) {
-		const changes: ChangeSpec[] = [];
-		for (const chordTokenRange of chordTokenRanges) {
-			const [chordTonic, chordType, bassNote] = Chord.tokenize(chordTokenRange.chordSymbol);
-			const simplifiedTonic = enharmonicNote(chordTonic);
-
-			let enharmonizedChord;
-
-			if (bassNote) {
-				enharmonizedChord = simplifiedTonic + chordType + "/" + enharmonicNote(bassNote);
-			} else {
-				enharmonizedChord = simplifiedTonic + (chordType ?? "");
-			}
-
-			const chordStartIndex = chordTokenRange.from;
-			const chordEndIndex = chordTokenRange.to;
-			changes.push({from: chordStartIndex, to: chordEndIndex, insert: enharmonizedChord});
-		}
+		const changes = enharmonicToggle(chordTokenRanges);
 		editor.plugin(this.editorPlugin)?.applyChanges(changes);
 	}
 
