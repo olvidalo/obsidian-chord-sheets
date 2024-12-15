@@ -1,6 +1,6 @@
 import {ChordToken, isChordToken, RhythmToken, tokenizeLine} from '../src/chordsUtils';
 
-describe('tokenizeLine', () => {
+describe('Parsing / Tokenization', () => {
 	const chordLineMarker = '%c';
 	const textLineMarker = '%t';
 	const lineIndex = 0;
