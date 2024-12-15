@@ -2,7 +2,7 @@
 
 import {debounce, Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
 import {EditorView, ViewPlugin} from "@codemirror/view";
-import {Instrument, transposeNote} from "./chordsUtils";
+import {ChordToken, Instrument, transposeNote, enharmonicNote} from "./chordsUtils";
 import {ChordBlockPostProcessorView} from "./chordBlockPostProcessorView";
 import {ChordSheetsSettings, DEFAULT_SETTINGS} from "./chordSheetsSettings";
 import {ChangeSpec, Extension} from "@codemirror/state";
@@ -10,7 +10,8 @@ import {
 	ChordSymbolRange,
 	chordSheetEditorPlugin,
 	ChordSheetsViewPlugin,
-	TransposeEventDetail
+	TransposeEventDetail,
+    EnharmonicToggleEventDetail
 } from "./editor-extension/chordSheetsViewPlugin";
 import {InstrumentChangeEventDetail} from "./editor-extension/chordBlockToolsWidget";
 import {AutoscrollControl, SPEED_CHANGED_EVENT} from "./autoscrollControl";
@@ -94,6 +95,21 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			}
 		});
 
+        this.registerDomEvent(window, "chord-sheet-enharmonic-toggle", async (event: CustomEvent<EnharmonicToggleEventDetail>) => {
+			const {blockDef} = event.detail;
+			const editor = this.app.workspace.activeEditor?.editor;
+
+			if (editor) {
+				// @ts-ignore
+				const editorView = editor.cm as EditorView;
+				const chordPlugin = editorView?.plugin(this.editorPlugin);
+				if (chordPlugin) {
+					const chordTokens = await chordPlugin.getChordSymbolRangesForBlock(blockDef);
+					this.enharmonicToggle(chordTokens, editorView);
+				}
+			}
+		});
+
 
 		// Handle obsidian events
 
@@ -152,6 +168,13 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			name: 'Transpose current chord block one semitone down',
 			editorCheckCallback: (checking: boolean, editor: Editor) =>
 				this.transposeCommand(editor, this.editorPlugin, checking, "down")
+		});
+
+        this.addCommand({
+			id: 'enharmonic-toggle',
+			name: 'Enharmonically toggle chords in current block between sharp (#) and flat (b).',
+			editorCheckCallback: (checking: boolean, editor: Editor) =>
+				this.enharmonicToggleCommand(editor, this.editorPlugin, checking)
 		});
 
 		this.addCommand({
@@ -248,6 +271,25 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		return true;
 	}
 
+    private enharmonicToggleCommand(editor: Editor, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean) {
+		const editorView = editor.cm as EditorView;
+		const chordPlugin = editorView.plugin(plugin);
+		if (chordPlugin) {
+			const chordSheetBlockAtCursor = chordPlugin.getChordSheetBlockAtCursor();
+			if (!chordSheetBlockAtCursor) {
+				return false;
+			}
+
+			if (!checking) {
+				chordPlugin.getChordSymbolRangesForBlock(chordSheetBlockAtCursor).then(
+					chordTokens => this.enharmonicToggle(chordTokens, editorView)
+				);
+			}
+		}
+
+		return true;
+	}
+
 	private adjustScrollSpeedCommand(action: 'increase' | 'decrease', checking: boolean) {
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!view) {
@@ -305,6 +347,27 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 				changes.push({from: from, to: to, insert: transposedChord});
 			}
+		}
+		editor.plugin(this.editorPlugin)?.applyChanges(changes);
+	}
+
+    private enharmonicToggle(chordTokenRanges: ChordSymbolRange[], editor: EditorView) {
+		const changes: ChangeSpec[] = [];
+		for (const chordTokenRange of chordTokenRanges) {
+			const [chordTonic, chordType, bassNote] = Chord.tokenize(chordTokenRange.chordSymbol);
+			const simplifiedTonic = enharmonicNote(chordTonic);
+
+			let enharmonizedChord;
+
+			if (bassNote) {
+				enharmonizedChord = simplifiedTonic + chordType + "/" + enharmonicNote(bassNote);
+			} else {
+				enharmonizedChord = simplifiedTonic + (chordType ?? "");
+			}
+
+			const chordStartIndex = chordTokenRange.from;
+			const chordEndIndex = chordTokenRange.to;
+			changes.push({from: chordStartIndex, to: chordEndIndex, insert: enharmonizedChord});
 		}
 		editor.plugin(this.editorPlugin)?.applyChanges(changes);
 	}

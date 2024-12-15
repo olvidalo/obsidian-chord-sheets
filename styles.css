@@ -574,6 +574,12 @@ code.chord-sheet-chord-block-preview {
 	color: var(--text-muted);
 }
 
+.chord-sheet-enharmonic {
+	border-radius: var(--button-radius);
+	box-shadow: none;
+    margin-right: 6px;
+}
+
 /* Autoscroll controls */
 .chord-sheet-autoscroll-control {
 	display: flex;

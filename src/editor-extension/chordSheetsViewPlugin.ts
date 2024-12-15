@@ -23,6 +23,15 @@ export interface TransposeEventDetail {
 	}
 }
 
+export interface EnharmonicToggleEventDetail {
+	blockDef: {
+		from: number
+		to: number
+		value: IChordBlockRangeValue
+	}
+}
+
+
 export interface ChordSymbolRange {
 	from: number,
 	to: number,
@@ -52,8 +61,25 @@ export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsView
 					});
 					window.dispatchEvent(transposeEvent);
 				}
+			} else if (target.nodeName === "BUTTON" && target.classList.contains("chord-sheet-enharmonic-toggle")) {
+				event.stopPropagation();
+				const pos = view.posAtDOM(target);
+				const chordBlockRange = view.state.field(chordBlocksStateField).ranges.iter(pos);
+				if (chordBlockRange.value) {
+					const enharmonicToggleEvent = new CustomEvent<EnharmonicToggleEventDetail>('chord-sheet-enharmonic-toggle', {
+						detail: {
+							blockDef: {
+								from: chordBlockRange.from,
+								to: chordBlockRange.to,
+								value: chordBlockRange.value
+							}
+						}
+					});
+					window.dispatchEvent(enharmonicToggleEvent);
+				}
 			}
 		},
+        
 		mousemove: function (event: MouseEvent, view: EditorView) {
 			const {showChordDiagramsOnHover} = view.state.facet(chordSheetsConfigFacet);
 			if (

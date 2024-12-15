@@ -408,9 +408,9 @@ function getChordBlockDecos(config: ChordSheetsSettings, chordBlockRanges: Range
 				side: -1
 			}));
 
-			if (config.showTransposeControl || config.showInstrumentControl) {
+			if (config.showTransposeControl || config.showInstrumentControl || config.showEnharmonicToggleControl) {
 				builder.add(chordBlockIter.from, chordBlockIter.from, Decoration.widget({
-					widget: new ChordBlockToolsWidget(chordBlockIter.value.instrument, config.showTransposeControl, config.showInstrumentControl, shouldShowChordOverviewInEditor(config)),
+					widget: new ChordBlockToolsWidget(chordBlockIter.value.instrument, config.showTransposeControl, config.showInstrumentControl,config.showEnharmonicToggleControl, shouldShowChordOverviewInEditor(config)),
 					side: 0,
 					block: false
 				}));
