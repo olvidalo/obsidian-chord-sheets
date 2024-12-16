@@ -1,8 +1,5 @@
 import {MarkdownRenderChild} from "obsidian";
-import {
-	Instrument,
-	uniqueChordTokens
-} from "./chordsUtils";
+import {Instrument, uniqueChordTokens} from "./chordsUtils";
 import tippy from "tippy.js/headless";
 import {makeChordDiagram, makeChordOverview} from "./chordDiagrams";
 import {ChordSheetsSettings} from "./chordSheetsSettings";
@@ -66,10 +63,11 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 						cls: "chord-sheet-chord",
 					});
 
-					if (token.openingBracket) {
+
+					if (token.inlineChord) {
 						chordSpan.createSpan({
-							cls: `chord-sheet-inline-chord-tag`,
-							text: token.openingBracket.value
+							cls: `chord-sheet-inline-chord-bracket`,
+							text: token.inlineChord.openingBracket.value
 						});
 					}
 
@@ -78,18 +76,43 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 						text: token.chordSymbol
 					});
 
-					if (token.auxText) {
+					if (token.userDefinedChord) {
+						const userDefinedChord = token.userDefinedChord;
+
 						chordSpan.createSpan({
-							cls: `chord-sheet-inline-chord-aux-text`,
-							text: token.auxText.value
+							cls: 'chord-sheet-user-defined-chord-bracket',
+							text: userDefinedChord.openingBracket.value
 						});
+						userDefinedChord.position && chordSpan.createSpan({
+							cls: 'chord-sheet-user-defined-chord-position',
+							text: userDefinedChord.position.value
+						});
+						userDefinedChord.positionSeparator && chordSpan.createSpan({
+							cls: 'chord-sheet-user-defined-chord-position-separator',
+							text: userDefinedChord.positionSeparator.value
+						});
+						chordSpan.createSpan({
+							cls: 'chord-sheet-user-defined-chord-frets',
+							text: userDefinedChord.frets.value
+						});
+						chordSpan.createSpan({
+							cls: 'chord-sheet-user-defined-chord-bracket',
+							text: userDefinedChord.closingBracket.value
+						});
+
 					}
 
-					if (token.closingBracket) {
+					if (token.inlineChord) {
+						if (token.inlineChord.auxText) {
+							chordSpan.createSpan({
+								cls: `chord-sheet-inline-chord-aux-text`,
+								text: token.inlineChord.auxText.value
+							});
+						}
 						chordSpan.createSpan({
-                            cls: `chord-sheet-inline-chord-tag`,
-                            text: token.closingBracket.value
-                        });
+							cls: `chord-sheet-inline-chord-bracket`,
+							text: token.inlineChord.closingBracket.value
+						});
 					}
 
 
@@ -112,7 +135,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 						cls: "chord-sheet-section-header-content",
 					});
 					headerSpan.createSpan({
-						cls: `chord-sheet-section-header-tag`,
+						cls: `chord-sheet-section-header-bracket`,
 						text: token.openingBracket
 					});
 					headerSpan.createSpan({
@@ -120,7 +143,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
                         text: token.headerName
 					});
 					headerSpan.createSpan({
-						cls: `chord-sheet-section-header-tag`,
+						cls: `chord-sheet-section-header-bracket`,
 						text: token.closingBracket
 					});
 				} else {

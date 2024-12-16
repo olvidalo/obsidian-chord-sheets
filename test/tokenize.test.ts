@@ -1,5 +1,4 @@
 import {
-	ChordInfo,
 	ChordToken,
 	HeaderToken,
 	isChordToken,
@@ -8,7 +7,7 @@ import {
 	Token
 } from "../src/sheet-parsing/tokens";
 import {tokenizeLine} from "../src/sheet-parsing/tokenizeLine";
-import {SheetChord, UserDefinedChord} from "../src/chordsUtils";
+import {SheetChord} from "../src/chordsUtils";
 
 describe('Parsing / Tokenization', () => {
 	const chordLineMarker = '%c';
@@ -181,8 +180,10 @@ describe('Parsing / Tokenization', () => {
 				chord: expect.any(Object),
 				chordSymbol: 'C#/D#',
 				chordSymbolRange: [1, 6],
-				openingBracket: { value: '[', range: [0, 1] },
-				closingBracket: { value: ']', range: [6, 7] }
+				inlineChord: {
+					openingBracket: { value: '[', range: [0, 1] },
+					closingBracket: { value: ']', range: [6, 7] }
+				}
 			});
 
 			expect(chordTokens[1]).toMatchObject<Partial<ChordToken>>({
@@ -190,9 +191,11 @@ describe('Parsing / Tokenization', () => {
 				chord: expect.any(Object),
 				chordSymbol: 'F#',
 				chordSymbolRange: [ 1, 3 ],
-				openingBracket: { value: '[', range: [ 0, 1 ] },
-				closingBracket: { value: ']', range: [ 9, 10 ] },
-				auxText: { value: ' spec.', range: [ 3, 9 ] }
+				inlineChord: {
+					openingBracket: { value: '[', range: [ 0, 1 ] },
+					closingBracket: { value: ']', range: [ 9, 10 ] },
+					auxText: { value: ' spec.', range: [ 3, 9 ] }
+				}
 			});
 
 			expect(chordTokens[2]).toMatchObject<Partial<ChordToken>>({
@@ -200,7 +203,11 @@ describe('Parsing / Tokenization', () => {
 				range: [ 47, 54 ],
 				chord: expect.any(Object),
 				chordSymbol: 'G#7',
-				auxText: { value: '  ', range: [ 4, 6 ] },
+				inlineChord: {
+					openingBracket: { value: '[', range: [.0, 1 ] },
+					closingBracket: { value: ']', range: [ 6, 7 ] },
+					auxText: { value: '  ', range: [ 4, 6 ] },
+				}
 			});
 
 
@@ -238,6 +245,11 @@ describe('Parsing / Tokenization', () => {
 				},
 				chordSymbol: "Am",
 				chordSymbolRange: [0, 2],
+				userDefinedChord: {
+					openingBracket: { value: '[', range: [2, 3] },
+					frets: { value: 'x02210', range: [3, 9] },
+					closingBracket: { value: ']', range: [9, 10] }
+				}
 			});
 
 			expect(chordTokens[1]).toMatchObject<ChordTokenWithPartialChord>({
@@ -250,6 +262,13 @@ describe('Parsing / Tokenization', () => {
 				},
 				chordSymbol: "C*4",
 				chordSymbolRange: [0, 3],
+				userDefinedChord: {
+					openingBracket: { value: '[', range: [3, 4] },
+					position: { value: '3', range: [4, 5] },
+					positionSeparator: { value: '|', range: [5, 6] },
+					frets: { value: 'x32010', range: [6, 12] },
+					closingBracket: { value: ']', range: [12, 13] }
+				}
 			});
 
 			expect(chordTokens[2]).toMatchObject<ChordTokenWithPartialChord>({

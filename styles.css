@@ -47,25 +47,36 @@ settings:
         opacity: true;
 
 
-    ## INLINE CHORDS
-
+    ### INLINE CHORDS
     -
-        id: chord-sheets-uniform-inline-style
+        id: inline-chords
+        title: Inline chords
+        description: '[D]Chords in [Bm]brackets'
+        type: heading
+        level: 4
+    -
+        id: chord-sheet-uniform-inline-style
         title: Uniform inline chord style
         description: |
         	Use the styling for chord symbols for the whole inline chord. Disables independent styling of brackets and
         	auxiliary text.
         type: class-toggle
+
+    -
+        id: inline-chords-advanced
+        title: Advanced inline chord styling
+        type: heading
+        level: 5
     -
         id: inline-chords-style-info
-        title: Advanced inline chord styling
+        // title: Advanced inline chord styling
         description: |
         	**Note**: The following settings only take effect when the *Uniform inline chord style* option is
         	**disabled**.
         type: info-text
         markdown: true
     -
-        id: inline-chord-tag-color
+        id: inline-chord-bracket-color
         title: Inline chord bracket color
         description: |
         	Highlight color for the brackets of inline chords, such as [Dm]. Defaults to the current theme's faint text
@@ -107,6 +118,154 @@ settings:
         id: inline-chord-aux-text-font-weight
         title: Inline chord auxiliary text font weight
         description: Font weight for auxiliary text in inline chords, such as [Dm special].
+        type: variable-select
+        default: inherit
+        options:
+            - '100'
+            - '200'
+            - '300'
+            - normal
+            - '500'
+            - '600'
+            - bold
+            - '800'
+            - '900'
+            - lighter
+            - bolder
+            - inherit
+
+	### CUSTOM CHORD SHAPES
+    -
+        id: user-defined-chords
+        title: 'Chords with custom chord shape'
+        description: ' e. g.: Dm6[4|x2x132]'
+        markdown: true
+        type: heading
+        level: 4
+    -
+        id: chord-sheet-uniform-user-defined-style
+        title: Uniform custom chord style
+        description: |
+        	Use the styling for chord symbols for the whole custom chord. Disables independent styling of brackets,
+        	barre position, and frets.
+        type: class-toggle
+
+    -
+        id: user-defined-chords-advanced
+        title: Advanced custom chord styling
+        type: heading
+        level: 5
+    -
+        id: user-defined-chords-style-info
+        description: |
+        	**Note**: The following settings only take effect when the *Uniform custom chord style* option is
+        	**disabled**.
+        type: info-text
+        markdown: true
+    -
+        id: user-defined-chord-bracket-color
+        title: Custom chord bracket color
+        description: |
+        	Highlight color for the brackets of custom chords. Defaults to the current theme's faint text
+        	color.
+        type: variable-themed-color
+        format: hex
+        default-light: '#'
+        default-dark: '#'
+    -
+        id: user-defined-chord-bracket-font-weight
+        title: Custom chord bracket font weight
+        description: Font weight for the brackets of user defined chords.
+        type: variable-select
+        default: inherit
+        options:
+            - '100'
+            - '200'
+            - '300'
+            - normal
+            - '500'
+            - '600'
+            - bold
+            - '800'
+            - '900'
+            - lighter
+            - bolder
+            - inherit
+    -
+        id: user-defined-chord-position-color
+        title: Custom chord barre position color
+        description: |
+        	Highlight color for the optional barree position number in custom chords. Defaults to the current theme's
+        	normal code color`.
+        type: variable-themed-color
+        format: hex
+        default-light: '#'
+        default-dark: '#'
+    -
+        id: user-defined-chord-position-font-weight
+        title: Custom chord barre position font weight
+        description: Font weight for the optional barree position number in custom chords.
+        type: variable-select
+        default: inherit
+        options:
+            - '100'
+            - '200'
+            - '300'
+            - normal
+            - '500'
+            - '600'
+            - bold
+            - '800'
+            - '900'
+            - lighter
+            - bolder
+            - inherit
+
+    -
+        id: user-defined-chord-position-separator-color
+        title: Custom chord barre position separator color
+        description: |
+        	Highlight color for the barre position separator ("|") of custom chords. Defaults to the
+        	current theme's faint text color.
+        type: variable-themed-color
+        format: hex
+        default-light: '#'
+        default-dark: '#'
+
+    -
+        id: user-defined-chord-position-separator-font-weight
+        title: Custom chord barre position separator font weight
+        description: Font weight for the barre position separator ("|") of user defined chords.
+        type: variable-select
+        default: inherit
+        options:
+            - '100'
+            - '200'
+            - '300'
+            - normal
+            - '500'
+            - '600'
+            - bold
+            - '800'
+            - '900'
+            - lighter
+            - bolder
+            - inherit
+
+    -   id: user-defined-chord-frets-color
+        title: Custom chord fret string color
+        description: |
+        	Highlight color for the bracketed fret string in custom chords. Defaults to the current theme's
+        	normal code color`.
+        type: variable-themed-color
+        format: hex
+        default-light: '#'
+        default-dark: '#'
+
+    -
+        id: user-defined-chord-frets-font-weight
+        title: Custom chord fret string font weight
+        description: Font weight for the bracketed fret string in custom chords.
         type: variable-select
         default: inherit
         options:
@@ -214,7 +373,7 @@ settings:
         default: ""
 
     -
-        id: chord-sheets-uniform-header-style
+        id: chord-sheet-uniform-header-style
         title: Uniform section header style
         description: |
         	Use the styling for section header names for the whole header. Disables independent styling of header tags.
@@ -228,8 +387,8 @@ settings:
         type: info-text
         markdown: true
     -
-        id: section-header-tag-color
-        title: Section header tag color
+        id: section-header-bracket-color
+        title: Section header bracket color
         description: |
         	Highlight color for the opening and closing tags of section headers. Defaults to the current theme's faint
         	text color.
@@ -238,8 +397,8 @@ settings:
         default-light: '#'
         default-dark: '#'
     -
-        id: section-header-tag-font-weight
-        title: Section header tag font weight
+        id: section-header-bracket-font-weight
+        title: Section header bracket font weight
         description: Font weight for the opening and closing tags of section headers.
         type: variable-select
         default: inherit
@@ -357,18 +516,20 @@ code.chord-sheet-chord-block-preview {
 	font-weight: var(--section-header-title-font-weight, bolder);
 }
 
-.chord-sheet-section-header-tag {
-	color: var(--section-header-tag-color, var(--text-faint));
+.chord-sheet-section-header-bracket {
+	color: var(--section-header-bracket-color, var(--text-faint));
 	font-weight: var(--section-header-tag-font-weight, inherit);
 }
 
-.chord-sheets-uniform-header-style .chord-sheet-section-header-tag{
+.chord-sheet-uniform-header-style .chord-sheet-section-header-bracket{
 	color: var(--section-header-title-color, var(--bold-color));
 	font-weight: var(--section-header-title-font-weight, bolder);
 }
 
-.chord-sheet-inline-chord-tag {
-	color: var(--inline-chord-tag-color, var(--text-faint));
+/* Inline chords */
+
+.chord-sheet-inline-chord-bracket {
+	color: var(--inline-chord-bracket-color, var(--text-faint));
 	font-weight: var(--inline-chord-bracket-font-weight, inherit);
 }
 
@@ -377,11 +538,41 @@ code.chord-sheet-chord-block-preview {
 	color: var(--inline-chord-aux-text-color, var(--code-normal));
 }
 
-.chord-sheets-uniform-inline-style .chord-sheet-inline-chord-tag, .chord-sheets-uniform-inline-style .chord-sheet-inline-chord-aux-text {
+.chord-sheet-uniform-inline-style .chord-sheet-inline-chord-bracket,
+.chord-sheet-uniform-inline-style .chord-sheet-inline-chord-aux-text {
 	color: var(--chord-symbol-color, var(--text-accent));
 	font-weight: var(--chord-highlight-font-weight, bolder);
 }
 
+/* User defined chords */
+
+.chord-sheet-user-defined-chord-bracket {
+	color: var(--user-defined-chord-bracket-color, var(--text-faint));
+	font-weight: var(--user-defined-chord-bracket-font-weight, inherit);
+}
+
+.chord-sheet-user-defined-chord-position {
+	font-weight: var(--user-defined-chord-position-font-weight, inherit);
+	color: var(--user-defined-chord-position-color, var(--code-normal));
+}
+
+.chord-sheet-user-defined-chord-position-separator {
+	color: var(--user-defined-chord-position-separator-color, var(--text-faint));
+	font-weight: var(--user-defined-chord-position-separator-font-weight, inherit);
+}
+
+.chord-sheet-user-defined-chord-frets {
+	font-weight: var(--user-defined-chord-frets-font-weight, inherit);
+	color: var(--user-defined-chord-frets-color, var(--code-normal));
+}
+
+.chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-bracket,
+.chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-position,
+.chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-position-separator,
+.chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-frets {
+	color: var(--chord-symbol-color, var(--text-accent));
+	font-weight: var(--chord-highlight-font-weight, bolder);
+}
 
 
 /* Chord Boxes */

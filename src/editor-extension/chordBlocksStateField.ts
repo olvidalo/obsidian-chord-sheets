@@ -1,6 +1,4 @@
-import {
-	Instrument
-} from "../chordsUtils";
+import {Instrument} from "../chordsUtils";
 import {Decoration, DecorationSet, EditorView, ViewUpdate} from "@codemirror/view";
 import {
 	Compartment,
@@ -580,57 +578,66 @@ function chordDecosForLine(line: Line, {
 	for (const token of tokenizedLine.tokens) {
 		if (isChordToken(token)) {
 
-			chordDecos.push(
-				Decoration
+			chordDecos.push(Decoration
 					.mark({ type: "chord", class: `chord-sheet-chord`, token })
 					.range(...token.range))
 			;
 
-			if (token.openingBracket) {
-				chordDecos.push(
-					Decoration
-						.mark({ class: `chord-sheet-inline-chord-tag` })
-						.range(...resolveIndex(token.openingBracket.range, token))
-				);
-			}
+			token.inlineChord && chordDecos.push(Decoration
+					.mark({ class: `chord-sheet-inline-chord-bracket` })
+					.range(...resolveIndex(token.inlineChord.openingBracket.range, token)));
 
-			chordDecos.push(
-				Decoration
+
+			chordDecos.push(Decoration
 					.mark({ class:`chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}` })
-					.range(...resolveIndex(token.chordSymbolRange, token))
-			);
+					.range(...resolveIndex(token.chordSymbolRange, token)));
 
-			if (token.auxText) {
-				chordDecos.push(
+			if (token.userDefinedChord) {
+				const userDefinedChord = token.userDefinedChord;
+
+				chordDecos.push(Decoration
+						.mark({ class: `chord-sheet-user-defined-chord-bracket` })
+						.range(...resolveIndex(userDefinedChord.openingBracket.range, token)));
+
+				userDefinedChord.position && chordDecos.push(Decoration
+						.mark({ class: `chord-sheet-user-defined-chord-position` })
+						.range(...resolveIndex(userDefinedChord.position.range, token)));
+
+				userDefinedChord.positionSeparator && chordDecos.push(Decoration
+						.mark({ class: `chord-sheet-user-defined-chord-position-separator` })
+						.range(...resolveIndex(userDefinedChord.positionSeparator.range, token)));
+
+				chordDecos.push(Decoration
+						.mark({ class: `chord-sheet-user-defined-chord-frets` })
+						.range(...resolveIndex(userDefinedChord.frets.range, token)),
 					Decoration
-						.mark({ class: `chord-sheet-inline-chord-aux-text`})
-						.range(...resolveIndex(token.auxText.range, token))
-				);
+						.mark({ class: `chord-sheet-user-defined-chord-bracket` })
+						.range(...resolveIndex(userDefinedChord.closingBracket.range, token))
+					);
 			}
 
-			if (token.closingBracket) {
-				chordDecos.push(
-					Decoration
-						.mark({ class: `chord-sheet-inline-chord-tag` })
-						.range(...resolveIndex(token.closingBracket.range, token))
+			if (token.inlineChord) {
+				token.inlineChord.auxText && chordDecos.push(Decoration
+						.mark({ class: `chord-sheet-inline-chord-aux-text`})
+						.range(...resolveIndex(token.inlineChord.auxText.range, token))
 				);
+
+				chordDecos.push(Decoration
+						.mark({ class: `chord-sheet-inline-chord-bracket` })
+						.range(...resolveIndex(token.inlineChord.closingBracket.range, token)));
 			}
 
 		} else if (highlightRhythmMarkers && isRhythmToken(token)) {
-			const deco = Decoration.mark({
-				class: "chord-sheet-rhythm-marker",
-				token
-			});
-			const [start, end] = token.range;
-			chordDecos.push(deco.range(start, end));
+			chordDecos.push(Decoration
+				.mark({ class: "chord-sheet-rhythm-marker", token })
+				.range(...token.range)
+			);
 
 		} else if (isMarkerToken(token)) {
-			const deco = Decoration.mark({
-				class: "chord-sheet-line-marker",
-				token
-			});
-			const [start, end] = token.range;
-			chordDecos.push(deco.range(start, end));
+			chordDecos.push(Decoration
+				.mark({ class: "chord-sheet-line-marker", token })
+				.range(...token.range)
+			);
 
 		} else if (highlightSectionHeaders && isHeaderToken(token)) {
 			const [headerStart, headerEnd] = token.range;
@@ -638,20 +645,19 @@ function chordDecosForLine(line: Line, {
 			const [headerNameStart, headerNameEnd] = resolveIndex(token.headerNameRange, token);
 			const endTagStart = resolveIndex(token.closingBracketRange, token)[0];
 
-			chordDecos.push(
-				Decoration
+			chordDecos.push(Decoration
 					.line({ class: "chord-sheet-section-header" })
 					.range(line.from),
 				Decoration
 					.mark({ class: "chord-sheet-section-header-content" })
 					.range(headerStart, headerEnd),
 				Decoration
-					.mark({ class: "chord-sheet-section-header-tag" })
+					.mark({ class: "chord-sheet-section-header-bracket" })
 					.range(startTagStart, startTagEnd),
 				Decoration
 					.mark({ class: "chord-sheet-section-header-name cm-strong" })
 					.range(headerNameStart, headerNameEnd),
-				Decoration.mark({ class: "chord-sheet-section-header-tag" })
+				Decoration.mark({ class: "chord-sheet-section-header-bracket" })
 					.range(endTagStart, headerEnd)
 			);
 		}

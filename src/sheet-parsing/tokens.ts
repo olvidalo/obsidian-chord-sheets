@@ -11,9 +11,19 @@ export interface ChordInfo {
 	chordSymbol: string
 	chordSymbolRange: [start: number, end: number]
 
-	openingBracket?: { value: string, range: [start: number, end: number] }
-	auxText?: { value: string; range: [start: number, end: number] }
-	closingBracket?: { value: string; range: [start: number, end: number] }
+	inlineChord?: {
+		openingBracket: { value: string, range: [start: number, end: number] }
+		auxText?: { value: string; range: [start: number, end: number] }
+		closingBracket: { value: string; range: [start: number, end: number] }
+	}
+
+	userDefinedChord?: {
+		openingBracket: { value: string, range: [start: number, end: number] }
+		closingBracket: { value: string; range: [start: number, end: number] }
+		position?: { value: string; range: [start: number, end: number] }
+		positionSeparator?: { value: string; range: [start: number, end: number] }
+		frets: { value: string; range: [start: number, end: number] }
+	}
 }
 
 export type ChordToken = Token & ChordInfo & {

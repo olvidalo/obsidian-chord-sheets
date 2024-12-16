@@ -136,11 +136,13 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 								...baseToken,
 								type: "chord",
 								chord,
-								openingBracket: {value: openingBracket, range: openingBracketRange},
-								...(auxText && {auxText: {value: auxText, range: auxTextRange}}),
-								closingBracket: {value: closingBracket, range: closingBracketRange},
 								chordSymbol,
 								chordSymbolRange,
+								inlineChord: {
+									openingBracket: {value: openingBracket, range: openingBracketRange},
+									...(auxText && {auxText: {value: auxText, range: auxTextRange}}),
+									closingBracket: {value: closingBracket, range: closingBracketRange},
+								}
 							};
 							tokens.push(chordToken);
 						} else {
@@ -151,8 +153,14 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 					}
 
 					case "userDefinedChord": {
-							const {chordSymbol, pos: position, frets} = match.groups!;
-							const {chordSymbol: chordSymbolRange} = match.indices!.groups!;
+							const {
+								chordSymbol, open: openingBracket, pos: position, posSep: positionSeparator,
+								close: closingBracket, frets
+							} = match.groups!;
+							const {
+								chordSymbol: chordSymbolRange, open: openingBracketRange, pos: positionRange,
+								posSep: positionSeparatorRange,	close: closingBracketRange, frets: fretsRange
+							} = match.indices!.groups!;
 
 							const chordToken: ChordToken = {
 								...baseToken,
@@ -162,7 +170,16 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 									userDefinedChord: { frets, position: position ? parseInt(position) : 0}
 								},
 								chordSymbol,
-								chordSymbolRange
+								chordSymbolRange,
+								userDefinedChord: {
+									openingBracket: {value: openingBracket, range: openingBracketRange},
+									...(position && {
+										position: { value: position, range: positionRange },
+										positionSeparator: { value: positionSeparator, range: positionSeparatorRange }
+									}),
+									frets: {value: frets, range: fretsRange},
+									closingBracket: {value: closingBracket, range: closingBracketRange},
+								}
 							};
 
 							tokens.push(chordToken);
