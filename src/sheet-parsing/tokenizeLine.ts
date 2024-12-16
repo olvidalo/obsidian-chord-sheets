@@ -3,9 +3,10 @@ import escapeStringRegexp from "escape-string-regexp";
 import {Chord} from "tonal";
 import {SheetChord} from "../chordsUtils";
 
+const CHORD_LINE_PROBABILITY_THRESHOLD = 0.5;
 
-function offsetRange(indexArray: [number, number], offset: number): [number, number] {
-	return indexArray && [indexArray[0] + offset, indexArray[1] + offset];
+function offsetRange(range: [number, number], offset: number): [number, number] {
+	return range && [range[0] + offset, range[1] + offset];
 }
 
 function getChord(maybeChordSymbol: string): SheetChord {
@@ -20,24 +21,29 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 	const headerPattern = /(?<leadingWs>^\s*)(?<open>\[)(?<name>[^\]]+)(?<close>])(?<trailingWs>\s*$)/d;
 	const headerMatch = line.match(headerPattern);
 	if (headerMatch) {
-		const {leadingWs, open: startTag, name: headerName, close: endTag, trailingWs} = headerMatch.groups!;
-		const {leadingWs: leadingWsRange, open: startTagRange, name: headerNameRange, close: endTagRange, trailingWs: trailingWsRange} = headerMatch.indices!.groups!;
+		const {
+			leadingWs, open: openingBracket, name: headerName, close: closingBracket, trailingWs
+		} = headerMatch.groups!;
+		const {
+			leadingWs: leadingWsRange, open: openingBracketRange, name: headerNameRange, close: closingBracketRange,
+			trailingWs: trailingWsRange
+		} = headerMatch.indices!.groups!;
 
 		if (leadingWs) {
-			tokens.push({type: "whitespace", value: leadingWs, index: offsetRange(leadingWsRange, lineIndex)});
+			tokens.push({type: "whitespace", value: leadingWs, range: offsetRange(leadingWsRange, lineIndex)});
 		}
 
 		const headerToken: HeaderToken = {
 			type: "header",
 			value: headerMatch[0],
-			index: offsetRange(headerMatch.indices![0], lineIndex),
-			startTag, headerName, endTag,
-			startTagIndex: startTagRange, headerNameIndex: headerNameRange, endTagIndex: endTagRange
+			range: offsetRange(headerMatch.indices![0], lineIndex),
+			openingBracket, headerName, closingBracket: closingBracket,
+			openingBracketRange, headerNameRange: headerNameRange, closingBracketRange
 		};
 		tokens.push(headerToken);
 
 		if (trailingWs) {
-			tokens.push({type: "whitespace", value: trailingWs, index: offsetRange(trailingWsRange, lineIndex)});
+			tokens.push({type: "whitespace", value: trailingWs, range: offsetRange(trailingWsRange, lineIndex)});
 		}
 
 		return {tokens, isChordLine: false};
@@ -47,9 +53,9 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 	const chordLineMarkerPattern = escapeStringRegexp(chordLineMarker);
 	const textLineMarkerPattern = escapeStringRegexp(textLineMarker);
 
-	// The tokenization loop eats the line from start to end, so we have to match
-	// each inline token against the start of the string.
-	// The order of the patterns is significant!
+	// The tokenization loop eats the line from start to end, so we have to match each
+	// inline token against the start of the string. The order of patterns matters:
+	// we want to match more specific tokens first (e.g. inlineChord vs. wordOrChord).
 	const inlinePatterns = {
 		// line type markers at the end of the line, can be user defined, default "%t" and "%c"
 		lineMarker: new RegExp(`^(?<marker>${textLineMarkerPattern}|${chordLineMarkerPattern})\\s*$`, "d"),
@@ -76,7 +82,9 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 		whitespace: /^\s+/d,
 	};
 
-	const possibleChordOrRhythmTokens = new Map<Token, ChordInfo | "rhythm">;
+
+	const tokensPendingReclassification = new Map<Token, ChordInfo | "rhythm">;
+
 	let wordTokenCount: number = 0;
 	let markerValue: MarkerToken['value'] | null = null;
 	let hasUserDefinedChord = false;
@@ -90,11 +98,11 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 			match = remainingLine.match(pattern);
 			if (match) {
 				const matchValue = match[0];
-				const matchIndex = match.indices![0];
+				const matchRange = match.indices![0];
 
-				const baseToken: Pick<Token, "value" | "index"> = {
+				const baseToken: Pick<Token, "value" | "range"> = {
 					value: matchValue,
-					index: offsetRange(matchIndex, pos)
+					range: offsetRange(matchRange, pos)
 				};
 
 				switch (name) {
@@ -108,18 +116,17 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 						const possibleRhythmToken: Token = {
 							...baseToken, type: "word"
 						};
-						possibleChordOrRhythmTokens.set(possibleRhythmToken, "rhythm");
+
+						tokensPendingReclassification.set(possibleRhythmToken, "rhythm");
 						tokens.push(possibleRhythmToken);
 						break;
 					}
 
 					case "inlineChord": {
-						const {open: startTag, chordSymbol, auxText, close: endTag} = match.groups!;
+						const {open: openingBracket, chordSymbol, auxText, close: closingBracket} = match.groups!;
 						const {
-							open: startTagIndex,
-							chordSymbol: chordSymbolIndex,
-							auxText: auxTextIndex,
-							close: endTagIndex
+							open: openingBracketRange, chordSymbol: chordSymbolRange,
+							auxText: auxTextRange, close: closingBracketRange
 						} = match.indices!.groups!;
 
 						const chord = getChord(chordSymbol);
@@ -129,11 +136,11 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 								...baseToken,
 								type: "chord",
 								chord,
-								startTag: {value: startTag, index: startTagIndex},
-								...(auxText && {auxText: {value: auxText, index: auxTextIndex}}),
-								endTag: {value: endTag, index: endTagIndex},
+								openingBracket: {value: openingBracket, range: openingBracketRange},
+								...(auxText && {auxText: {value: auxText, range: auxTextRange}}),
+								closingBracket: {value: closingBracket, range: closingBracketRange},
 								chordSymbol,
-								chordSymbolIndex,
+								chordSymbolRange,
 							};
 							tokens.push(chordToken);
 						} else {
@@ -145,7 +152,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 
 					case "userDefinedChord": {
 							const {chordSymbol, pos: position, frets} = match.groups!;
-							const {chordSymbol: chordSymbolIndex } = match.indices!.groups!;
+							const {chordSymbol: chordSymbolRange} = match.indices!.groups!;
 
 							const chordToken: ChordToken = {
 								...baseToken,
@@ -155,7 +162,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 									userDefinedChord: { frets, position: position ? parseInt(position) : 0}
 								},
 								chordSymbol,
-								chordSymbolIndex,
+								chordSymbolRange
 							};
 
 							tokens.push(chordToken);
@@ -170,10 +177,10 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 
 						const chord = getChord(matchValue);
 						if (chord?.tonic) {
-							possibleChordOrRhythmTokens.set(resultToken, {
+							tokensPendingReclassification.set(resultToken, {
 								chord,
 								chordSymbol: matchValue,
-								chordSymbolIndex: matchIndex
+								chordSymbolRange: matchRange
 							});
 						}
 
@@ -205,12 +212,12 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 	}
 
 	const isChordLine =
-			markerValue === chordLineMarker ? true :
+			markerValue === chordLineMarker || hasUserDefinedChord ? true :
 			markerValue === textLineMarker ? false :
-			hasUserDefinedChord || possibleChordOrRhythmTokens.size / wordTokenCount > 0.5;
+			tokensPendingReclassification.size / wordTokenCount > CHORD_LINE_PROBABILITY_THRESHOLD;
 
 	if (isChordLine) {
-		for (const [token, tokenInfo] of possibleChordOrRhythmTokens) {
+		for (const [token, tokenInfo] of tokensPendingReclassification) {
 			if (tokenInfo === "rhythm") {
 				token.type = "rhythm";
 			} else {

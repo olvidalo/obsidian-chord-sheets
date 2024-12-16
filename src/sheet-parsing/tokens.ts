@@ -3,17 +3,17 @@ import {SheetChord} from "../chordsUtils";
 export interface Token {
 	type: 'word' | 'chord' | 'whitespace' | 'marker' | 'header' | 'rhythm';
 	value: string;
-	index: [start: number, end: number];
+	range: [start: number, end: number];
 }
 
 export interface ChordInfo {
 	chord: SheetChord
 	chordSymbol: string
-	chordSymbolIndex: [start: number, end: number]
+	chordSymbolRange: [start: number, end: number]
 
-	startTag?: { value: string, index: [start: number, end: number] }
-	auxText?: { value: string; index: [start: number, end: number] }
-	endTag?: { value: string; index: [start: number, end: number] }
+	openingBracket?: { value: string, range: [start: number, end: number] }
+	auxText?: { value: string; range: [start: number, end: number] }
+	closingBracket?: { value: string; range: [start: number, end: number] }
 }
 
 export type ChordToken = Token & ChordInfo & {
@@ -29,12 +29,12 @@ export interface MarkerToken extends Token {
 
 export interface HeaderToken extends Token {
 	type: 'header'
-	startTag: string
-	startTagIndex: [start: number, end: number]
+	openingBracket: string
+	openingBracketRange: [start: number, end: number]
 	headerName: string
-	headerNameIndex: [start: number, end: number]
-	endTag: string
-	endTagIndex: [start: number, end: number]
+	headerNameRange: [start: number, end: number]
+	closingBracket: string
+	closingBracketRange: [start: number, end: number]
 }
 
 export interface TokenizedLine {

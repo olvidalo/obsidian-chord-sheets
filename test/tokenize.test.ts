@@ -1,5 +1,14 @@
-import {ChordToken, isChordToken, RhythmToken} from "../src/sheet-parsing/tokens";
+import {
+	ChordInfo,
+	ChordToken,
+	HeaderToken,
+	isChordToken,
+	MarkerToken,
+	RhythmToken,
+	Token
+} from "../src/sheet-parsing/tokens";
 import {tokenizeLine} from "../src/sheet-parsing/tokenizeLine";
+import {SheetChord, UserDefinedChord} from "../src/chordsUtils";
 
 describe('Parsing / Tokenization', () => {
 	const chordLineMarker = '%c';
@@ -11,33 +20,32 @@ describe('Parsing / Tokenization', () => {
 			const line = 'Hello world';
 			const result = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
 
-			expect(result).toEqual({
-				tokens: [
+			expect(result.tokens).toEqual<Token[]>(
+				[
 					{
 						type: 'word',
 						value: 'Hello',
-						index: [0, 5]
+						range: [0, 5]
 					},
 					{
 						type: 'whitespace',
 						value: ' ',
-						index: [5, 6]
+						range: [5, 6]
 					},
 					{
 						type: 'word',
 						value: 'world',
-						index: [6, 11]
+						range: [6, 11]
 					}
-				],
-				isChordLine: false
-			});
+				]
+			);
 		});
 
 		test('should tokenize words and whitespace, not starting at first line', () => {
 			const line = 'Hello world';
 			const result = tokenizeLine(line, 10, chordLineMarker, textLineMarker);
 
-			expect(result.tokens[2].index).toStrictEqual([16, 21]);
+			expect(result.tokens[2].range).toStrictEqual([16, 21]);
 		});
 
 		test('should identify chord line markers', () => {
@@ -45,10 +53,10 @@ describe('Parsing / Tokenization', () => {
 			const { tokens } = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
 
 			expect(tokens).toHaveLength(7);
-			expect(tokens[6]).toEqual({
+			expect(tokens[6]).toEqual<MarkerToken>({
 				type: 'marker',
 				value: '%c',
-				index: [7, 9]
+				range: [7, 9]
 			});
 		});
 
@@ -57,10 +65,10 @@ describe('Parsing / Tokenization', () => {
 			const line = 'Lyrics here %t';
 			const { tokens } = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
 
-			expect(tokens[tokens.length - 1]).toEqual({
+			expect(tokens[tokens.length - 1]).toEqual<MarkerToken>({
 				type: 'marker',
 				value: '%t',
-				index: [12, 14]
+				range: [12, 14]
 			});
 		});
 	});
@@ -88,8 +96,8 @@ describe('Parsing / Tokenization', () => {
 			expect(chordTokens[3].chord.tonic).toBe('D');
 
 			chordTokens.filter(t => t.type === 'chord').forEach((token) => {
-				expect(token.index).toEqual([line.indexOf(token.value), line.indexOf(token.value) + token.value.length]);
-				expect(token.chordSymbolIndex).toEqual([0, token.chordSymbol.length]);
+				expect(token.range).toEqual([line.indexOf(token.value), line.indexOf(token.value) + token.value.length]);
+				expect(token.chordSymbolRange).toEqual([0, token.chordSymbol.length]);
 			});
 		});
 
@@ -100,30 +108,30 @@ describe('Parsing / Tokenization', () => {
 			expect(tokens).toHaveLength(5);
 			const chordTokens = tokens.filter(t => isChordToken(t)) as ChordToken[];
 
-			expect(chordTokens).toEqual([
+			expect(chordTokens).toEqual<ChordToken[]>([
 					{
 						type: 'chord',
 						value: 'Cmaj7',
-						index: [0, 5],
+						range: [0, 5],
 						chord: expect.any(Object),
 						chordSymbol: 'Cmaj7',
-						chordSymbolIndex: [0, 5]
+						chordSymbolRange: [0, 5]
 					},
 					{
 						type: 'chord',
 						value: 'Dm7b5',
-						index: [6, 11],
+						range: [6, 11],
 						chord: expect.any(Object),
 						chordSymbol: 'Dm7b5',
-						chordSymbolIndex: [0, 5]
+						chordSymbolRange: [0, 5]
 					},
 					{
 						type: 'chord',
 						value: 'G7sus4',
-						index: [12, 18],
+						range: [12, 18],
 						chord: expect.any(Object),
 						chordSymbol: 'G7sus4',
-						chordSymbolIndex: [0, 6]
+						chordSymbolRange: [0, 6]
 					}
 				]
 			);
@@ -136,24 +144,24 @@ describe('Parsing / Tokenization', () => {
 			expect(tokens).toHaveLength(5);
 			const chordTokens = tokens.filter(t => isChordToken(t)) as ChordToken[];
 
-			expect(chordTokens).toMatchObject([
+			expect(chordTokens).toMatchObject<Partial<ChordToken>[]>([
 					{
-						index: [0, 3],
+						range: [0, 3],
 						chord: expect.any(Object),
 						chordSymbol: 'C/G',
-						chordSymbolIndex: [0, 3]
+						chordSymbolRange: [0, 3]
 					},
 					{
-						index: [4, 8],
+						range: [4, 8],
 						chord: expect.any(Object),
 						chordSymbol: 'Am/F',
-						chordSymbolIndex: [0, 4]
+						chordSymbolRange: [0, 4]
 					},
 					{
-						index: [9, 14],
+						range: [9, 14],
 						chord: expect.any(Object),
 						chordSymbol: 'Dm7/C',
-						chordSymbolIndex: [0, 5]
+						chordSymbolRange: [0, 5]
 					}
 					]);
 		});
@@ -168,31 +176,31 @@ describe('Parsing / Tokenization', () => {
 			const chordTokens = tokens.filter(t => t.type === 'chord');
 			expect(chordTokens).toHaveLength(3);
 
-			expect(chordTokens[0]).toMatchObject({
+			expect(chordTokens[0]).toMatchObject<Partial<ChordToken>>({
 				value: '[C#/D#]',
 				chord: expect.any(Object),
 				chordSymbol: 'C#/D#',
-				chordSymbolIndex: [1, 6],
-				startTag: { value: '[', index: [0, 1] },
-				endTag: { value: ']', index: [6, 7] }
+				chordSymbolRange: [1, 6],
+				openingBracket: { value: '[', range: [0, 1] },
+				closingBracket: { value: ']', range: [6, 7] }
 			});
 
-			expect(chordTokens[1]).toMatchObject({
+			expect(chordTokens[1]).toMatchObject<Partial<ChordToken>>({
 				value: '[F# spec.]',
 				chord: expect.any(Object),
 				chordSymbol: 'F#',
-				chordSymbolIndex: [ 1, 3 ],
-				startTag: { value: '[', index: [ 0, 1 ] },
-				endTag: { value: ']', index: [ 9, 10 ] },
-				auxText: { value: ' spec.', index: [ 3, 9 ] }
+				chordSymbolRange: [ 1, 3 ],
+				openingBracket: { value: '[', range: [ 0, 1 ] },
+				closingBracket: { value: ']', range: [ 9, 10 ] },
+				auxText: { value: ' spec.', range: [ 3, 9 ] }
 			});
 
-			expect(chordTokens[2]).toMatchObject({
+			expect(chordTokens[2]).toMatchObject<Partial<ChordToken>>({
 				value: '[G#7  ]',
-				index: [ 47, 54 ],
+				range: [ 47, 54 ],
 				chord: expect.any(Object),
 				chordSymbol: 'G#7',
-				auxText: { value: '  ', index: [ 4, 6 ] },
+				auxText: { value: '  ', range: [ 4, 6 ] },
 			});
 
 
@@ -210,25 +218,30 @@ describe('Parsing / Tokenization', () => {
 			);
 		});
 
+		// helper type for user defined chord tests
+		type ChordTokenWithPartialChord = Pick<Partial<ChordToken>, Exclude<keyof ChordToken, 'chord'>> & {
+			chord: Partial<SheetChord>
+		};
+
 		test('should handle user-defined chords', () => {
 			const line = 'Some Am[x02210] user-defined C*4[3|x32010] chords C°[x34_24_]';
 			const { tokens } = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
 
 			const chordTokens = tokens.filter(t => isChordToken(t)) as ChordToken[];
-			expect(chordTokens[0]).toMatchObject({
-				index: [5, 15],
+			expect(chordTokens[0]).toMatchObject<ChordTokenWithPartialChord> ({
+				range: [5, 15],
 				chord: {
 					userDefinedChord: {
 						"frets": "x02210",
 						"position": 0,
-					},
+					}
 				},
 				chordSymbol: "Am",
-				chordSymbolIndex: [0, 2],
+				chordSymbolRange: [0, 2],
 			});
 
-			expect(chordTokens[1]).toMatchObject({
-				index: [29, 42],
+			expect(chordTokens[1]).toMatchObject<ChordTokenWithPartialChord>({
+				range: [29, 42],
 				chord: {
 					userDefinedChord: {
 						frets: 'x32010',
@@ -236,11 +249,11 @@ describe('Parsing / Tokenization', () => {
 					}
 				},
 				chordSymbol: "C*4",
-				chordSymbolIndex: [0, 3],
+				chordSymbolRange: [0, 3],
 			});
 
-			expect(chordTokens[2]).toMatchObject({
-				index: [50, 61],
+			expect(chordTokens[2]).toMatchObject<ChordTokenWithPartialChord>({
+				range: [50, 61],
 				chord: {
 					userDefinedChord: {
 						frets: 'x34_24_',
@@ -248,7 +261,7 @@ describe('Parsing / Tokenization', () => {
 					}
 				},
 				chordSymbol: "C°",
-				chordSymbolIndex: [0, 2],
+				chordSymbolRange: [0, 2],
 			});
 		});
 	});
@@ -259,19 +272,18 @@ describe('Parsing / Tokenization', () => {
 				const line = '[Verse 1]';
 				const result = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
 
-				expect(result).toMatchObject({
-					isChordLine: false,
-					tokens: [{
+				expect(result.tokens).toMatchObject<Partial<HeaderToken>[]>([
+					{
 						value: '[Verse 1]',
-						index: [0, 9],
-						startTag: '[',
-						endTag: ']',
+						range: [0, 9],
+						openingBracket: '[',
+						closingBracket: ']',
 						headerName: 'Verse 1',
-						startTagIndex: [0, 1],
-						headerNameIndex: [1, 8],
-						endTagIndex: [8, 9]
+						openingBracketRange: [0, 1],
+						headerNameRange: [1, 8],
+						closingBracketRange: [8, 9]
 					}]
-				});
+				);
 			});
 
 			test('header with surrounding whitespace', () => {
@@ -279,16 +291,20 @@ describe('Parsing / Tokenization', () => {
 				const result = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
 
 				expect(result.tokens).toHaveLength(3);
-				expect(result.tokens[1]).toMatchObject({
-					value: '  [Chorus]  ',
-					headerName: 'Chorus',
-					startTag: '[',
-					endTag: ']',
-					index: [0, 12],
-					startTagIndex: [2, 3],
-					headerNameIndex: [3, 9],
-					endTagIndex: [9, 10]
-				});
+				expect(result.tokens).toMatchObject<Partial<Token | HeaderToken>[]>([
+					{ type: "whitespace" },
+					{
+						value: '  [Chorus]  ',
+						headerName: 'Chorus',
+						openingBracket: '[',
+						closingBracket: ']',
+						range: [0, 12],
+						openingBracketRange: [2, 3],
+						headerNameRange: [3, 9],
+						closingBracketRange: [9, 10]
+					},
+					{ type: "whitespace" }
+				]);
 			});
 
 			test('header with surrounding whitespace, not starting on first line', () => {
@@ -296,9 +312,9 @@ describe('Parsing / Tokenization', () => {
 				const result = tokenizeLine(line, 10, chordLineMarker, textLineMarker);
 
 				expect(result.tokens).toHaveLength(3);
-				expect(result.tokens[1]).toMatchObject({
+				expect(result.tokens[1]).toMatchObject<Partial<HeaderToken>>({
 					value: '  [Chorus]  ',
-					index: [10, 22]
+					range: [10, 22]
 				});
 			});
 
@@ -306,11 +322,11 @@ describe('Parsing / Tokenization', () => {
 				const line = '[Bridge #2 (alternate)]';
 				const result = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
 
-				expect(result.tokens[0]).toMatchObject({
+				expect(result.tokens[0]).toMatchObject<Partial<HeaderToken>>({
 					type: 'header',
 					headerName: 'Bridge #2 (alternate)',
-					startTag: '[',
-					endTag: ']'
+					openingBracket: '[',
+					closingBracket: ']'
 				});
 			});
 
@@ -318,11 +334,11 @@ describe('Parsing / Tokenization', () => {
 				const line = '[Verse [1]';
 				const result = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
 
-				expect(result.tokens[0]).toMatchObject({
+				expect(result.tokens[0]).toMatchObject<Partial<HeaderToken>>({
 					type: 'header',
 					headerName: 'Verse [1',
-					startTag: '[',
-					endTag: ']'
+					openingBracket: '[',
+					closingBracket: ']'
 				});
 			});
 		});
@@ -377,13 +393,13 @@ describe('Parsing / Tokenization', () => {
 			const { tokens } = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
 			const rythmTokens = tokens.filter(t => t.type === 'rhythm') as RhythmToken[];
 			expect(rythmTokens).toHaveLength(6);
-			expect(rythmTokens).toMatchObject([
-				{ value: '|', index: [0, 1] },
-				{ value: '/', index: [2, 3] },
-				{ value: '/', index: [4, 5] },
-				{ value: '|', index: [7, 8] },
-				{ value: '%', index: [12, 13] },
-				{ value: '|', index: [17, 18] }
+			expect(rythmTokens).toMatchObject<Partial<RhythmToken>[]>([
+				{ value: '|', range: [0, 1] },
+				{ value: '/', range: [2, 3] },
+				{ value: '/', range: [4, 5] },
+				{ value: '|', range: [7, 8] },
+				{ value: '%', range: [12, 13] },
+				{ value: '|', range: [17, 18] }
 			]);
 		});
 
@@ -394,7 +410,7 @@ describe('Parsing / Tokenization', () => {
 							.filter(t => t.type !== 'whitespace');
 
 			expect(tokens).toHaveLength(13);
-			expect(tokens).toMatchObject([
+			expect(tokens).toMatchObject<Partial<RhythmToken | ChordToken>[]>([
 				{ type: 'rhythm', value: '|' },
 				{ type: 'chord', value: 'G' },
 				{ type: 'rhythm', value: '/' },
@@ -418,7 +434,7 @@ describe('Parsing / Tokenization', () => {
 				.filter(t => t.type !== 'whitespace');
 
 			expect(tokens).toHaveLength(12);
-			expect(tokens).toMatchObject([
+			expect(tokens).toMatchObject<Partial<RhythmToken | ChordToken | Token>[]>([
 				{ type: 'rhythm', value: '|' },
 				{ type: 'chord', value: 'G' },
 				{ type: 'rhythm', value: '/' },

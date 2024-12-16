@@ -555,7 +555,7 @@ function parseChordBlocks(state: EditorState, from: number, to: number, parseCho
 }
 
 function resolveIndex(indexTuple: [number, number], token: Token): [from: number, to: number] {
-	const position = token.index[0];
+	const position = token.range[0];
 	return indexTuple && [position + indexTuple[0], position + indexTuple[1]];
 }
 
@@ -583,36 +583,36 @@ function chordDecosForLine(line: Line, {
 			chordDecos.push(
 				Decoration
 					.mark({ type: "chord", class: `chord-sheet-chord`, token })
-					.range(...token.index))
+					.range(...token.range))
 			;
 
-			if (token.startTag) {
+			if (token.openingBracket) {
 				chordDecos.push(
 					Decoration
 						.mark({ class: `chord-sheet-inline-chord-tag` })
-						.range(...resolveIndex(token.startTag.index, token))
+						.range(...resolveIndex(token.openingBracket.range, token))
 				);
 			}
 
 			chordDecos.push(
 				Decoration
 					.mark({ class:`chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}` })
-					.range(...resolveIndex(token.chordSymbolIndex, token))
+					.range(...resolveIndex(token.chordSymbolRange, token))
 			);
 
 			if (token.auxText) {
 				chordDecos.push(
 					Decoration
 						.mark({ class: `chord-sheet-inline-chord-aux-text`})
-						.range(...resolveIndex(token.auxText.index, token))
+						.range(...resolveIndex(token.auxText.range, token))
 				);
 			}
 
-			if (token.endTag) {
+			if (token.closingBracket) {
 				chordDecos.push(
 					Decoration
 						.mark({ class: `chord-sheet-inline-chord-tag` })
-						.range(...resolveIndex(token.endTag.index, token))
+						.range(...resolveIndex(token.closingBracket.range, token))
 				);
 			}
 
@@ -621,7 +621,7 @@ function chordDecosForLine(line: Line, {
 				class: "chord-sheet-rhythm-marker",
 				token
 			});
-			const [start, end] = token.index;
+			const [start, end] = token.range;
 			chordDecos.push(deco.range(start, end));
 
 		} else if (isMarkerToken(token)) {
@@ -629,14 +629,14 @@ function chordDecosForLine(line: Line, {
 				class: "chord-sheet-line-marker",
 				token
 			});
-			const [start, end] = token.index;
+			const [start, end] = token.range;
 			chordDecos.push(deco.range(start, end));
 
 		} else if (highlightSectionHeaders && isHeaderToken(token)) {
-			const [headerStart, headerEnd] = token.index;
-			const [startTagStart, startTagEnd] = resolveIndex(token.startTagIndex, token);
-			const [headerNameStart, headerNameEnd] = resolveIndex(token.headerNameIndex, token);
-			const endTagStart = resolveIndex(token.endTagIndex, token)[0];
+			const [headerStart, headerEnd] = token.range;
+			const [startTagStart, startTagEnd] = resolveIndex(token.openingBracketRange, token);
+			const [headerNameStart, headerNameEnd] = resolveIndex(token.headerNameRange, token);
+			const endTagStart = resolveIndex(token.closingBracketRange, token)[0];
 
 			chordDecos.push(
 				Decoration

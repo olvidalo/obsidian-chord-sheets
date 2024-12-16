@@ -66,10 +66,10 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 						cls: "chord-sheet-chord",
 					});
 
-					if (token.startTag) {
+					if (token.openingBracket) {
 						chordSpan.createSpan({
 							cls: `chord-sheet-inline-chord-tag`,
-							text: token.startTag.value
+							text: token.openingBracket.value
 						});
 					}
 
@@ -85,10 +85,10 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 						});
 					}
 
-					if (token.endTag) {
+					if (token.closingBracket) {
 						chordSpan.createSpan({
                             cls: `chord-sheet-inline-chord-tag`,
-                            text: token.endTag.value
+                            text: token.closingBracket.value
                         });
 					}
 
@@ -113,7 +113,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 					});
 					headerSpan.createSpan({
 						cls: `chord-sheet-section-header-tag`,
-						text: token.startTag
+						text: token.openingBracket
 					});
 					headerSpan.createSpan({
 						cls: `chord-sheet-section-header-name cm-strong`,
@@ -121,7 +121,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 					});
 					headerSpan.createSpan({
 						cls: `chord-sheet-section-header-tag`,
-						text: token.endTag
+						text: token.closingBracket
 					});
 				} else {
 					lineDiv.append(document.createTextNode(token.value));
