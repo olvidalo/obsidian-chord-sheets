@@ -2,6 +2,7 @@ import {EditorView, WidgetType} from "@codemirror/view";
 import {Instrument} from "../chordsUtils";
 import {chordBlocksStateField} from "./chordBlocksStateField";
 import ChordsDB from "@tombatossals/chords-db";
+import {setIcon} from "obsidian";
 
 export interface InstrumentChangeEventDetail {
 	selectedInstrument: string
@@ -133,16 +134,18 @@ export class ChordBlockToolsWidget extends WidgetType {
 
 		const buttonDown = Object.assign(document.createElement('button'), {
 			className: 'chord-sheet-transpose chord-sheet-transpose-down',
-			textContent: '-1'
 		});
+		setIcon(buttonDown, 'move-down');
+
 		const label = Object.assign(document.createElement('span'), {
 			className: 'chord-sheet-transpose-label',
-			textContent: 'Transpose'
 		});
+		setIcon(label, 'music');
+
 		const buttonUp = Object.assign(document.createElement('button'), {
 			className: 'chord-sheet-transpose chord-sheet-transpose-up',
-			textContent: '+1'
 		});
+		setIcon(buttonUp, 'move-up');
 
 		el.append(buttonDown, label, buttonUp);
 		containerEl.firstElementChild?.prepend(el);
@@ -151,8 +154,8 @@ export class ChordBlockToolsWidget extends WidgetType {
     private createEnharmonicToggleButton(containerEl: HTMLElement): void {
 		const el = Object.assign(document.createElement("button"), {
 			className: 'chord-sheet-enharmonic-toggle',
-            textContent: 'Enharmonic'
 		});
+		setIcon(el, 'enharmonic-toggle');
 
 		containerEl.firstElementChild?.prepend(el);
 	}

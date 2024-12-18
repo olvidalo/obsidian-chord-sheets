@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {debounce, Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
+import {addIcon, debounce, Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
 import {EditorView, ViewPlugin} from "@codemirror/view";
 import {Instrument} from "./chordsUtils";
 import {ChordBlockPostProcessorView} from "./chordBlockPostProcessorView";
@@ -34,11 +34,9 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 	async onload() {
 		addCustomChordTypes();
-
 		await this.loadSettings();
-
 		this.app.workspace.trigger("parse-style-settings");
-
+		addIcon("enharmonic-toggle", enharmonicToggleIcon);
 
 		// Register code block post processor for reading mode
 
@@ -480,3 +478,17 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 	}
 }
 
+const enharmonicToggleIcon = `<g>
+    <path d="m 67.938374,81.624479 c 2.039181,-1.006678 3.932707,-2.348915 5.971893,-3.556933 3.058768,-2.147583 6.263191,-4.160945 8.884993,-6.84542 C 84.615959,69.4101 86.21817,66.926959 86.145346,63.8398 86.072466,60.551317 83.96051,58.068173 81.70285,56.725929 78.279936,54.645461 74.128749,54.444121 70.123215,56.323277" style="stroke-width:7.75711"/>
+    <line x1="67.719902" y1="32.028694" x2="67.647064" y2="81.356026" style="stroke-width:7.75711"/>
+    <g transform="matrix(4.3305517,0,0,4.3305517,-0.68684179,0.35334386)">
+      <line x1="5.8633256" y1="5.3617735" x2="5.8478827" y2="16.646721"/>
+      <line x1="9.8784332" y1="4.2660093" x2="9.8629894" y2="15.550956"/>
+    </g>
+    <g transform="matrix(4.3305517,0,0,4.3305517,-1.389032,-0.21026658)">
+      <g transform="translate(0,0.49467325)">
+        <path d="M 12.426756,6.5789032 3.6238563,8.7457333"/>
+        <line x1="12.426755" y1="11.437944" x2="3.6238565" y2="13.604775"/>
+      </g>
+    </g>
+  </g>`;
