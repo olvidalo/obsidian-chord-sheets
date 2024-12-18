@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {addIcon, debounce, Editor, MarkdownFileInfo, MarkdownView, Plugin, TFile, View} from 'obsidian';
+import {addIcon, debounce, Editor, MarkdownFileInfo, MarkdownView, Notice, Plugin, TFile, View} from 'obsidian';
 import {EditorView, ViewPlugin} from "@codemirror/view";
 import {Instrument} from "./chordsUtils";
 import {ChordBlockPostProcessorView} from "./chordBlockPostProcessorView";
@@ -334,6 +334,10 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
     private enharmonicToggle(chordTokenRanges: ChordSymbolRange[], editor: EditorView) {
 		const changes = enharmonicToggle(chordTokenRanges);
+		if (changes.length === 0) {
+			new Notice("No chords with accidentals were found.");
+			return;
+		}
 		editor.plugin(this.editorPlugin)?.applyChanges(changes);
 	}
 

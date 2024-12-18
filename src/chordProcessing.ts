@@ -28,7 +28,9 @@ export function processChords(chordRanges: ChordSymbolRange[], processNote: Note
 			? processedTonic + chordType + "/" + processNote(bassNote)
 			: processedTonic + chordType;
 
-		changes.push({from: from, to: to, insert: processedChord});
+		if (processedChord !== chordSymbol) {
+			changes.push({from: from, to: to, insert: processedChord});
+		}
 	}
 
 	return changes;
