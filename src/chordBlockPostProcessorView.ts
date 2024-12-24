@@ -73,7 +73,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 
 					chordSpan.createSpan({
 						cls: `chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}`,
-						text: token.chordSymbol
+						text: token.chordSymbol.value
 					});
 
 					if (token.userDefinedChord) {
@@ -136,15 +136,15 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 					});
 					headerSpan.createSpan({
 						cls: `chord-sheet-section-header-bracket`,
-						text: token.openingBracket
+						text: token.openingBracket.value
 					});
 					headerSpan.createSpan({
 						cls: `chord-sheet-section-header-name cm-strong`,
-                        text: token.headerName
+                        text: token.headerName.value
 					});
 					headerSpan.createSpan({
 						cls: `chord-sheet-section-header-bracket`,
-						text: token.closingBracket
+						text: token.closingBracket.value
 					});
 				} else {
 					lineDiv.append(document.createTextNode(token.value));

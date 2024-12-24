@@ -37,9 +37,11 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 			type: "header",
 			value: headerMatch[0],
 			range: offsetRange(headerMatch.indices![0], lineIndex),
-			openingBracket, headerName, closingBracket: closingBracket,
-			openingBracketRange, headerNameRange: headerNameRange, closingBracketRange
+			openingBracket: { value: openingBracket, range: openingBracketRange },
+			headerName: {value: headerName, range: headerNameRange},
+			closingBracket: { value: closingBracket, range: closingBracketRange }
 		};
+
 		tokens.push(headerToken);
 
 		if (trailingWs) {
@@ -136,8 +138,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 								...baseToken,
 								type: "chord",
 								chord,
-								chordSymbol,
-								chordSymbolRange,
+								chordSymbol: { value: chordSymbol, range: chordSymbolRange},
 								inlineChord: {
 									openingBracket: {value: openingBracket, range: openingBracketRange},
 									...(auxText && {auxText: {value: auxText, range: auxTextRange}}),
@@ -169,8 +170,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 									...getChord(chordSymbol),
 									userDefinedChord: { frets, position: position ? parseInt(position) : 0}
 								},
-								chordSymbol,
-								chordSymbolRange,
+								chordSymbol: { value: chordSymbol, range: chordSymbolRange },
 								userDefinedChord: {
 									openingBracket: {value: openingBracket, range: openingBracketRange},
 									...(position && {
@@ -196,8 +196,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 						if (chord?.tonic) {
 							tokensPendingReclassification.set(resultToken, {
 								chord,
-								chordSymbol: matchValue,
-								chordSymbolRange: matchRange
+								chordSymbol: { value: matchValue, range: matchRange },
 							});
 						}
 

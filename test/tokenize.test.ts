@@ -96,7 +96,7 @@ describe('Parsing / Tokenization', () => {
 
 			chordTokens.filter(t => t.type === 'chord').forEach((token) => {
 				expect(token.range).toEqual([line.indexOf(token.value), line.indexOf(token.value) + token.value.length]);
-				expect(token.chordSymbolRange).toEqual([0, token.chordSymbol.length]);
+				expect(token.chordSymbol.range).toEqual([0, token.chordSymbol.value.length]);
 			});
 		});
 
@@ -113,24 +113,21 @@ describe('Parsing / Tokenization', () => {
 						value: 'Cmaj7',
 						range: [0, 5],
 						chord: expect.any(Object),
-						chordSymbol: 'Cmaj7',
-						chordSymbolRange: [0, 5]
+						chordSymbol: { value: 'Cmaj7', range: [0, 5] }
 					},
 					{
 						type: 'chord',
 						value: 'Dm7b5',
 						range: [6, 11],
 						chord: expect.any(Object),
-						chordSymbol: 'Dm7b5',
-						chordSymbolRange: [0, 5]
+						chordSymbol: { value: 'Dm7b5', range: [0, 5] }
 					},
 					{
 						type: 'chord',
 						value: 'G7sus4',
 						range: [12, 18],
 						chord: expect.any(Object),
-						chordSymbol: 'G7sus4',
-						chordSymbolRange: [0, 6]
+						chordSymbol: { value: 'G7sus4', range: [0, 6]},
 					}
 				]
 			);
@@ -147,20 +144,17 @@ describe('Parsing / Tokenization', () => {
 					{
 						range: [0, 3],
 						chord: expect.any(Object),
-						chordSymbol: 'C/G',
-						chordSymbolRange: [0, 3]
+						chordSymbol: { value: 'C/G', range: [0, 3] }
 					},
 					{
 						range: [4, 8],
 						chord: expect.any(Object),
-						chordSymbol: 'Am/F',
-						chordSymbolRange: [0, 4]
+						chordSymbol: { value: 'Am/F', range: [0, 4] }
 					},
 					{
 						range: [9, 14],
 						chord: expect.any(Object),
-						chordSymbol: 'Dm7/C',
-						chordSymbolRange: [0, 5]
+						chordSymbol: { value: 'Dm7/C', range: [0, 5] }
 					}
 					]);
 		});
@@ -178,8 +172,7 @@ describe('Parsing / Tokenization', () => {
 			expect(chordTokens[0]).toMatchObject<Partial<ChordToken>>({
 				value: '[C#/D#]',
 				chord: expect.any(Object),
-				chordSymbol: 'C#/D#',
-				chordSymbolRange: [1, 6],
+				chordSymbol: { value: 'C#/D#', range: [1, 6]},
 				inlineChord: {
 					openingBracket: { value: '[', range: [0, 1] },
 					closingBracket: { value: ']', range: [6, 7] }
@@ -189,8 +182,7 @@ describe('Parsing / Tokenization', () => {
 			expect(chordTokens[1]).toMatchObject<Partial<ChordToken>>({
 				value: '[F# spec.]',
 				chord: expect.any(Object),
-				chordSymbol: 'F#',
-				chordSymbolRange: [ 1, 3 ],
+				chordSymbol: {value: 'F#', range: [1, 3]},
 				inlineChord: {
 					openingBracket: { value: '[', range: [ 0, 1 ] },
 					closingBracket: { value: ']', range: [ 9, 10 ] },
@@ -202,7 +194,7 @@ describe('Parsing / Tokenization', () => {
 				value: '[G#7  ]',
 				range: [ 47, 54 ],
 				chord: expect.any(Object),
-				chordSymbol: 'G#7',
+				chordSymbol: { value: 'G#7', range: [ 1, 4 ]},
 				inlineChord: {
 					openingBracket: { value: '[', range: [.0, 1 ] },
 					closingBracket: { value: ']', range: [ 6, 7 ] },
@@ -243,8 +235,7 @@ describe('Parsing / Tokenization', () => {
 						"position": 0,
 					}
 				},
-				chordSymbol: "Am",
-				chordSymbolRange: [0, 2],
+				chordSymbol: { value: "Am", range: [0, 2] },
 				userDefinedChord: {
 					openingBracket: { value: '[', range: [2, 3] },
 					frets: { value: 'x02210', range: [3, 9] },
@@ -260,8 +251,7 @@ describe('Parsing / Tokenization', () => {
 						position: 3
 					}
 				},
-				chordSymbol: "C*4",
-				chordSymbolRange: [0, 3],
+				chordSymbol: { value: "C*4", range: [0, 3]},
 				userDefinedChord: {
 					openingBracket: { value: '[', range: [3, 4] },
 					position: { value: '3', range: [4, 5] },
@@ -279,8 +269,7 @@ describe('Parsing / Tokenization', () => {
 						position: 0
 					}
 				},
-				chordSymbol: "C°",
-				chordSymbolRange: [0, 2],
+				chordSymbol: { value: "C°", range: [0, 2] },
 			});
 		});
 	});
@@ -295,12 +284,9 @@ describe('Parsing / Tokenization', () => {
 					{
 						value: '[Verse 1]',
 						range: [0, 9],
-						openingBracket: '[',
-						closingBracket: ']',
-						headerName: 'Verse 1',
-						openingBracketRange: [0, 1],
-						headerNameRange: [1, 8],
-						closingBracketRange: [8, 9]
+						openingBracket: { value: '[', range: [0, 1] },
+						closingBracket: { value: ']', range: [8, 9] },
+						headerName: { value: 'Verse 1', range: [1, 8] },
 					}]
 				);
 			});
@@ -314,13 +300,10 @@ describe('Parsing / Tokenization', () => {
 					{ type: "whitespace" },
 					{
 						value: '  [Chorus]  ',
-						headerName: 'Chorus',
-						openingBracket: '[',
-						closingBracket: ']',
+						headerName: { value: 'Chorus', range: [3, 9] },
+						openingBracket: { value: '[', range: [2, 3] },
+						closingBracket: { value: ']', range: [9, 10] },
 						range: [0, 12],
-						openingBracketRange: [2, 3],
-						headerNameRange: [3, 9],
-						closingBracketRange: [9, 10]
 					},
 					{ type: "whitespace" }
 				]);
@@ -343,9 +326,9 @@ describe('Parsing / Tokenization', () => {
 
 				expect(result.tokens[0]).toMatchObject<Partial<HeaderToken>>({
 					type: 'header',
-					headerName: 'Bridge #2 (alternate)',
-					openingBracket: '[',
-					closingBracket: ']'
+					headerName: { value: 'Bridge #2 (alternate)', range: [1, 22] },
+					openingBracket: { value: '[', range: [0, 1] },
+					closingBracket: { value: ']', range: [22, 23] },
 				});
 			});
 
@@ -355,9 +338,9 @@ describe('Parsing / Tokenization', () => {
 
 				expect(result.tokens[0]).toMatchObject<Partial<HeaderToken>>({
 					type: 'header',
-					headerName: 'Verse [1',
-					openingBracket: '[',
-					closingBracket: ']'
+					headerName: { value: 'Verse [1', range: [1, 9] },
+					openingBracket: { value: '[', range: [0, 1] },
+					closingBracket: { value: ']', range: [9, 10] },
 				});
 			});
 		});

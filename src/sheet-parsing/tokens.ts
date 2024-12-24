@@ -6,23 +6,27 @@ export interface Token {
 	range: [start: number, end: number];
 }
 
+interface SubToken {
+	value: string;
+	range: [start: number, end: number];
+}
+
 export interface ChordInfo {
 	chord: SheetChord
-	chordSymbol: string
-	chordSymbolRange: [start: number, end: number]
+	chordSymbol: SubToken
 
 	inlineChord?: {
-		openingBracket: { value: string, range: [start: number, end: number] }
-		auxText?: { value: string; range: [start: number, end: number] }
-		closingBracket: { value: string; range: [start: number, end: number] }
+		openingBracket: SubToken
+		auxText?: SubToken
+		closingBracket: SubToken
 	}
 
 	userDefinedChord?: {
-		openingBracket: { value: string, range: [start: number, end: number] }
-		closingBracket: { value: string; range: [start: number, end: number] }
-		position?: { value: string; range: [start: number, end: number] }
-		positionSeparator?: { value: string; range: [start: number, end: number] }
-		frets: { value: string; range: [start: number, end: number] }
+		openingBracket: SubToken
+		closingBracket: SubToken
+		position?: SubToken
+		positionSeparator?: SubToken
+		frets: SubToken
 	}
 }
 
@@ -39,12 +43,9 @@ export interface MarkerToken extends Token {
 
 export interface HeaderToken extends Token {
 	type: 'header'
-	openingBracket: string
-	openingBracketRange: [start: number, end: number]
-	headerName: string
-	headerNameRange: [start: number, end: number]
-	closingBracket: string
-	closingBracketRange: [start: number, end: number]
+	openingBracket: SubToken
+	headerName: SubToken
+	closingBracket: SubToken
 }
 
 export interface TokenizedLine {

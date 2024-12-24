@@ -590,7 +590,7 @@ function chordDecosForLine(line: Line, {
 
 			chordDecos.push(Decoration
 					.mark({ class:`chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}` })
-					.range(...resolveIndex(token.chordSymbolRange, token)));
+					.range(...resolveIndex(token.chordSymbol.range, token)));
 
 			if (token.userDefinedChord) {
 				const userDefinedChord = token.userDefinedChord;
@@ -641,9 +641,9 @@ function chordDecosForLine(line: Line, {
 
 		} else if (highlightSectionHeaders && isHeaderToken(token)) {
 			const [headerStart, headerEnd] = token.range;
-			const [startTagStart, startTagEnd] = resolveIndex(token.openingBracketRange, token);
-			const [headerNameStart, headerNameEnd] = resolveIndex(token.headerNameRange, token);
-			const endTagStart = resolveIndex(token.closingBracketRange, token)[0];
+			const [startTagStart, startTagEnd] = resolveIndex(token.openingBracket.range, token);
+			const [headerNameStart, headerNameEnd] = resolveIndex(token.headerName.range, token);
+			const endTagStart = resolveIndex(token.closingBracket.range, token)[0];
 
 			chordDecos.push(Decoration
 					.line({ class: "chord-sheet-section-header" })

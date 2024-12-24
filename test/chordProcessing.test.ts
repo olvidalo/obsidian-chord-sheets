@@ -13,9 +13,9 @@ export function getChordSymbolRangesForLine(line: string, lineIndex = 0): ChordS
 	return tokens
 		.filter(isChordToken)
 		.map(token => ({
-			from: token.range[0] + token.chordSymbolRange[0],
-			to: token.range[0] + token.chordSymbolRange[1],
-			chordSymbol: token.chordSymbol,
+			from: token.range[0] + token.chordSymbol.range[0],
+			to: token.range[0] + token.chordSymbol.range[1],
+			chordSymbol: token.chordSymbol.value,
 			chord: token.chord
 		}));
 }

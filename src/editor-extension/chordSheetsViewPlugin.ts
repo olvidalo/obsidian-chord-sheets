@@ -216,9 +216,9 @@ export class ChordSheetsViewPlugin implements PluginValue {
 			if (value.spec.type === "chord") {
 				const chordToken = value.spec.token as ChordToken;
 				chordRanges.push({
-					from: from + chordToken.chordSymbolRange[0],
-					to: from + chordToken.chordSymbolRange[1],
-					chordSymbol: chordToken.chordSymbol,
+					from: from + chordToken.chordSymbol.range[0],
+					to: from + chordToken.chordSymbol.range[1],
+					chordSymbol: chordToken.chordSymbol.value,
 					chord: chordToken.chord
 				});
 			}

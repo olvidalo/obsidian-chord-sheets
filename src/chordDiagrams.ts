@@ -154,7 +154,7 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 			position: 0,
 			numStrings: numStrings,
 			numFrets: numFrets,
-			chordName: chordToken.chordSymbol,
+			chordName: chordToken.chordSymbol.value,
 			width: width
 		});
 	}
@@ -211,7 +211,7 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 						position: ++currentPosition,
 						numStrings: numStrings,
 						numFrets: numFrets,
-						chordName: chordToken.chordSymbol,
+						chordName: chordToken.chordSymbol.value,
 						width: width
 					});
 				}
@@ -226,7 +226,7 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 						position: --currentPosition,
 						numStrings: numStrings,
 						numFrets: numFrets,
-						chordName: chordToken.chordSymbol,
+						chordName: chordToken.chordSymbol.value,
 						width: width
 					});
 				}
@@ -241,7 +241,7 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 			position: position,
 			numStrings: numStrings,
 			numFrets: numFrets,
-			chordName: chordToken.chordSymbol,
+			chordName: chordToken.chordSymbol.value,
 			width: width
 		});
 	}
