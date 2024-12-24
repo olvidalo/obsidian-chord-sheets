@@ -116,7 +116,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 					}
 
 
-					if (showChordDiagramsOnHover) {
+					if (showChordDiagramsOnHover === "always" || showChordDiagramsOnHover === "preview") {
 						this.attachChordDiagram(token, chordSpan);
 					}
 				} else if (highlightRhythmMarkers && isRhythmToken(token)) {
@@ -154,7 +154,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 			currentIndex = currentIndex + line.length;
 		}
 
-		if (showChordOverview) {
+		if (showChordOverview === "always" || showChordOverview === "preview") {
 			const uniqueTokens = uniqueChordTokens(chordTokens);
 			const overviewContainerEl = createDiv({cls: "chord-sheet-chord-overview-container"});
 			const overviewEl = overviewContainerEl.createDiv({cls: "chord-sheet-chord-overview"});
