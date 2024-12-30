@@ -5,12 +5,8 @@ import {ChangeSpec} from "@codemirror/state";
 export type NoteProcessor = (note: string) => string;
 
 function transposeNote(chordTonic: string, direction: "up" | "down"): string {
-	const transposedTonic = Note.transpose(chordTonic, direction === "up" ? "2m" : "-2m");
-	return direction === "up" ? Note.enharmonic(transposedTonic) : Note.simplify(transposedTonic);
-}
-
-function enharmonicNote(chordTonic: string): string {
-	return Note.enharmonic(chordTonic);
+	const transposedNote = Note.transpose(chordTonic, direction === "up" ? "2m" : "-2m");
+	return direction === "up" ? Note.enharmonic(transposedNote) : Note.simplify(transposedNote);
 }
 
 export function processChords(chordRanges: ChordSymbolRange[], processNote: NoteProcessor, skipUserDefinedChords = false) {
@@ -41,5 +37,5 @@ export function transpose(chordRanges: ChordSymbolRange[], direction: "up" | "do
 }
 
 export function enharmonicToggle(chordTokenRanges: ChordSymbolRange[]) {
-	return processChords(chordTokenRanges, enharmonicNote);
+	return processChords(chordTokenRanges, Note.enharmonic);
 }
