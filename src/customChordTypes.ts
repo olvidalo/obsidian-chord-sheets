@@ -9,6 +9,7 @@ interface CustomChordType {
 const customChordTypes: CustomChordType[] = [
 	extendChordType("7#5", { aliases: ["7(5+)", "7(+5)", "7+5"] }),
 	extendChordType("M7", { aliases: ["7M"] }),
+	extendChordType("mM7", { aliases: ["mmaj7", "m+7"] }),
 	extendChordType("m9", { aliases: ["m7(9)"] }),
 	{
 		name: "suspended four sharp five",
