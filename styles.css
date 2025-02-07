@@ -860,3 +860,30 @@ svg.enharmonic-toggle {
 	.S {color: darkred}
 	.E {color: palevioletred}
 }
+
+/* Display inline chords over lyrics */
+
+.markdown-reading-view div.chord-sheet-inline {
+	display: flex;
+	align-items: flex-end;
+	flex-wrap: wrap;
+}
+
+.markdown-reading-view div.chord-sheet-inline .chord-sheet-chord {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: end;
+	margin-right: 1ex;
+}
+
+.markdown-reading-view div.chord-sheet-inline .chord-sheet-chord-name {
+	display: flex;
+	flex-direction: column;
+	align-items: left;
+}
+
+.markdown-reading-view div.chord-sheet-inline .chord-sheet-inline-chord-bracket {
+	display: none;
+	visibility: collapse;
+}

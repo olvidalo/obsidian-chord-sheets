@@ -65,6 +65,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 
 
 					if (token.inlineChord) {
+						lineDiv.addClass("chord-sheet-inline");
 						chordSpan.createSpan({
 							cls: `chord-sheet-inline-chord-bracket`,
 							text: token.inlineChord.openingBracket.value
@@ -112,6 +113,10 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 						chordSpan.createSpan({
 							cls: `chord-sheet-inline-chord-bracket`,
 							text: token.inlineChord.closingBracket.value
+						});
+						chordSpan.createSpan({
+							cls: `chord-sheet-inline-chord-trailing-text`,
+							text: token.inlineChord.trailingText ? token.inlineChord.trailingText.value : " "
 						});
 					}
 
