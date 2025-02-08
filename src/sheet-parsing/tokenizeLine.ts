@@ -145,7 +145,9 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 									closingBracket: {value: closingBracket, range: closingBracketRange},
 									...(trailingText && {trailingText: {value: trailingText, range: trailingTextRange}}),
 								}
+
 							};
+							if (trailingText) 		wordTokenCount++;
 							tokens.push(chordToken);
 						} else {
 							// does not look like a chord, treat as word
