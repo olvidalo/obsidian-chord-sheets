@@ -146,6 +146,12 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 	const numFrets = instrumentChordDb.main.fretsOnChord;
 
 	if (chordToken.chord.userDefinedChord !== undefined) {
+
+		const highestFret = Array.from(chordToken.chord.userDefinedChord.frets)
+			.map(f => parseInt(f))
+			.filter(f => !isNaN(f))
+			.sort((a, b) => b - a)[0];
+
 		renderChordDiagram({
 			containerEl: containerEl,
 			userDefinedChord: chordToken.chord.userDefinedChord,
@@ -153,7 +159,7 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 			numPositions: 1,
 			position: 0,
 			numStrings: numStrings,
-			numFrets: numFrets,
+			numFrets: Math.max(numFrets, highestFret),
 			chordName: chordToken.chordSymbol.value,
 			width: width
 		});
