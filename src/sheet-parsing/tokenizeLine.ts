@@ -64,7 +64,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 
 		// Inline chord notation in brackets mixed with words, optional auxiliarry test, eg:
 		// [Am]Some [Dm aux. text]lyrics
-		inlineChord: /^(?<open>\[)(?<chordSymbol>[^\s\]]+)(?<auxText>[^[()]*)(?<close>])(?<trailing>[^\s\[]*)/d,
+		inlineChord: /^(?<open>\[)(?<chordSymbol>[^\s\]]+)(?<auxText>[^[()]*)(?<close>])/d,
 
 		// Chord symbol with custom shape definition in brackets, optionally barre position:
 		// Bbadd13[x13333], Dm6[4|x2x132] (with barree position), B*[_224442_] (with barre markers).
@@ -125,10 +125,10 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 					}
 
 					case "inlineChord": {
-						const {open: openingBracket, chordSymbol, auxText, close: closingBracket, trailing: trailingText} = match.groups!;
+						const {open: openingBracket, chordSymbol, auxText, close: closingBracket} = match.groups!;
 						const {
 							open: openingBracketRange, chordSymbol: chordSymbolRange,
-							auxText: auxTextRange, close: closingBracketRange, trailing: trailingTextRange
+							auxText: auxTextRange, close: closingBracketRange
 						} = match.indices!.groups!;
 
 						const chord = getChord(chordSymbol);
@@ -143,11 +143,8 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 									openingBracket: {value: openingBracket, range: openingBracketRange},
 									...(auxText && {auxText: {value: auxText, range: auxTextRange}}),
 									closingBracket: {value: closingBracket, range: closingBracketRange},
-									...(trailingText && {trailingText: {value: trailingText, range: trailingTextRange}}),
 								}
-
 							};
-							if (trailingText) 		wordTokenCount++;
 							tokens.push(chordToken);
 						} else {
 							// does not look like a chord, treat as word

@@ -869,7 +869,7 @@ svg.enharmonic-toggle {
 	flex-wrap: wrap;
 }
 
-.markdown-reading-view div.chord-sheet-inline .chord-sheet-chord {
+.markdown-reading-view div.chord-sheet-inline .chord-sheet-chord-word-pair {
 	display: inline-flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -877,13 +877,6 @@ svg.enharmonic-toggle {
 	margin-right: 1ex;
 }
 
-.markdown-reading-view div.chord-sheet-inline .chord-sheet-chord-name {
-	display: flex;
-	flex-direction: column;
-	align-items: left;
-}
-
 .markdown-reading-view div.chord-sheet-inline .chord-sheet-inline-chord-bracket {
 	display: none;
-	visibility: collapse;
 }

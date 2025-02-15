@@ -19,7 +19,6 @@ export interface ChordInfo {
 		openingBracket: SubToken
 		auxText?: SubToken
 		closingBracket: SubToken
-		trailingText?: SubToken
 	}
 
 	userDefinedChord?: {

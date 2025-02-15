@@ -56,10 +56,25 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 				cls: "chord-sheet-chord-line"
 			});
 
-			for (const token of tokenizedLine.tokens) {
+
+
+			for (let i = 0; i < tokenizedLine.tokens.length; i++) {
+				const token = tokenizedLine.tokens[i];
+
 				if (isChordToken(token)) {
 					chordTokens.push(token);
-					const chordSpan = lineDiv.createSpan({
+
+					const nextToken = tokenizedLine.tokens[i + 1];
+					const isTokenPair = token.inlineChord && (nextToken?.type === "word" || nextToken?.type === "whitespace");
+					if (isTokenPair) {
+						i++;
+					}
+
+					const pairSpan = isTokenPair ? lineDiv.createSpan({
+						cls: "chord-sheet-chord-word-pair"
+					}) : null;
+
+					const chordSpan = (pairSpan ?? lineDiv).createSpan({
 						cls: "chord-sheet-chord",
 					});
 
@@ -114,9 +129,10 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 							cls: `chord-sheet-inline-chord-bracket`,
 							text: token.inlineChord.closingBracket.value
 						});
-						chordSpan.createSpan({
+
+						pairSpan?.createSpan({
 							cls: `chord-sheet-inline-chord-trailing-text`,
-							text: token.inlineChord.trailingText ? token.inlineChord.trailingText.value : " "
+							text: nextToken.value
 						});
 					}
 

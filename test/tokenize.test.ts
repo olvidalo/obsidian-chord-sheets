@@ -191,8 +191,8 @@ describe('Parsing / Tokenization', () => {
 			});
 
 			expect(chordTokens[2]).toMatchObject<Partial<ChordToken>>({
-				value: '[G#7  ]plodin\'',
-				range: [ 47, 61 ],
+				value: '[G#7  ]',
+				range: [ 47, 54 ],
 				chord: expect.any(Object),
 				chordSymbol: { value: 'G#7', range: [ 1, 4 ]},
 				inlineChord: {
@@ -204,8 +204,8 @@ describe('Parsing / Tokenization', () => {
 
 
 			const wordTokens = tokens.filter(t => t.type === 'word');
-			expect(wordTokens).toHaveLength(6);
-			expect(wordTokens.map(t => t.value)).toEqual(['The', 'Eastern', 'world,', 'it', 'is', 'ex-']);
+			expect(wordTokens).toHaveLength(7);
+			expect(wordTokens.map(t => t.value)).toEqual(['The', 'Eastern', 'world,', 'it', 'is', 'ex-', 'plodin\'']);
 
 		});
 
@@ -213,7 +213,7 @@ describe('Parsing / Tokenization', () => {
 			const line = '[D]He\'s like a [G]scat[D/F#]tered [C]me[Em/B]mo[Am]ry[Bm]  [D]';
 			const { tokens } = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
 			expect(tokens.filter(isChordToken).map(token => token.value)).toEqual(
-				["[D]He\'s", "[G]scat", "[D/F#]tered", "[C]me", "[Em/B]mo", "[Am]ry", "[Bm]", "[D]"]
+				["[D]", "[G]", "[D/F#]", "[C]", "[Em/B]", "[Am]", "[Bm]", "[D]"]
 			);
 		});
 
