@@ -1,7 +1,6 @@
 import {EditorView, WidgetType} from "@codemirror/view";
 import {Instrument} from "../chordsUtils";
 import {chordBlocksStateField} from "./chordBlocksStateField";
-import ChordsDB from "@tombatossals/chords-db";
 import {setIcon, setTooltip} from "obsidian";
 
 export interface InstrumentChangeEventDetail {
@@ -100,15 +99,24 @@ export class ChordBlockToolsWidget extends WidgetType {
 		const el = document.createElement("select");
 		el.classList.add("dropdown", "chord-sheet-instrument-change");
 
-		for (const instrument of Object.keys(ChordsDB)) {
-			const option = document.createElement("option");
-			option.value = instrument;
-			option.text = instrument.charAt(0).toUpperCase() + instrument.slice(1);
-			option.selected = this.instrument === instrument;
-			el.append(option);
-		}
+		const instrumentOption = (instrument: Instrument, name: string) => {
+			return Object.assign(document.createElement("option"), {
+				value: instrument,
+				text: name,
+				selected: this.instrument === instrument
+			});
+		};
 
-		el.addEventListener("change", event => {
+		el.append(instrumentOption("guitar", "Guitar"));
+		el.append(instrumentOption("ukulele", "Ukulele"));
+		el.append(instrumentOption("mandolin", "Mandolin"));
+
+
+		el.append(document.createElement("hr"));
+		el.append(instrumentOption("ukulele-d-tuning", "Ukulele (D tuning)"));
+
+
+		el.addEventListener("change", (event) => {
 			const target = event.target as HTMLSelectElement;
 			const selectedInstrument = target.value;
 
@@ -122,6 +130,7 @@ export class ChordBlockToolsWidget extends WidgetType {
 				}
 			});
 			window.dispatchEvent(instrumentChangeEvent);
+
 		});
 
 		containerEl.firstElementChild?.append(el);

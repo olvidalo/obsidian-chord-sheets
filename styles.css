@@ -727,6 +727,8 @@ code.chord-sheet-chord-block-preview {
 	& select {
 		color: var(--icon-color);
 		opacity: var(--icon-opacity);
+		min-width: 9em;
+		field-sizing: content;
 	}
 
 	& svg {
