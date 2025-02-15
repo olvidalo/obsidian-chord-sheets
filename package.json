@@ -29,7 +29,7 @@
 	},
 	"dependencies": {
 		"@codemirror/language": "^6.8.0",
-		"@tombatossals/chords-db": "https://github.com/olvidalo/chords-db#32b68bc75066ba9d3579355b358e08c7413b431c",
+		"@tombatossals/chords-db": "https://github.com/olvidalo/chords-db#b33a24ccf3374029ed9d1811d35d537fcc3dabe1",
 		"escape-string-regexp": "^5.0.0",
 		"tippy.js": "^6.3.7",
 		"tonal": "^6.2.0",

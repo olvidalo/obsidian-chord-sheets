@@ -114,6 +114,7 @@ export class ChordBlockToolsWidget extends WidgetType {
 
 		el.append(document.createElement("hr"));
 		el.append(instrumentOption("ukulele-d-tuning", "Ukulele (D tuning)"));
+		el.append(instrumentOption("ukulele-baritone", "Ukulele (Baritone)"));
 
 
 		el.addEventListener("change", (event) => {
