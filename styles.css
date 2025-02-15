@@ -863,13 +863,13 @@ svg.enharmonic-toggle {
 
 /* Display inline chords over lyrics */
 
-.markdown-reading-view div.chord-sheet-inline {
+.markdown-reading-view div.chord-sheet-inline-over-lyrics {
 	display: flex;
 	align-items: flex-end;
 	flex-wrap: wrap;
 }
 
-.markdown-reading-view div.chord-sheet-inline .chord-sheet-chord-word-pair {
+.markdown-reading-view div.chord-sheet-inline-over-lyrics .chord-sheet-chord-word-pair {
 	display: inline-flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -885,6 +885,6 @@ svg.enharmonic-toggle {
 	}
 }
 
-.markdown-reading-view div.chord-sheet-inline .chord-sheet-inline-chord-bracket {
+.markdown-reading-view div.chord-sheet-inline-over-lyrics .chord-sheet-inline-chord-bracket {
 	display: none;
 }

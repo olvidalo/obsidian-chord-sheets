@@ -151,7 +151,21 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 					this.plugin.applyNewSettingsToEditors();
 				}));
 
-		new Setting(containerEl).setName('Chord block controls in live preview mode').setHeading();
+		new Setting(containerEl).setName('Reading mode').setHeading();
+
+		new Setting(containerEl)
+			.setName('Display inline/ChordPro-style chords over lyrics')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.displayInlineChordsOverLyrics)
+				.onChange(async (value) => {
+					this.plugin.settings.displayInlineChordsOverLyrics = value;
+					await this.plugin.saveSettings();
+					this.plugin.applyNewSettingsToEditors();
+				})
+			);
+
+
+		new Setting(containerEl).setName('Live preview / edit mode').setHeading();
 
 		new Setting(containerEl)
 			.setName('Show transpose control')
