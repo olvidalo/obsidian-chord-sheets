@@ -65,7 +65,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 					chordTokens.push(token);
 
 					const nextToken = tokenizedLine.tokens[i + 1];
-					const isTokenPair = token.inlineChord && (nextToken?.type === "word" || nextToken?.type === "whitespace");
+					const isTokenPair = token.inlineChord && (!nextToken || nextToken?.type === "word" || nextToken?.type === "whitespace");
 					if (isTokenPair) {
 						i++;
 					}
@@ -132,7 +132,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 
 						pairSpan?.createSpan({
 							cls: `chord-sheet-inline-chord-trailing-text`,
-							text: nextToken.value
+							text: nextToken?.value
 						});
 					}
 

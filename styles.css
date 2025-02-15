@@ -874,7 +874,15 @@ svg.enharmonic-toggle {
 	flex-direction: column;
 	align-items: flex-start;
 	justify-content: end;
-	margin-right: 1ex;
+
+	&:not(:last-child) {
+		margin-inline-end: 1ex;
+	}
+
+	/* prevent wrapping of inline chord at the end of a line without trailing spaces */
+	&:empty:after {
+		content: " ";
+	}
 }
 
 .markdown-reading-view div.chord-sheet-inline .chord-sheet-inline-chord-bracket {
