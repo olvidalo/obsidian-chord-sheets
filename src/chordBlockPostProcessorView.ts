@@ -56,8 +56,6 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 				cls: "chord-sheet-chord-line"
 			});
 
-
-
 			for (let i = 0; i < tokenizedLine.tokens.length; i++) {
 				const token = tokenizedLine.tokens[i];
 
@@ -67,14 +65,19 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 					const nextToken = tokenizedLine.tokens[i + 1];
 					const isTokenPair =
 						this.settings.displayInlineChordsOverLyrics &&
-						token.inlineChord && (!nextToken || nextToken?.type === "word" || nextToken?.type === "whitespace");
+						token.inlineChord && (
+							!nextToken || nextToken?.type === "word" || nextToken?.type === "whitespace" ||
+							isChordToken(nextToken)
+						);
 
-					if (isTokenPair) {
+					if (isTokenPair && !isChordToken(nextToken)) {
+						// Skip the next word or whitespace token when rendering inline chords over lyrics.
+						// Its content will be handled in the current iteration.
 						i++;
 					}
 
 					const pairSpan = isTokenPair ? lineDiv.createSpan({
-						cls: "chord-sheet-chord-word-pair"
+						cls: "chord-sheet-chord-text-pair"
 					}) : null;
 
 					const chordSpan = (pairSpan ?? lineDiv).createSpan({
@@ -137,7 +140,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 
 						pairSpan?.createSpan({
 							cls: `chord-sheet-inline-chord-trailing-text`,
-							text: nextToken?.value
+							text: !isChordToken(nextToken) ? nextToken?.value : ""
 						});
 					}
 
@@ -173,7 +176,10 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 						text: token.closingBracket.value
 					});
 				} else {
-					lineDiv.append(document.createTextNode(token.value));
+					lineDiv.createSpan({
+						cls: `chord-sheet-${token.type}`,
+						text: token.value
+					});
 				}
 			}
 

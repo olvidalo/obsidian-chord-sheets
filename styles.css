@@ -869,7 +869,7 @@ svg.enharmonic-toggle {
 	flex-wrap: wrap;
 }
 
-.markdown-reading-view div.chord-sheet-inline-over-lyrics .chord-sheet-chord-word-pair {
+.markdown-reading-view div.chord-sheet-inline-over-lyrics .chord-sheet-chord-text-pair {
 	display: inline-flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -880,8 +880,16 @@ svg.enharmonic-toggle {
 	}
 
 	/* prevent wrapping of inline chord at the end of a line without trailing spaces */
-	&:empty:after {
+	.chord-sheet-inline-chord-trailing-text:empty:after {
 		content: " ";
+	}
+}
+
+/* collapse empty lyric line for lines with only inline chords */
+.markdown-reading-view div.chord-sheet-inline-over-lyrics:not(:has(.chord-sheet-word)) .chord-sheet-inline-chord-trailing-text {
+	display: none;
+	:after {
+		content: none;
 	}
 }
 
