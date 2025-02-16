@@ -867,6 +867,10 @@ svg.enharmonic-toggle {
 	display: flex;
 	align-items: flex-end;
 	flex-wrap: wrap;
+
+	.chord-sheet-chord {
+		margin-inline-end: 1ch;
+	}
 }
 
 .markdown-reading-view div.chord-sheet-inline-over-lyrics .chord-sheet-chord-text-pair {
@@ -883,7 +887,7 @@ svg.enharmonic-toggle {
 
 /* collapse empty lyric line for lines with only inline chords */
 .markdown-reading-view div.chord-sheet-inline-over-lyrics:not(:has(.chord-sheet-word)) .chord-sheet-inline-chord-trailing-text {
-	display: none;
+	height: 0;
 	:after {
 		content: none;
 	}
