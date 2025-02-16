@@ -875,10 +875,6 @@ svg.enharmonic-toggle {
 	align-items: flex-start;
 	justify-content: end;
 
-	&:not(:last-child) {
-		margin-inline-end: 1ex;
-	}
-
 	/* prevent wrapping of inline chord at the end of a line without trailing spaces */
 	.chord-sheet-inline-chord-trailing-text:empty:after {
 		content: " ";
