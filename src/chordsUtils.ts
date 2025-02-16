@@ -80,8 +80,8 @@ export function uniqueChordTokens(chordTokens: ChordToken[]) {
 	const seenValues = new Set<string>();
 
 	return chordTokens.filter(token => {
-		if (!seenValues.has(token.value)) {
-			seenValues.add(token.value);
+		if (!seenValues.has(token.chordSymbol.value)) {
+			seenValues.add(token.chordSymbol.value);
 			return true;
 		}
 		return false;
