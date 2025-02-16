@@ -60,18 +60,16 @@ export function findDbChord(chordToken: ChordToken, instrumentChords: Instrument
 			testChord => chordToken.chord.typeAliases.some(alias => testChord.suffix === alias + bassSuffix)
 		);
 		if (dbChord) return dbChord;
+	} else {
+		dbChord = instrumentChords.chords[tonicKey].find(
+			testChord => testChord.suffix === chordToken.chord.type
+		);
+		if (dbChord) return dbChord;
+
+		dbChord = instrumentChords.chords[tonicKey].find(
+			testChord => chordToken.chord.typeAliases.includes(testChord.suffix)
+		);
 	}
-
-	// Third priority: Exact match without bass note
-	dbChord = instrumentChords.chords[tonicKey].find(
-		testChord => testChord.suffix === chordToken.chord.type
-	);
-	if (dbChord) return dbChord;
-
-	// Fourth priority: Alias match without bass note
-	dbChord = instrumentChords.chords[tonicKey].find(
-		testChord => chordToken.chord.typeAliases.includes(testChord.suffix)
-	);
 
 	return dbChord ?? null;
 }
