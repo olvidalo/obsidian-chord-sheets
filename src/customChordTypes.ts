@@ -11,6 +11,7 @@ const customChordTypes: CustomChordType[] = [
 	extendChordType("M7", { aliases: ["7M"] }),
 	extendChordType("mM7", { aliases: ["mmaj7", "m+7"] }),
 	extendChordType("m9", { aliases: ["m7(9)"] }),
+	extendChordType("maj9", { aliases: ["M9", "9M"]}),
 	{
 		name: "suspended four sharp five",
 		intervals: ["1P", "4P", "5A"],
