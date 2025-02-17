@@ -56,15 +56,34 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 				cls: "chord-sheet-chord-line"
 			});
 
-			for (const token of tokenizedLine.tokens) {
+			for (let i = 0; i < tokenizedLine.tokens.length; i++) {
+				const token = tokenizedLine.tokens[i];
+
 				if (isChordToken(token)) {
 					chordTokens.push(token);
-					const chordSpan = lineDiv.createSpan({
+
+					let nextToken = tokenizedLine.tokens[i + 1];
+					const isTokenPair =
+						this.settings.displayInlineChordsOverLyrics &&
+						token.inlineChord && (
+							!nextToken || nextToken?.type === "word" || nextToken?.type === "whitespace" ||
+							isChordToken(nextToken)
+						);
+
+
+					const pairSpan = isTokenPair ? lineDiv.createSpan({
+						cls: "chord-sheet-chord-text-pair"
+					}) : null;
+
+					const chordSpan = (pairSpan ?? lineDiv).createSpan({
 						cls: "chord-sheet-chord",
 					});
 
 
 					if (token.inlineChord) {
+						if (isTokenPair) {
+							lineDiv.addClass("chord-sheet-inline-over-lyrics");
+						}
 						chordSpan.createSpan({
 							cls: `chord-sheet-inline-chord-bracket`,
 							text: token.inlineChord.openingBracket.value
@@ -113,6 +132,22 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 							cls: `chord-sheet-inline-chord-bracket`,
 							text: token.inlineChord.closingBracket.value
 						});
+
+						const trailingSpan = pairSpan?.createSpan({
+							cls: `chord-sheet-inline-chord-trailing-text`
+						});
+
+						if (trailingSpan) {
+							// fast-forward until the next chord token
+							while (nextToken && !isChordToken(nextToken)) {
+								trailingSpan.createSpan({
+									cls: `chord-sheet-${nextToken.type}`,
+									text: nextToken.value
+								});
+								i++;
+								nextToken = tokenizedLine.tokens[i + 1];
+							}
+						}
 					}
 
 
@@ -147,7 +182,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 						text: token.closingBracket.value
 					});
 				} else {
-					lineDiv.append(document.createTextNode(token.value));
+					lineDiv.append(token.value);
 				}
 			}
 

@@ -862,3 +862,39 @@ svg.enharmonic-toggle {
 	.S {color: darkred}
 	.E {color: palevioletred}
 }
+
+/* Display inline chords over lyrics */
+
+.markdown-reading-view div.chord-sheet-inline-over-lyrics {
+	display: flex;
+	align-items: flex-end;
+	flex-wrap: wrap;
+
+	.chord-sheet-chord {
+		margin-inline-end: 1ch;
+	}
+}
+
+.markdown-reading-view div.chord-sheet-inline-over-lyrics .chord-sheet-chord-text-pair {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: end;
+
+	/* prevent wrapping of inline chord at the end of a line without trailing spaces */
+	.chord-sheet-inline-chord-trailing-text:empty:after {
+		content: " ";
+	}
+}
+
+/* collapse empty lyric line for lines with only inline chords */
+.markdown-reading-view div.chord-sheet-inline-over-lyrics:not(:has(.chord-sheet-word)) .chord-sheet-inline-chord-trailing-text {
+	height: 0;
+	:after {
+		content: none;
+	}
+}
+
+.markdown-reading-view div.chord-sheet-inline-over-lyrics .chord-sheet-inline-chord-bracket {
+	display: none;
+}
