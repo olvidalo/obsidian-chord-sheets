@@ -1,15 +1,16 @@
 import {chordSequenceString, findDbChord, Instrument, UserDefinedChord} from "./chordsUtils";
-import {BarreDef, ChordBox, ChordParams} from "vexchords";
+import {ChordBox} from "@chordbook/charts";
 import ChordsDB, {ChordDef} from "@tombatossals/chords-db";
-
 import {ChordToken} from "./sheet-parsing/tokens";
 
-function dbChordToVexChord(input: ChordDef, positionIndex = 0): ChordParams {
+type ChordBoxParams = Parameters<ChordBox["draw"]>[0];
+
+function dbChordToVexChord(input: ChordDef, positionIndex = 0): ChordBoxParams {
 	const position = input.positions[positionIndex];
 	const fingers = [...position.fingers].reverse();
 	const frets = [...position.frets].reverse();
 
-	const barres: BarreDef[] = [];
+	const barres: ChordBoxParams["barres"] = [];
 	position.barres.forEach((barreFret) => {
 		const toString = frets.indexOf(barreFret) + 1;
 		const fromString = frets.lastIndexOf(barreFret) + 1;
@@ -26,14 +27,14 @@ function dbChordToVexChord(input: ChordDef, positionIndex = 0): ChordParams {
 
 	return {
 		chord,
-		position: position.baseFret > 1 ? position.baseFret : undefined,
-		barres: barres.length > 0 ? barres : undefined,
+		position: position.baseFret,
+		barres,
 		tuning: [...fingers].reverse().map(finger => finger > 0 ? `${finger}` : '')
 	};
 }
 
-function userDefinedToVexChord({frets, position}: UserDefinedChord, numStrings: number): ChordParams {
-	const barres: BarreDef[] = [];
+function userDefinedToVexChord({frets, position}: UserDefinedChord, numStrings: number): ChordBoxParams{
+	const barres: ChordBoxParams["barres"] = [];
 
 	const barrePositions = frets
 		.split('')
@@ -66,7 +67,7 @@ function userDefinedToVexChord({frets, position}: UserDefinedChord, numStrings: 
 		chord: chordFrets,
 		position, barres
 
-	}
+	};
 }
 
 export function renderChordDiagram({containerEl, userDefinedChord, chordDef, numPositions, position, numStrings, numFrets, chordName, width}: {
@@ -108,6 +109,7 @@ export function renderChordDiagram({containerEl, userDefinedChord, chordDef, num
 		width: width,
 		height: width * 1.2
 	});
+
 	chordBox.draw(vexChord);
 
 	updateChordPosition(containerEl, numPositions, position);
