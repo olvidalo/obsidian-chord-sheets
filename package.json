@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-chord-sheets",
-	"version": "1.6.1",
+	"version": "1.6.2",
 	"description": "Chord Sheets plugin for Obsidian",
 	"main": "main.js",
 	"scripts": {
