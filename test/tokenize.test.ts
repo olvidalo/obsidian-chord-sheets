@@ -452,6 +452,33 @@ describe('Parsing / Tokenization', () => {
 			]);
 		});
 
+		test('no chord (NC) markers with chords', () => {
+			const lines = [
+				"  Am       NC",
+				" N.C.       C ",
+				"   Am  N. C. Am",
+				"     Am   N C"
+			];
+
+			const tokens = lines.flatMap(line =>
+				tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker)
+					.tokens
+					.filter(t => t.type !== 'whitespace')
+			);
+			expect(tokens).toHaveLength(9);
+			expect(tokens).toMatchObject<Partial<RhythmToken | ChordToken>[]>([
+				{type: "chord", value: "Am"},
+				{type: "rhythm", value: "NC"},
+				{type: "rhythm", value: "N.C."},
+				{type: "chord", value: "C"},
+				{type: "chord", value: "Am"},
+				{type: "rhythm", value: "N. C."},
+				{type: "chord", value: "Am"},
+				{type: "chord", value: "Am"},
+				{type: "rhythm", value: "N C"}
+			]);
+		});
+
 		test('text with forward slashes should not be rhythm', () => {
 			const line = 'look at this/that thing';
 			const result = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
