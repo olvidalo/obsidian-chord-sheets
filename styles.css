@@ -589,6 +589,10 @@ code.chord-sheet-chord-block-preview {
 	padding-left: 5%;
 }
 
+.print .chord-sheet-position-chooser {
+	display: none;
+}
+
 .chord-sheet-position-label {
 	margin: 0 0.2rem;
 }
@@ -865,7 +869,7 @@ svg.enharmonic-toggle {
 
 /* Display inline chords over lyrics */
 
-.markdown-reading-view div.chord-sheet-inline-over-lyrics {
+.markdown-preview-view div.chord-sheet-inline-over-lyrics {
 	display: flex;
 	align-items: flex-end;
 	flex-wrap: wrap;
@@ -875,7 +879,7 @@ svg.enharmonic-toggle {
 	}
 }
 
-.markdown-reading-view div.chord-sheet-inline-over-lyrics .chord-sheet-chord-text-pair {
+.markdown-preview-view div.chord-sheet-inline-over-lyrics .chord-sheet-chord-text-pair {
 	display: inline-flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -888,13 +892,13 @@ svg.enharmonic-toggle {
 }
 
 /* collapse empty lyric line for lines with only inline chords */
-.markdown-reading-view div.chord-sheet-inline-over-lyrics:not(:has(.chord-sheet-word)) .chord-sheet-inline-chord-trailing-text {
+.markdown-preview-view div.chord-sheet-inline-over-lyrics:not(:has(.chord-sheet-word)) .chord-sheet-inline-chord-trailing-text {
 	height: 0;
 	:after {
 		content: none;
 	}
 }
 
-.markdown-reading-view div.chord-sheet-inline-over-lyrics .chord-sheet-inline-chord-bracket {
+.markdown-preview-view div.chord-sheet-inline-over-lyrics .chord-sheet-inline-chord-bracket {
 	display: none;
 }
