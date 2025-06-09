@@ -228,9 +228,21 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 		this.addSettingTab(new ChordSheetsSettingTab(this.app, this));
 
-		if (!this.app.metadataTypeManager.getAssignedType(AUTOSCROLL_SPEED_PROPERTY)) {
+		if (this.getMetadataType(AUTOSCROLL_SPEED_PROPERTY) !== "number") {
 			this.app.metadataTypeManager.setType(AUTOSCROLL_SPEED_PROPERTY, "number");
 		}
+	}
+
+	private getMetadataType(property: string) {
+		// new API >= 1.9.2
+		if (this.app.metadataTypeManager.getTypeInfo) {
+			// @ts-ignore
+			const typeInfo = this.app.metadataTypeManager.getTypeInfo(property);
+			return typeInfo?.expected.type;
+		}
+
+		// old API <= 1.9.1
+		return this.app.metadataTypeManager.getAssignedType?.(property);
 	}
 
 	private changeInstrumentCommand(view: MarkdownView, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean, instrument: Instrument | null) {
@@ -435,7 +447,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 	private saveAutoscrollSpeed(file: TFile, newSpeed: number) {
 		this.app.fileManager.processFrontMatter(file, frontmatter => {
-			frontmatter[AUTOSCROLL_SPEED_PROPERTY] = this.app.metadataTypeManager.getAssignedType(AUTOSCROLL_SPEED_PROPERTY) === "number"
+			frontmatter[AUTOSCROLL_SPEED_PROPERTY] = this.getMetadataType(AUTOSCROLL_SPEED_PROPERTY) === "number"
 				? newSpeed
 				: newSpeed.toString();
 		}).then();
