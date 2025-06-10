@@ -234,15 +234,13 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 	}
 
 	private getMetadataType(property: string) {
-		// new API >= 1.9.2
-		if (this.app.metadataTypeManager.getTypeInfo) {
-			// @ts-ignore
-			const typeInfo = this.app.metadataTypeManager.getTypeInfo(property);
-			return typeInfo?.expected.type;
-		}
-
 		// old API <= 1.9.1
-		return this.app.metadataTypeManager.getAssignedType?.(property);
+		if (this.app.metadataTypeManager.getAssignedType) {
+			return this.app.metadataTypeManager.getAssignedType(property);
+		}
+		// @ts-ignore new API >= 1.9.2
+		const typeInfo = this.app.metadataTypeManager.getTypeInfo(property);
+		return typeInfo.expected.type;
 	}
 
 	private changeInstrumentCommand(view: MarkdownView, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean, instrument: Instrument | null) {
