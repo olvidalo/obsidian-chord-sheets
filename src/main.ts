@@ -133,6 +133,18 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			})
 		);
 
+		// Handle mode changes (edit/reading mode)
+		this.registerEvent(
+			this.app.workspace.on("layout-change", () => {
+				this.app.workspace.iterateAllLeaves(leaf => {
+					if (leaf.view.getViewType() === "markdown") {
+						const markdownView = leaf.view as MarkdownView;
+						this.updateAutoscrollSpeedControl(markdownView);
+					}
+				});
+			})
+		);
+
 
 		// Register editor commands
 
@@ -390,6 +402,67 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			} else if (existingEl) {
 				existingEl.remove();
 			}
+
+			// Update autoscroll speed control visibility
+			this.updateAutoscrollSpeedControl(view);
+		}
+	}
+
+	private updateAutoscrollSpeedControl(view: MarkdownView) {
+		let autoscrollControl = this.viewAutoscrollControlMap.get(view);
+
+		if (this.settings.showAutoscrollSpeed === "edit") {
+			// Show control only in edit mode (source mode)
+			if (view.getMode() === "source") {
+				// Ensure control exists and is shown
+				if (!autoscrollControl) {
+					const frontmatterSpeed = this.getAutoscrollSpeedFromFrontmatter(view.file);
+					const speed = frontmatterSpeed ?? this.settings.autoscrollDefaultSpeed;
+					autoscrollControl = new AutoscrollControl(view, speed);
+					this.registerEvent(autoscrollControl.events.on(SPEED_CHANGED_EVENT, (newSpeed: number) => {
+						const file = view.file;
+						if (!file) {
+							return;
+						}
+						const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
+						const isSpeedInFrontmatter = frontmatter && AUTOSCROLL_SPEED_PROPERTY in frontmatter;
+						if (this.settings.alwaysSaveAutoscrollSpeedToFrontmatter || isSpeedInFrontmatter) {
+							this.saveAutoscrollSpeed(file, newSpeed);
+						}
+					}));
+					this.viewAutoscrollControlMap.set(view, autoscrollControl);
+				}
+				autoscrollControl.showControl();
+			} else {
+				// Hide control in reading mode (preview mode)
+				autoscrollControl?.hideControl();
+			}
+		} else if (this.settings.showAutoscrollSpeed === "always") {
+			// Ensure control exists and is shown
+			if (!autoscrollControl) {
+				const frontmatterSpeed = this.getAutoscrollSpeedFromFrontmatter(view.file);
+				const speed = frontmatterSpeed ?? this.settings.autoscrollDefaultSpeed;
+				autoscrollControl = new AutoscrollControl(view, speed);
+				this.registerEvent(autoscrollControl.events.on(SPEED_CHANGED_EVENT, (newSpeed: number) => {
+					const file = view.file;
+					if (!file) {
+						return;
+					}
+					const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
+					const isSpeedInFrontmatter = frontmatter && AUTOSCROLL_SPEED_PROPERTY in frontmatter;
+					if (this.settings.alwaysSaveAutoscrollSpeedToFrontmatter || isSpeedInFrontmatter) {
+						this.saveAutoscrollSpeed(file, newSpeed);
+					}
+				}));
+				this.viewAutoscrollControlMap.set(view, autoscrollControl);
+			}
+			autoscrollControl.showControl();
+		} else if (this.settings.showAutoscrollSpeed === "on-autoscroll") {
+			// For "on-autoscroll", the control visibility is handled by start/stop methods
+			// If not running, hide it
+			if (!autoscrollControl?.isRunning) {
+				autoscrollControl?.hideControl();
+			}
 		}
 	}
 
@@ -468,6 +541,8 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 				markdownView.previewMode?.rerender(true);
 				const chordPlugin = editorView?.plugin(this.editorPlugin);
 				chordPlugin?.updateSettings(this.settings);
+				// Update autoscroll controls when settings change
+				this.updateAutoscrollSpeedControl(markdownView);
 			}
 		});
 

@@ -49,7 +49,10 @@ export class AutoscrollControl extends Component {
 		super.onunload();
 	}
 
-	start() {
+	showControl() {
+		if (this.controlEl) {
+			return; // Already shown
+		}
 		this.controlEl = this.view.contentEl.createDiv({
 			prepend: true,
 			text: "Autoscroll speed",
@@ -62,17 +65,24 @@ export class AutoscrollControl extends Component {
 			.onChange(value => {
 				this.speed = value;
 			});
+	}
 
+	hideControl() {
+		if (this.controlEl) {
+			this.controlEl.remove();
+			this.controlEl = null;
+			this.slider = null;
+		}
+	}
+
+	start() {
+		this.showControl();
 		this.startInterval();
 	}
 
 	stop() {
 		this.stopInterval();
-
-		if (this.controlEl) {
-			this.controlEl.remove();
-			this.controlEl = null;
-		}
+		this.hideControl();
 	}
 
 	increaseSpeed() {

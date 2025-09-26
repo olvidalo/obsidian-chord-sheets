@@ -7,6 +7,7 @@ import {
 	DEFAULT_CHORD_LINE_MARKER,
 	DEFAULT_TEXT_LINE_MARKER,
 	ShowAutoscrollButtonSetting,
+	ShowAutoscrollSpeedSetting,
 	ShowChordDiagramsOnHoverSetting,
 	ShowChordOverviewSetting
 } from "./chordSheetsSettings";
@@ -239,6 +240,24 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 				.onChange(async value => {
 					this.plugin.settings.alwaysSaveAutoscrollSpeedToFrontmatter = value;
 					await this.plugin.saveSettings();
+				})
+			);
+
+		const showAutoscrollSpeedOptions: Record<ShowAutoscrollSpeedSetting, string> = {
+			edit: "In edit mode",
+			always: "Always",
+			"on-autoscroll": "On autoscroll"
+		};
+		new Setting(containerEl)
+			.setName('Show autoscroll speed control')
+			.setDesc('Control the visibility of the autoscroll speed slider.')
+			.addDropdown(dropdown => dropdown
+				.addOptions(showAutoscrollSpeedOptions)
+				.setValue(this.plugin.settings.showAutoscrollSpeed)
+				.onChange(async (value: ShowAutoscrollSpeedSetting) => {
+					this.plugin.settings.showAutoscrollSpeed = value;
+					await this.plugin.saveSettings();
+					this.plugin.applyNewSettingsToEditors();
 				})
 			);
 

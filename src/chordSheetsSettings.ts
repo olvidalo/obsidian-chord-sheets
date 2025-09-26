@@ -1,6 +1,7 @@
 import {Instrument} from "./chordsUtils";
 
 export type ShowAutoscrollButtonSetting = "never" | "chord-blocks" | "always";
+export type ShowAutoscrollSpeedSetting = "edit" | "always" | "on-autoscroll";
 export type ShowChordOverviewSetting = "never" | "edit" | "preview" | "always";
 export type ShowChordDiagramsOnHoverSetting = "never" | "edit" | "preview" | "always";
 
@@ -19,6 +20,7 @@ export interface ChordSheetsSettings {
 	diagramWidth: number;
 	autoscrollDefaultSpeed: number;
 	showAutoscrollButton: ShowAutoscrollButtonSetting;
+	showAutoscrollSpeed: ShowAutoscrollSpeedSetting;
 	blockLanguageSpecifier: string;
 	alwaysSaveAutoscrollSpeedToFrontmatter: boolean;
 	chordLineMarker: string;
@@ -40,6 +42,7 @@ export const DEFAULT_SETTINGS: ChordSheetsSettings = {
 	diagramWidth: 100,
 	autoscrollDefaultSpeed: 10,
 	showAutoscrollButton: "chord-blocks",
+	showAutoscrollSpeed: "on-autoscroll",
 	blockLanguageSpecifier: DEFAULT_BLOCK_LANGUAGE_SPECIFIER,
 	alwaysSaveAutoscrollSpeedToFrontmatter: false,
 	chordLineMarker: DEFAULT_CHORD_LINE_MARKER,
