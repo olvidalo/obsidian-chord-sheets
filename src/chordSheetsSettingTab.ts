@@ -261,6 +261,18 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 				})
 			);
 
+		new Setting(containerEl)
+			.setName('Show autoscroll speed control on chord block')
+			.setDesc('If enabled, the autoscroll speed control will only be shown on notes containing chord blocks. If disabled, it will be shown on all notes according to the "Show autoscroll speed control" setting.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showAutoscrollSpeedOnChordBlocksOnly)
+				.onChange(async (value) => {
+					this.plugin.settings.showAutoscrollSpeedOnChordBlocksOnly = value;
+					await this.plugin.saveSettings();
+					this.plugin.applyNewSettingsToEditors();
+				})
+			);
+
 		const showAutoscrollButtonOptions: Record<ShowAutoscrollButtonSetting, string> = {
 			never: "Never",
 			"chord-blocks": "When note has chord blocks",

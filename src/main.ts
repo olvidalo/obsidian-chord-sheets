@@ -409,6 +409,16 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 	}
 
 	private updateAutoscrollSpeedControl(view: MarkdownView) {
+		if (this.settings.showAutoscrollSpeedOnChordBlocksOnly) {
+			const editorView = view.editor.cm as EditorView;
+			const plugin = editorView.plugin(this.editorPlugin);
+			if (!plugin?.hasChordBlocks()) {
+				const autoscrollControl = this.viewAutoscrollControlMap.get(view);
+				autoscrollControl?.hideControl();
+				return;
+			}
+		}
+
 		let autoscrollControl = this.viewAutoscrollControlMap.get(view);
 
 		if (this.settings.showAutoscrollSpeed === "edit") {

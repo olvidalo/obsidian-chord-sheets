@@ -21,6 +21,7 @@ export interface ChordSheetsSettings {
 	autoscrollDefaultSpeed: number;
 	showAutoscrollButton: ShowAutoscrollButtonSetting;
 	showAutoscrollSpeed: ShowAutoscrollSpeedSetting;
+	showAutoscrollSpeedOnChordBlocksOnly: boolean;
 	blockLanguageSpecifier: string;
 	alwaysSaveAutoscrollSpeedToFrontmatter: boolean;
 	chordLineMarker: string;
@@ -43,6 +44,7 @@ export const DEFAULT_SETTINGS: ChordSheetsSettings = {
 	autoscrollDefaultSpeed: 10,
 	showAutoscrollButton: "chord-blocks",
 	showAutoscrollSpeed: "on-autoscroll",
+	showAutoscrollSpeedOnChordBlocksOnly: true,
 	blockLanguageSpecifier: DEFAULT_BLOCK_LANGUAGE_SPECIFIER,
 	alwaysSaveAutoscrollSpeedToFrontmatter: false,
 	chordLineMarker: DEFAULT_CHORD_LINE_MARKER,
