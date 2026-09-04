@@ -85,11 +85,11 @@ describe('Parsing / Tokenization', () => {
 
 			expect(chordTokens[0].chord.tonic).toBe('A');
 			expect(chordTokens[0].chord.type).toBe('minor');
-			expect(chordTokens[0].chord.bass).toBe(null);
+			expect(chordTokens[0].chord.bass).toBe("");
 
 			expect(chordTokens[1].chord.tonic).toBe('C');
 			expect(chordTokens[1].chord.type).toBe('major');
-			expect(chordTokens[1].chord.bass).toBe(null);
+			expect(chordTokens[1].chord.bass).toBe("");
 
 			expect(chordTokens[2].chord.tonic).toBe('G');
 			expect(chordTokens[3].chord.tonic).toBe('D');

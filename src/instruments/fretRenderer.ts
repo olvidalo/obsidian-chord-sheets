@@ -134,8 +134,10 @@ export function getTonicVariations(tonic: string) {
 }
 
 export function findDbChord(chord: SheetChord, instrumentChords: InstrumentChords) {
-	const tonic = chord.tonic;
-	const tonicVariations = getTonicVariations(tonic);
+	if (!chord.tonic) {
+		return null;
+	}
+	const tonicVariations = getTonicVariations(chord.tonic);
 
 	const availableTonicKeys = Object.keys(instrumentChords.chords);
 	const tonicKey = availableTonicKeys.find(note => tonicVariations.includes(note));
@@ -156,7 +158,7 @@ export function findDbChord(chord: SheetChord, instrumentChords: InstrumentChord
 
 		// Second priority: Alias match with bass note
 		dbChord = instrumentChords.chords[tonicKey].find(
-			testChord => chord.typeAliases.some(alias => testChord.suffix === alias + bassSuffix)
+			testChord => chord.aliases.some(alias => testChord.suffix === alias + bassSuffix)
 		);
 		if (dbChord) return dbChord;
 	} else {
@@ -166,7 +168,7 @@ export function findDbChord(chord: SheetChord, instrumentChords: InstrumentChord
 		if (dbChord) return dbChord;
 
 		dbChord = instrumentChords.chords[tonicKey].find(
-			testChord => chord.typeAliases.includes(testChord.suffix)
+			testChord => chord.aliases.includes(testChord.suffix)
 		);
 	}
 

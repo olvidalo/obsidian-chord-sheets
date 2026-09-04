@@ -1,18 +1,11 @@
 import {ChordInfo, ChordToken, HeaderToken, MarkerToken, Token, TokenizedLine} from "./tokens";
 import escapeStringRegexp from "escape-string-regexp";
 import {Chord} from "tonal";
-import {SheetChord} from "../chordsUtils";
 
 const CHORD_LINE_PROBABILITY_THRESHOLD = 0.5;
 
 function offsetRange(range: [number, number], offset: number): [number, number] {
 	return range && [range[0] + offset, range[1] + offset];
-}
-
-function getChord(maybeChordSymbol: string): SheetChord {
-	const tonalJsChord = Chord.get(maybeChordSymbol);
-	const {tonic, type, aliases: typeAliases} = tonalJsChord;
-	return {tonic: tonic ?? "", type, typeAliases, bass: tonalJsChord.bass || null};
 }
 
 export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: string, textLineMarker: string): TokenizedLine {
@@ -135,7 +128,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 							auxText: auxTextRange, close: closingBracketRange
 						} = match.indices!.groups!;
 
-						const chord = getChord(chordSymbol);
+						const chord = Chord.get(chordSymbol);
 
 						if (chord.tonic) {
 							const chordToken: ChordToken = {
@@ -171,7 +164,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 								...baseToken,
 								type: "chord",
 								chord: {
-									...getChord(chordSymbol),
+									...Chord.get(chordSymbol),
 									userDefinedChord: { frets, position: position ? parseInt(position) : 0}
 								},
 								chordSymbol: { value: chordSymbol, range: chordSymbolRange },
@@ -196,8 +189,8 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 							...baseToken, type: "word"
 						};
 
-						const chord = getChord(matchValue);
-						if (chord?.tonic) {
+						const chord = Chord.get(matchValue);
+						if (chord.tonic) {
 							tokensPendingReclassification.set(resultToken, {
 								chord,
 								chordSymbol: { value: matchValue, range: matchRange },

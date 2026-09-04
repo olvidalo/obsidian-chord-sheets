@@ -1,4 +1,5 @@
 import {ChordToken} from "./sheet-parsing/tokens";
+import {Chord} from "tonal";
 
 
 export interface UserDefinedChord {
@@ -6,13 +7,9 @@ export interface UserDefinedChord {
 	position: number;
 }
 
-export interface SheetChord {
-	tonic: string,
-	type: string,
-	typeAliases: string[],
-	bass: string | null,
+export type SheetChord = ReturnType<typeof Chord.get> & {
 	userDefinedChord?: UserDefinedChord
-}
+};
 
 
 export function uniqueChordTokens(chordTokens: ChordToken[]) {
