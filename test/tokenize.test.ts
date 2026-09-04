@@ -133,6 +133,11 @@ describe('Parsing / Tokenization', () => {
 			);
 		});
 
+		// helper type for tests that check only some chord fields
+		type ChordTokenWithPartialChord = Pick<Partial<ChordToken>, Exclude<keyof ChordToken, 'chord'>> & {
+			chord: Partial<SheetChord>
+		};
+
 		test('should handle slash/bass chords', () => {
 			const line = 'C/G Am/F Dm7/C';
 			const { tokens } = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
@@ -140,20 +145,20 @@ describe('Parsing / Tokenization', () => {
 			expect(tokens).toHaveLength(5);
 			const chordTokens = tokens.filter(t => isChordToken(t)) as ChordToken[];
 
-			expect(chordTokens).toMatchObject<Partial<ChordToken>[]>([
+			expect(chordTokens).toMatchObject<ChordTokenWithPartialChord[]>([
 					{
 						range: [0, 3],
-						chord: expect.any(Object),
+						chord: { tonic: 'C', type: 'major', bass: 'G' },
 						chordSymbol: { value: 'C/G', range: [0, 3] }
 					},
 					{
 						range: [4, 8],
-						chord: expect.any(Object),
+						chord: { tonic: 'A', type: 'minor', bass: 'F' },
 						chordSymbol: { value: 'Am/F', range: [0, 4] }
 					},
 					{
 						range: [9, 14],
-						chord: expect.any(Object),
+						chord: { tonic: 'D', type: 'minor seventh', bass: 'C' },
 						chordSymbol: { value: 'Dm7/C', range: [0, 5] }
 					}
 					]);
@@ -216,11 +221,6 @@ describe('Parsing / Tokenization', () => {
 				["[D]", "[G]", "[D/F#]", "[C]", "[Em/B]", "[Am]", "[Bm]", "[D]"]
 			);
 		});
-
-		// helper type for user defined chord tests
-		type ChordTokenWithPartialChord = Pick<Partial<ChordToken>, Exclude<keyof ChordToken, 'chord'>> & {
-			chord: Partial<SheetChord>
-		};
 
 		test('should handle user-defined chords', () => {
 			const line = 'Some Am[x02210] user-defined C*4[3|x32010] chords C°[x34_24_]';
