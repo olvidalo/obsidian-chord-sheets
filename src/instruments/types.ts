@@ -7,8 +7,9 @@ export type Instrument = FrettedInstrument | KeyboardInstrument;
 
 export interface ChordDiagram {
 	readonly numVoicings: number;
+	readonly initialVoicing?: number;
 	render(index: number, width: number): HTMLDivElement;
-	voicingName?(index: number): string | undefined;
+	voicingName?(index: number): string;
 }
 
 export interface InstrumentRenderer {

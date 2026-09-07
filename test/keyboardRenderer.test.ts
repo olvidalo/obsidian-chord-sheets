@@ -1,6 +1,6 @@
 import {Chord} from "tonal";
 import {addCustomChordTypes} from "../src/customChordTypes";
-import {getKeyboardRange, getKeyboardVoicings} from "../src/instruments/keyboardRenderer";
+import {getKeyboardRange, getKeyboardVoicings, KeyboardDiagramRenderer} from "../src/instruments/keyboardRenderer";
 
 beforeAll(() => {
 	addCustomChordTypes();
@@ -67,10 +67,9 @@ describe("getKeyboardVoicings", () => {
 	});
 
 	describe("slash chords", () => {
-		test("a chord tone as bass yields only the matching inversion", () => {
-			expect(midi("C/E")).toEqual([[64, 67, 72]]);
-			expect(midi("C/G")).toEqual([[67, 72, 76]]);
-			expect(names("Am7/G")).toEqual([["G", "A", "C", "E"]]);
+		test("a chord tone as bass yields all inversions, in root position order", () => {
+			expect(midi("C/E")).toEqual(midi("C"));
+			expect(names("Am7/G")[0]).toEqual(["A", "C", "E", "G"]);
 		});
 
 		test("a bass outside the chord is placed below the chord", () => {
@@ -82,6 +81,29 @@ describe("getKeyboardVoicings", () => {
 	test("a symbol tonal does not know yields no voicings", () => {
 		// e.g. the chord name of a user-defined shape like Xy[x899xx]
 		expect(voicings("Xy")).toEqual([]);
+	});
+});
+
+describe("KeyboardDiagramRenderer.getDiagram", () => {
+	const diagram = (symbol: string) => new KeyboardDiagramRenderer("piano", "Piano").getDiagram(Chord.get(symbol), symbol)!;
+
+	test("starts on the voicing written in the sheet", () => {
+		expect(diagram("C").initialVoicing).toBe(0);
+		expect(diagram("C/E").initialVoicing).toBe(1);
+		expect(diagram("C/G").initialVoicing).toBe(2);
+		expect(diagram("C/D").initialVoicing).toBe(0);
+	});
+
+	test("names every voicing as it would be written in the sheet", () => {
+		const names = (symbol: string) => {
+			const {numVoicings, voicingName} = diagram(symbol);
+			return Array.from({length: numVoicings}, (_, i) => voicingName!(i));
+		};
+		expect(names("C")).toEqual(["C", "C/E", "C/G"]);
+		expect(names("C/E")).toEqual(["C", "C/E", "C/G"]);
+		expect(names("Am7/G")).toEqual(["Am7", "Am7/C", "Am7/E", "Am7/G"]);
+		expect(names("C6/9")[0]).toEqual("C6/9");
+		expect(names("C/D")).toEqual(["C/D"]);
 	});
 });
 

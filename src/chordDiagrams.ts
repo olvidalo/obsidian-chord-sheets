@@ -17,7 +17,6 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 	diagramContainer.setAttribute("data-tooltip-position", "top");
 
 	const renderer = getRenderer(instrument);
-	let currentPosition = 0;
 
 	const chordDiagram = renderer.getDiagram(chordToken.chord, chordToken.chordSymbol.value);
 	if (!chordDiagram) {
@@ -28,6 +27,8 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 
 		return containerEl;
 	}
+
+	let currentPosition = chordDiagram.initialVoicing ?? 0;
 
 	let updateChooser: VoicingChooserUpdateFn = (_position: number) => {};
 

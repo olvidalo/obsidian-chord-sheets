@@ -1,4 +1,4 @@
-import {Note} from "tonal";
+import {Chord, Note} from "tonal";
 import {SheetChord} from "../chordsUtils";
 import {ChordDiagram, InstrumentRenderer, KeyboardInstrument} from "./types";
 import {drawKeyboard, drawMissingMark, KeyRange} from "./keyboardSvg";
@@ -20,13 +20,25 @@ export function getKeyboardVoicings(chord: SheetChord): Voicing[] {
 	if (chord.empty || !root) {
 		return [];
 	}
-	const noteOrders = chord.bass ? [chord.notes] : inversions(chord.notes);
-	return noteOrders.map(names => stackUpward(names, root));
+	// tonal lists the notes from the bass up; rootDegree is set only when the bass is a chord tone
+	const bassIsForeign = chord.bass && !chord.rootDegree;
+	if (bassIsForeign) {
+		return [stackUpward(chord.notes, root)];
+	}
+	const rootPosition = rotate(chord.notes, chord.notes.indexOf(root));
+	return inversions(rootPosition).map(names => stackUpward(names, root));
 }
 
 /** Yields the root position, then each inversion. */
 function inversions(notes: readonly string[]): string[][] {
-	return notes.map((_, i) => [...notes.slice(i), ...notes.slice(0, i)]);
+	return notes.map((_, i) => rotate(notes, i));
+}
+
+function rotate(notes: readonly string[], by: number): string[] {
+	if (by < 0) {
+		throw new Error(`Chord root not among its notes: ${notes.join(" ")}`);
+	}
+	return [...notes.slice(by), ...notes.slice(0, by)];
 }
 
 /** Places each note on the lowest key above the previous one. */
@@ -70,13 +82,16 @@ export class KeyboardDiagramRenderer implements InstrumentRenderer {
 			return null;
 		}
 		const range = getKeyboardRange(voicings.flat().map(note => note.midi));
+		const [tonic, type] = Chord.tokenize(chordName);
+		const nameWithoutBass = tonic + type;
 
 		return {
 			numVoicings: voicings.length,
+			initialVoicing: chord.rootDegree ? chord.rootDegree - 1 : 0,
 			render: (index: number, width: number) => this.draw(voicings[index], range, width),
 			voicingName: (index: number) => {
 				const bass = voicings[index][0];
-				return bass.isRoot ? undefined : `${chordName}/${bass.name}`;
+				return bass.isRoot ? nameWithoutBass : `${nameWithoutBass}/${bass.name}`;
 			}
 		};
 	}
