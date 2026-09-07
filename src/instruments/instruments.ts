@@ -1,5 +1,6 @@
 import {Instrument, InstrumentRenderer} from "./types";
 import {FretDiagramRenderer} from "./fretRenderer";
+import {KeyboardDiagramRenderer} from "./keyboardRenderer";
 
 const instrumentRenderers: Record<Instrument, InstrumentRenderer> = {
 	"guitar": new FretDiagramRenderer("guitar", "Guitar"),
@@ -7,6 +8,7 @@ const instrumentRenderers: Record<Instrument, InstrumentRenderer> = {
 	"ukulele-d-tuning": new FretDiagramRenderer("ukulele-d-tuning","Ukulele (D tuning)"),
 	"ukulele-baritone": new FretDiagramRenderer("ukulele-baritone", "Ukulele (Baritone)"),
 	"mandolin": new FretDiagramRenderer("mandolin", "Mandolin"),
+	"piano": new KeyboardDiagramRenderer("piano", "Piano"),
 };
 
 export function getRenderer(instrument: Instrument): InstrumentRenderer {

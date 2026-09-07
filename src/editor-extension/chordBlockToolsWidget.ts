@@ -106,6 +106,9 @@ export class ChordBlockToolsWidget extends WidgetType {
 		instrumentOption("mandolin", instrumentLabels["mandolin"]);
 
 		el.createEl("hr");
+		instrumentOption("piano", instrumentLabels["piano"]);
+
+		el.createEl("hr");
 		instrumentOption("ukulele-d-tuning", instrumentLabels["ukulele-d-tuning"]);
 		instrumentOption("ukulele-baritone", instrumentLabels["ukulele-baritone"]);
 

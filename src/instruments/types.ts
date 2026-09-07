@@ -1,7 +1,9 @@
 import {IChordsDB} from "@tombatossals/chords-db";
 import {SheetChord} from "../chordsUtils";
 
-export type Instrument = keyof IChordsDB;
+export type FrettedInstrument = keyof IChordsDB;
+export type KeyboardInstrument = "piano";
+export type Instrument = FrettedInstrument | KeyboardInstrument;
 
 export interface ChordDiagram {
 	readonly numVoicings: number;

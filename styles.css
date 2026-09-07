@@ -576,7 +576,10 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 
 
 /* Chord Boxes */
-.chord-sheet-chord-container svg {
+
+/* ChordBox draws its grid inside the middle 75% of its canvas; the negative
+   margins here and below cancel that built-in padding. */
+.chord-sheet-fretboard svg {
 	margin-top: -10%;
 	margin-bottom: -5%;
 }
@@ -585,6 +588,9 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 	display: flex;
 	justify-content: center;
 	font-size: var(--font-ui-smaller);
+}
+
+.chord-sheet-chord-diagram:has(.chord-sheet-fretboard) .chord-sheet-position-chooser {
 	margin-top: -10px;
 	padding-left: 5%;
 }
@@ -619,13 +625,12 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 }
 
 .chord-sheet-no-diagram-mark {
-	/* centered on the grid point given by the text element's x/y */
+	/* centered on the point given by the text element's x/y; the size is set there too */
 	text-anchor: middle;
 	dominant-baseline: central;
 	fill: var(--text-faint);
 	stroke: none;
 	font-family: var(--font-interface);
-	font-size: 2em;
 	font-weight: 400;
 }
 
@@ -639,11 +644,77 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 
 .chord-sheet-chord-popup .chord-sheet-chord-name {
 	text-align: center;
-	margin-bottom: -10px;
 	font-size: var(--font-ui-small);
 }
 
+.chord-sheet-chord-popup:has(.chord-sheet-fretboard) .chord-sheet-chord-name {
+	margin-bottom: -10px;
+}
 
+/* Keyboard diagrams */
+
+.chord-sheet-keyboard {
+	--keyboard-white-key: var(--color-base-20);
+	--keyboard-black-key: var(--color-base-100);
+	--keyboard-key-border: var(--color-base-40);
+	--keyboard-marker: var(--color-base-60);
+	--keyboard-root-marker: var(--color-base-100);
+	--keyboard-chord-color: var(--chord-symbol-color, var(--text-accent));
+
+	display: block;
+	overflow: visible;
+	margin: 0.25em 0 0.35em;
+}
+
+.theme-dark .chord-sheet-keyboard {
+	--keyboard-white-key: var(--color-base-100);
+	--keyboard-black-key: var(--color-base-00);
+	--keyboard-key-border: var(--color-base-50);
+	--keyboard-marker: var(--color-base-40);
+	--keyboard-root-marker: var(--color-base-00);
+}
+
+.chord-sheet-keyboard-white-key,
+.chord-sheet-keyboard-black-key {
+	stroke: var(--keyboard-key-border);
+	stroke-width: 0.04;
+}
+
+.chord-sheet-keyboard-white-key {
+	fill: var(--keyboard-white-key);
+}
+
+.chord-sheet-keyboard-black-key {
+	fill: var(--keyboard-black-key);
+}
+
+.chord-sheet-keyboard-marked-key {
+	fill: color-mix(in oklch, var(--keyboard-chord-color) 80%, var(--keyboard-white-key));
+}
+
+.chord-sheet-keyboard-marker {
+	fill: var(--keyboard-marker);
+	stroke: var(--keyboard-white-key);
+	stroke-width: 0.07;
+}
+
+.chord-sheet-keyboard-marker-emphasized {
+	fill: var(--keyboard-root-marker);
+}
+
+.chord-sheet-keyboard-label {
+	fill: var(--text-muted);
+	font-family: var(--font-text);
+	font-weight: var(--font-semibold);
+}
+
+.chord-sheet-keyboard-label-emphasized {
+	fill: var(--text-normal);
+}
+
+.chord-sheet-chord-diagram:has(.chord-sheet-keyboard) {
+	padding-inline: 0.6em;
+}
 
 /* Chord Blocks */
 .markdown-source-view.mod-cm6 .chord-sheet-block-start ~ .code-block-flair,
@@ -686,7 +757,7 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 		margin-bottom: 1rem;
 	}
 
-	.chord-sheet-chord-overview svg {
+	.chord-sheet-fretboard svg {
 		margin-top: -15%;
 	}
 }

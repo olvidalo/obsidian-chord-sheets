@@ -1,4 +1,4 @@
-import {ChordDiagram, Instrument, InstrumentRenderer} from "./types";
+import {ChordDiagram, FrettedInstrument, InstrumentRenderer} from "./types";
 import {SheetChord, UserDefinedChord} from "../chordsUtils";
 import {ChordBox} from "@chordbook/charts";
 import ChordsDB, {ChordDef, InstrumentChords} from "@tombatossals/chords-db";
@@ -178,7 +178,7 @@ export function findDbChord(chord: SheetChord, instrumentChords: InstrumentChord
 export class FretDiagramRenderer implements InstrumentRenderer {
 	private readonly chordDb: InstrumentChords;
 
-	constructor(readonly instrument: Instrument, readonly label: string) {
+	constructor(readonly instrument: FrettedInstrument, readonly label: string) {
 		this.chordDb = ChordsDB[this.instrument];
 	}
 
@@ -195,14 +195,14 @@ export class FretDiagramRenderer implements InstrumentRenderer {
 	}
 
 	renderMissing(width: number): HTMLDivElement {
-		const missingChordContainer = createDiv();
+		const missingChordContainer = createDiv({cls: "chord-sheet-fretboard"});
 		const chordBox = this.makeChordBox(missingChordContainer, width, this.numFrets, "var(--text-faint)");
 		chordBox.draw({chord: [], tuning: new Array(this.numStrings).fill('')});
 
 		const gridCenterX = chordBox.x + chordBox.spacing * (chordBox.numStrings - 1) / 2;
 		const gridCenterY = chordBox.y + chordBox.fretSpacing * chordBox.numFrets / 2;
 		chordBox.canvas.plain("?")
-			.attr({x: gridCenterX, y: gridCenterY})
+			.attr({x: gridCenterX, y: gridCenterY, "font-size": "2em"})
 			.addClass("chord-sheet-no-diagram-mark");
 
 
@@ -229,7 +229,7 @@ export class FretDiagramRenderer implements InstrumentRenderer {
 	}
 
 	private drawVexChord(vexChord: ChordBoxParams, width: number, numFrets = this.numFrets) {
-		const el = createDiv();
+		const el = createDiv({cls: "chord-sheet-fretboard"});
 		this.makeChordBox(el, width, numFrets).draw(vexChord);
 		return el;
 	}
