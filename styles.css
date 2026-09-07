@@ -585,14 +585,17 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 }
 
 .chord-sheet-position-chooser {
-	display: flex;
-	justify-content: center;
+	display: grid;
+	grid-template-columns: 2.5em minmax(0, 1fr) 2.5em;
+	align-items: baseline;
+	text-align: center;
+	padding-inline: 4%;
 	font-size: var(--font-ui-smaller);
 }
 
 .chord-sheet-chord-diagram:has(.chord-sheet-fretboard) .chord-sheet-position-chooser {
 	margin-top: -10px;
-	padding-left: 5%;
+	padding-inline: 9% 4%;
 }
 
 .print .chord-sheet-position-chooser {
@@ -600,18 +603,27 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 }
 
 .chord-sheet-position-label {
-	margin: 0 0.2rem;
+	display: flex;
+	justify-content: center;
+	white-space: nowrap;
 }
 
 [class^=chord-sheet-btn] {
 	color: var(--text-faint);
 	cursor: default;
+	border-radius: var(--radius-s);
 }
 
 .chord-sheet-pos-btn-enabled {
 	color: var(--link-color);
 	text-decoration: var(--link-decoration);
 	cursor: pointer;
+}
+
+.chord-sheet-pos-btn-enabled:hover {
+	color: var(--link-color-hover);
+	text-decoration: var(--link-decoration-hover);
+	background-color: var(--background-modifier-hover);
 }
 
 .chord-sheet-no-diagram {
@@ -625,7 +637,6 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 }
 
 .chord-sheet-no-diagram-mark {
-	/* centered on the point given by the text element's x/y; the size is set there too */
 	text-anchor: middle;
 	dominant-baseline: central;
 	fill: var(--text-faint);

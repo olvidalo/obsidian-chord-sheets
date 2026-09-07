@@ -64,7 +64,7 @@ function whiteKeyWidth(diagramWidth: number): number {
 export class KeyboardDiagramRenderer implements InstrumentRenderer {
 	constructor(readonly instrument: KeyboardInstrument, readonly label: string) {}
 
-	getDiagram(chord: SheetChord): ChordDiagram | null {
+	getDiagram(chord: SheetChord, chordName: string): ChordDiagram | null {
 		const voicings = getKeyboardVoicings(chord);
 		if (voicings.length === 0) {
 			return null;
@@ -73,7 +73,11 @@ export class KeyboardDiagramRenderer implements InstrumentRenderer {
 
 		return {
 			numVoicings: voicings.length,
-			render: (index: number, width: number) => this.draw(voicings[index], range, width)
+			render: (index: number, width: number) => this.draw(voicings[index], range, width),
+			voicingName: (index: number) => {
+				const bass = voicings[index][0];
+				return bass.isRoot ? undefined : `${chordName}/${bass.name}`;
+			}
 		};
 	}
 

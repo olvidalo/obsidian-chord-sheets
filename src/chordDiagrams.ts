@@ -19,7 +19,7 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 	const renderer = getRenderer(instrument);
 	let currentPosition = 0;
 
-	const chordDiagram = renderer.getDiagram(chordToken.chord);
+	const chordDiagram = renderer.getDiagram(chordToken.chord, chordToken.chordSymbol.value);
 	if (!chordDiagram) {
 		const missingEl = renderer.renderMissing(width);
 		missingEl.addClass("chord-sheet-no-diagram");
@@ -37,7 +37,8 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 	};
 
 	if (chordDiagram.numVoicings > 1) {
-		updateChooser = createVoicingChooser(containerEl, chordDiagram.numVoicings, (delta: -1 | 1) => {
+		const voicingName = (index: number) => chordDiagram.voicingName?.(index);
+		updateChooser = createVoicingChooser(containerEl, chordDiagram.numVoicings, voicingName, (delta: -1 | 1) => {
 			const next = currentPosition + delta;
 			if (next < 0 || next >= chordDiagram.numVoicings) return;
 			currentPosition = next;
@@ -60,13 +61,17 @@ export function makeChordOverview(instrument: Instrument, container: HTMLElement
 }
 
 
-function createVoicingChooser(parent: HTMLElement, numVoicings: number, onChange: (delta: -1 | 1) => void): VoicingChooserUpdateFn {
+function createVoicingChooser(
+	parent: HTMLElement, numVoicings: number, voicingName: (index: number) => string | undefined,
+	onChange: (delta: -1 | 1) => void
+): VoicingChooserUpdateFn {
 	const chooserDiv = parent.createDiv({cls: "chord-sheet-position-chooser"});
 	const prevBtn = chooserDiv.createSpan({cls: "chord-sheet-btn-prev-position", text: "<"});
 
 	const labelSpan = chooserDiv.createSpan({cls: "chord-sheet-position-label"});
 	const positionSpan = labelSpan.createSpan({cls: "chord-sheet-position"});
 	labelSpan.createSpan({text: `/${numVoicings}`});
+	const nameSpan = labelSpan.createSpan({cls: "chord-sheet-voicing-name"});
 
 	const nextBtn = chooserDiv.createSpan({cls: "chord-sheet-btn-next-position", text: ">"});
 
@@ -75,6 +80,8 @@ function createVoicingChooser(parent: HTMLElement, numVoicings: number, onChange
 
 	return (index: number) => {
 		positionSpan.textContent = `${index + 1}`;
+		const name = voicingName(index);
+		nameSpan.textContent = name ? ` · ${name}` : "";
 		prevBtn.toggleClass("chord-sheet-pos-btn-enabled", index > 0);
 		nextBtn.toggleClass("chord-sheet-pos-btn-enabled", index < numVoicings - 1);
 	};
