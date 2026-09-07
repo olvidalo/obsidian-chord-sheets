@@ -113,14 +113,16 @@ describe('Parsing / Tokenization', () => {
 						value: 'Cmaj7',
 						range: [0, 5],
 						chord: expect.any(Object),
-						chordSymbol: { value: 'Cmaj7', range: [0, 5] }
+						chordSymbol: { value: 'Cmaj7', range: [0, 5] },
+						trailingSpaces: 1
 					},
 					{
 						type: 'chord',
 						value: 'Dm7b5',
 						range: [6, 11],
 						chord: expect.any(Object),
-						chordSymbol: { value: 'Dm7b5', range: [0, 5] }
+						chordSymbol: { value: 'Dm7b5', range: [0, 5] },
+						trailingSpaces: 1
 					},
 					{
 						type: 'chord',
@@ -131,6 +133,17 @@ describe('Parsing / Tokenization', () => {
 					}
 				]
 			);
+		});
+
+		test('should count the spaces after a chord, but not tabs or spaces after inline chords', () => {
+			const trailingSpaces = (line: string) => tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker)
+				.tokens.filter(isChordToken).map(token => token.trailingSpaces);
+
+			expect(trailingSpaces('C   G')).toEqual([3, undefined]);
+			expect(trailingSpaces('C G')).toEqual([1, undefined]);
+			expect(trailingSpaces('C \t G')).toEqual([undefined, undefined]);
+			expect(trailingSpaces('[C]   [G]')).toEqual([undefined, undefined]);
+			expect(trailingSpaces('Am*[x02210]   C')).toEqual([3, undefined]);
 		});
 
 		// helper type for tests that check only some chord fields

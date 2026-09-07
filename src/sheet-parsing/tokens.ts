@@ -14,6 +14,7 @@ interface SubToken {
 export interface ChordInfo {
 	chord: SheetChord
 	chordSymbol: SubToken
+	trailingSpaces?: number
 
 	inlineChord?: {
 		openingBracket: SubToken

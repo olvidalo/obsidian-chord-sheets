@@ -1,4 +1,4 @@
-import {ChordInfo, ChordToken, HeaderToken, MarkerToken, Token, TokenizedLine} from "./tokens";
+import {ChordInfo, ChordToken, HeaderToken, isChordToken, MarkerToken, Token, TokenizedLine} from "./tokens";
 import escapeStringRegexp from "escape-string-regexp";
 import {Chord} from "tonal";
 
@@ -236,6 +236,14 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 			} else {
 				Object.assign(token, {type: "chord"}, tokenInfo);
 			}
+		}
+	}
+
+	// only plain spaces count: tab stops make column alignment undefined
+	for (const [i, token] of tokens.entries()) {
+		const next = tokens[i + 1];
+		if (isChordToken(token) && !token.inlineChord && next?.type === "whitespace" && /^ +$/.test(next.value)) {
+			token.trailingSpaces = next.value.length;
 		}
 	}
 

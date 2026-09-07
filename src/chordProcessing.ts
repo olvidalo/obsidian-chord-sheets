@@ -16,7 +16,7 @@ export function processChords(chordRanges: ChordSymbolRange[], processNote: Note
 			continue;
 		}
 
-		const {from, to, chordSymbol} = chordRange;
+		const {chordSymbol} = chordRange;
 		const [chordTonic, chordType, bassNote] = Chord.tokenize(chordSymbol);
 
 		const processedTonic = processNote(chordTonic);
@@ -25,8 +25,25 @@ export function processChords(chordRanges: ChordSymbolRange[], processNote: Note
 			: processedTonic + chordType;
 
 		if (processedChord !== chordSymbol) {
-			changes.push({from: from, to: to, insert: processedChord});
+			changes.push(...replacementChanges(chordRange, processedChord));
 		}
+	}
+
+	return changes;
+}
+
+export function replaceChordSymbol(chordRanges: ChordSymbolRange[], newSymbol: string): ChangeSpec[] {
+	return chordRanges.flatMap(chordRange => replacementChanges(chordRange, newSymbol));
+}
+
+function replacementChanges({from, to, chordSymbol, tokenTo, trailingSpaces}: ChordSymbolRange, newSymbol: string): ChangeSpec[] {
+	const changes: ChangeSpec[] = [{from, to, insert: newSymbol}];
+	const growth = newSymbol.length - chordSymbol.length;
+
+	if (growth < 0 && trailingSpaces > 0) {
+		changes.push({from: tokenTo, insert: " ".repeat(-growth)});
+	} else if (growth > 0 && trailingSpaces > 1) {
+		changes.push({from: tokenTo, to: tokenTo + Math.min(growth, trailingSpaces - 1)});
 	}
 
 	return changes;

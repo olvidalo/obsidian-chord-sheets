@@ -38,7 +38,9 @@ export interface ChordSymbolRange {
 	from: number,
 	to: number,
 	chord: SheetChord,
-	chordSymbol: string
+	chordSymbol: string,
+	tokenTo: number,
+	trailingSpaces: number
 }
 
 export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsViewPlugin, {
@@ -212,14 +214,16 @@ export class ChordSheetsViewPlugin implements PluginValue {
 			chordBlockEnd = blockDef.to;
 		}
 
-		chordBlocksState.chordDecos.between(blockDef.from, chordBlockEnd, (from, _to, value) => {
+		chordBlocksState.chordDecos.between(blockDef.from, chordBlockEnd, (tokenFrom, tokenTo, value) => {
 			if (value.spec.type === "chord") {
 				const chordToken = value.spec.token as ChordToken;
 				chordRanges.push({
-					from: from + chordToken.chordSymbol.range[0],
-					to: from + chordToken.chordSymbol.range[1],
+					from: tokenFrom + chordToken.chordSymbol.range[0],
+					to: tokenFrom + chordToken.chordSymbol.range[1],
 					chordSymbol: chordToken.chordSymbol.value,
-					chord: chordToken.chord
+					chord: chordToken.chord,
+					tokenTo,
+					trailingSpaces: chordToken.trailingSpaces ?? 0
 				});
 			}
 		});

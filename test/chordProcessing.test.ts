@@ -1,5 +1,5 @@
-import {enharmonicToggle, transpose} from "../src/chordProcessing";
-import {ChangeSet, Text} from "@codemirror/state";
+import {enharmonicToggle, replaceChordSymbol, transpose} from "../src/chordProcessing";
+import {ChangeSet, ChangeSpec, Text} from "@codemirror/state";
 import {testingSong} from "./data/testing-song";
 import {testingSongInline} from "./data/testing-song-inline";
 import {ChordSymbolRange} from "../src/editor-extension/chordSheetsViewPlugin";
@@ -16,7 +16,9 @@ export function getChordSymbolRangesForLine(line: string, lineIndex = 0): ChordS
 			from: token.range[0] + token.chordSymbol.range[0],
 			to: token.range[0] + token.chordSymbol.range[1],
 			chordSymbol: token.chordSymbol.value,
-			chord: token.chord
+			chord: token.chord,
+			tokenTo: token.range[1],
+			trailingSpaces: token.trailingSpaces ?? 0
 		}));
 }
 
@@ -31,10 +33,16 @@ export function getChordRangesForSheet(sheet: string) {
 	return {text, chordRanges};
 }
 
+function applyToSheet(sourceSheet: string, changes: ChangeSpec[]) {
+	return ChangeSet.of(changes, sourceSheet.length).apply(Text.of(sourceSheet.split('\n'))).toString();
+}
+
 function enharmonicToggleSheet(sourceSheet: string) {
-	const {text, chordRanges} = getChordRangesForSheet(sourceSheet);
-	const changes = enharmonicToggle(chordRanges);
-	return ChangeSet.of(changes, sourceSheet.length).apply(text).toString();
+	return applyToSheet(sourceSheet, enharmonicToggle(getChordRangesForSheet(sourceSheet).chordRanges));
+}
+
+function transposeSheet(sourceSheet: string, direction: "up" | "down") {
+	return applyToSheet(sourceSheet, transpose(getChordRangesForSheet(sourceSheet).chordRanges, direction));
 }
 
 describe('Transposition', () => {
@@ -74,6 +82,7 @@ describe('Transposition', () => {
 		expect(changes).toEqual([
 			{ from: 0, to: 3, insert: 'C#m7' },
 			{ from: 4, to: 10, insert: 'Amaj7' },
+			{ from: 10, insert: ' ' },
 			{ from: 11, to: 14, insert: 'B/F#' },
 		]);
 	});
@@ -103,10 +112,7 @@ describe('Transposition', () => {
 	) {
 		test.each(testCases.slice(1))(`should transpose %d step(s) ${direction}`, (index, transposedSheet) => {
 			const sourceSheet = testCases[parseInt(index) - 1][1];
-			const {text, chordRanges} = getChordRangesForSheet(sourceSheet);
-			const changes = transpose(chordRanges, direction);
-			const result = ChangeSet.of(changes, sourceSheet.length).apply(text).toString();
-			expect(result).toEqual(transposedSheet);
+			expect(transposeSheet(sourceSheet, direction)).toEqual(transposedSheet);
 		});
 	}
 
@@ -126,6 +132,55 @@ describe('Transposition', () => {
 		testTransposeSheet("up", upwardsTests);
 		testTransposeSheet("down", downwardsTests);
 
+	});
+});
+
+describe("Alignment: spaces after a chord absorb the symbol's length change", () => {
+	test("removes as many spaces as the symbol grows", () => {
+		expect(transpose(getChordSymbolRangesForLine("C    G"), "up")).toEqual([
+			{from: 0, to: 1, insert: "C#"},
+			{from: 1, to: 2},
+			{from: 5, to: 6, insert: "G#"}
+		]);
+		expect(transposeSheet("C    G", "up")).toEqual("C#   G#");
+		expect(transposeSheet("C/G   Am", "up")).toEqual("C#/G# A#m");
+	});
+
+	test("keeps at least one space", () => {
+		expect(transposeSheet("C G", "up")).toEqual("C# G#");
+		expect(transposeSheet("C/G  Am", "up")).toEqual("C#/G# A#m");
+	});
+
+	test("inserts spaces when the symbol shrinks", () => {
+		expect(enharmonicToggleSheet("Cb  Dm")).toEqual("B   Dm");
+		expect(transposeSheet("C#   G", "down")).toEqual("C    F#");
+	});
+
+	test("does nothing without spaces after the token", () => {
+		expect(transposeSheet("C#", "down")).toEqual("C");
+		expect(transposeSheet("C\tG", "up")).toEqual("C#\tG#");
+	});
+
+	test("never touches inline chords", () => {
+		expect(transposeSheet("[C]   [G]", "up")).toEqual("[C#]   [G#]");
+	});
+
+	test("treats following words like chords", () => {
+		expect(transposeSheet("C   G   (x2)", "up")).toEqual("C#  G#  (x2)");
+	});
+
+	test("adjusts after the whole token, including a fingering", () => {
+		expect(enharmonicToggleSheet("Cb*[x02210]   C")).toEqual("B*[x02210]    C");
+	});
+
+	test("round trip keeps the columns, and the width when there was a space to spare", () => {
+		expect(transposeSheet(transposeSheet("C   G", "up"), "down")).toEqual("C   G");
+		expect(transposeSheet(transposeSheet("C G", "up"), "down")).toEqual("C  G");
+	});
+
+	test("replaceChordSymbol", () => {
+		const [first] = getChordSymbolRangesForLine("C/E  G");
+		expect(applyToSheet("C/E  G", replaceChordSymbol([first], "C"))).toEqual("C    G");
 	});
 });
 
