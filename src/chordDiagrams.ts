@@ -21,7 +21,9 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 
 	const chordDiagram = renderer.getDiagram(chordToken.chord);
 	if (!chordDiagram) {
-		diagramContainer.replaceChildren(renderer.renderMissing(width));
+		const missingEl = renderer.renderMissing(width);
+		missingEl.addClass("chord-sheet-no-diagram");
+		diagramContainer.replaceChildren(missingEl);
 		diagramContainer.setAttribute("aria-label", `No diagram found for ${chordToken.chordSymbol.value}`);
 
 		return containerEl;
