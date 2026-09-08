@@ -10,6 +10,7 @@ import {
 	ChordSheetsViewPlugin,
 	ChordSymbolRange,
 	EnharmonicToggleEventDetail,
+	PersistVoicingEventDetail,
 	TransposeEventDetail
 } from "./editor-extension/chordSheetsViewPlugin";
 import {InstrumentChangeEventDetail} from "./editor-extension/chordBlockToolsWidget";
@@ -18,7 +19,7 @@ import {ChordSheetsSettingTab} from "./chordSheetsSettingTab";
 import {IChordSheetsPlugin} from "./chordSheetsPluginInterface";
 import {chordSheetsEditorExtension} from "./editor-extension/chordSheetsEditorExtension";
 import {addCustomChordTypes} from "./customChordTypes";
-import {enharmonicToggle, transpose} from "./chordProcessing";
+import {enharmonicToggle, replaceChordSymbol, transpose} from "./chordProcessing";
 import {Instrument} from "./instruments/types";
 import {instruments} from "./instruments/instruments";
 
@@ -104,6 +105,27 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 				if (chordPlugin) {
 					const chordTokens = await chordPlugin.getChordSymbolRangesForBlock(blockDef);
 					this.enharmonicToggle(chordTokens, editorView);
+				}
+			}
+		});
+
+		this.registerDomEvent(window, "chord-sheet-persist-voicing", async (event: CustomEvent<PersistVoicingEventDetail>) => {
+			const {pos, chordSymbol, newSymbol, onlyAtPos} = event.detail;
+			const editor = this.app.workspace.activeEditor?.editor;
+
+			if (editor) {
+				const editorView = editor.cm as EditorView;
+				const chordPlugin = editorView?.plugin(this.editorPlugin);
+				const blockDef = chordPlugin?.getChordSheetBlockAt(pos);
+				if (chordPlugin && blockDef) {
+					const chordRanges = (await chordPlugin.getChordSymbolRangesForBlock(blockDef))
+						.filter(range => range.chordSymbol === chordSymbol && (!onlyAtPos || range.from === pos));
+					const changes = replaceChordSymbol(chordRanges, newSymbol);
+					if (changes.length === 0) {
+						new Notice(`${chordSymbol} was not found in the chord block, nothing written.`);
+						return;
+					}
+					chordPlugin.applyChanges(changes);
 				}
 			}
 		});
@@ -247,7 +269,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		const editorView = view.editor.cm as EditorView;
 		const chordPlugin = editorView.plugin(plugin);
 		if (chordPlugin) {
-			const chordSheetBlockAtCursor = chordPlugin.getChordSheetBlockAtCursor();
+			const chordSheetBlockAtCursor = chordPlugin.getChordSheetBlockAt();
 			if (!chordSheetBlockAtCursor) {
 				return false;
 			}
@@ -264,7 +286,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		const editorView = editor.cm as EditorView;
 		const chordPlugin = editorView.plugin(plugin);
 		if (chordPlugin) {
-			const chordSheetBlockAtCursor = chordPlugin.getChordSheetBlockAtCursor();
+			const chordSheetBlockAtCursor = chordPlugin.getChordSheetBlockAt();
 			if (!chordSheetBlockAtCursor) {
 				return false;
 			}
@@ -283,7 +305,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		const editorView = editor.cm as EditorView;
 		const chordPlugin = editorView.plugin(plugin);
 		if (chordPlugin) {
-			const chordSheetBlockAtCursor = chordPlugin.getChordSheetBlockAtCursor();
+			const chordSheetBlockAtCursor = chordPlugin.getChordSheetBlockAt();
 			if (!chordSheetBlockAtCursor) {
 				return false;
 			}

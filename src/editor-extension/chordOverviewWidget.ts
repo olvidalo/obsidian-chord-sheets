@@ -1,6 +1,7 @@
 import {EditorView, WidgetType} from "@codemirror/view";
 import {chordSequenceString, uniqueChordTokens} from "../chordsUtils";
 import {makeChordOverview} from "../chordDiagrams";
+import {PersistVoicingEventDetail} from "./chordSheetsViewPlugin";
 
 import {ChordToken} from "../sheet-parsing/tokens";
 import {Instrument} from "../instruments/types";
@@ -49,7 +50,7 @@ export class ChordOverviewWidget extends WidgetType {
 			|| this.instrument !== previousInstrument
 			|| this.diagramWidth !== previousDiagramWidthInt
 		) {
-			this.updateChordOverview(chordOverview);
+			this.updateChordOverview(chordOverview, view);
 			view.requestMeasure();
 		}
 
@@ -60,14 +61,18 @@ export class ChordOverviewWidget extends WidgetType {
 		const el = createDiv({cls: "chord-sheet-chord-overview-container"});
 		const chordOverviewEl = el.createDiv({cls: ["chord-sheet-chord-overview", "chord-sheet-preview-mode"]});
 
-		this.updateChordOverview(chordOverviewEl);
+		this.updateChordOverview(chordOverviewEl, view);
 		view.requestMeasure();
 		return el;
 	}
 
-	private updateChordOverview(chordOverview: HTMLElement, instrument: Instrument = this.instrument) {
+	private updateChordOverview(chordOverview: HTMLElement, view: EditorView, instrument: Instrument = this.instrument) {
 		chordOverview.replaceChildren();
-		makeChordOverview(instrument, chordOverview, this.uniqueChordTokens, this.diagramWidth);
+		makeChordOverview(instrument, chordOverview, this.uniqueChordTokens, this.diagramWidth, (chordToken, newSymbol) => {
+			window.dispatchEvent(new CustomEvent<PersistVoicingEventDetail>("chord-sheet-persist-voicing", {
+				detail: {pos: view.posAtDOM(chordOverview), chordSymbol: chordToken.chordSymbol.value, newSymbol, onlyAtPos: false}
+			}));
+		});
 	}
 
 	private getChordOverviewEl(el: HTMLElement): HTMLElement {

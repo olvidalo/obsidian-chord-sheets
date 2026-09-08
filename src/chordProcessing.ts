@@ -34,7 +34,9 @@ export function processChords(chordRanges: ChordSymbolRange[], processNote: Note
 }
 
 export function replaceChordSymbol(chordRanges: ChordSymbolRange[], newSymbol: string): ChangeSpec[] {
-	return chordRanges.flatMap(chordRange => replacementChanges(chordRange, newSymbol));
+	return chordRanges
+		.filter(chordRange => !chordRange.chord.userDefinedChord)
+		.flatMap(chordRange => replacementChanges(chordRange, newSymbol));
 }
 
 function replacementChanges({from, to, chordSymbol, tokenTo, trailingSpaces}: ChordSymbolRange, newSymbol: string): ChangeSpec[] {

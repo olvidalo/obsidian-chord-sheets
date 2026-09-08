@@ -33,6 +33,13 @@ export interface EnharmonicToggleEventDetail {
 	}
 }
 
+export interface PersistVoicingEventDetail {
+	pos: number;
+	chordSymbol: string;
+	newSymbol: string;
+	onlyAtPos: boolean;
+}
+
 
 export interface ChordSymbolRange {
 	from: number,
@@ -96,13 +103,13 @@ export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsView
 			const pos = view.posAtCoords({x: event.clientX, y: event.clientY});
 			let isOverEl = false;
 			if (pos) {
-				view.state.field(chordBlocksStateField).chordDecos.between(pos, pos, (_from, _to, deco) => {
+				view.state.field(chordBlocksStateField).chordDecos.between(pos, pos, (from, _to, deco) => {
 					if (!deco.spec.token) {
 						return;
 					}
 
 					if (this.currentDeco != deco) {
-						this.tooltip.hide();
+						this.hideTooltip();
 						if (isChordToken(deco.spec.token)) {
 							const chordToken: ChordToken = deco.spec.token;
 							const dom = view.domAtPos(pos);
@@ -122,7 +129,17 @@ export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsView
 									if (currentBlock.value) {
 										this.currentDeco = deco;
 										this.currentEl = el;
-										this.tooltip.show(el, currentBlock.value.instrument, chordToken, diagramWidth);
+										this.tooltip.show(el, currentBlock.value.instrument, chordToken, diagramWidth, {scope: "chord", persist: newSymbol => {
+											this.hideTooltip();
+											window.dispatchEvent(new CustomEvent<PersistVoicingEventDetail>("chord-sheet-persist-voicing", {
+												detail: {
+													pos: from + chordToken.chordSymbol.range[0],
+													chordSymbol: chordToken.chordSymbol.value,
+													newSymbol,
+													onlyAtPos: true
+												}
+											}));
+										}});
 									}
 								}
 							}
@@ -152,9 +169,7 @@ export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsView
 						}
 					}
 
-					this.currentDeco = null;
-					this.currentEl = null;
-					this.tooltip.hide();
+					this.hideTooltip();
 				}
 			}
 		}
@@ -171,17 +186,15 @@ export class ChordSheetsViewPlugin implements PluginValue {
 	}
 
 
-	getChordSheetBlockAtCursor(): {
+	getChordSheetBlockAt(pos = this.view.state.selection.main.from): {
 		from: number,
 		to: number,
 		value: IChordBlockRangeValue
 	} | null {
-		const cursorPos = this.view.state.selection.main.from;
-
 		let from: number | null = null;
 		let to: number | null = null;
 		let blockValue: IChordBlockRangeValue | null = null;
-		this.view.state.field(chordBlocksStateField).ranges.between(cursorPos, cursorPos, (blockFrom, blockTo, value) => {
+		this.view.state.field(chordBlocksStateField).ranges.between(pos, pos, (blockFrom, blockTo, value) => {
 			from = blockFrom;
 			to = blockTo;
 			blockValue = {partiallyParsed: value.partiallyParsed, instrument: value.instrument};
@@ -256,8 +269,14 @@ export class ChordSheetsViewPlugin implements PluginValue {
 	}
 
 	destroy() {
-		this.tooltip.hide();
+		this.hideTooltip();
 		this.tooltip.popper.remove();
+	}
+
+	hideTooltip() {
+		this.currentDeco = null;
+		this.currentEl = null;
+		this.tooltip.hide();
 	}
 
 	updateSettings(settings: ChordSheetsSettings) {

@@ -1,5 +1,5 @@
 import tippy, {Instance} from "tippy.js";
-import {makeChordDiagram} from "../chordDiagrams";
+import {makeChordDiagram, PersistVoicing} from "../chordDiagrams";
 
 import {ChordToken} from "../sheet-parsing/tokens";
 import {Instrument} from "../instruments/types";
@@ -23,8 +23,8 @@ export class ChordTooltip {
 		});
 	}
 
-	show(target: HTMLElement, instrument: Instrument, chordToken: ChordToken, diagramWidth: number): void { // Replace `any` with the correct type for `vexChord`
-		this.popper.appendChild(makeChordDiagram(instrument, chordToken, diagramWidth));
+	show(target: HTMLElement, instrument: Instrument, chordToken: ChordToken, diagramWidth: number, persistVoicing?: PersistVoicing): void {
+		this.popper.appendChild(makeChordDiagram(instrument, chordToken, diagramWidth, persistVoicing));
 
 		if (this.instance) {
 			this.instance.setProps({

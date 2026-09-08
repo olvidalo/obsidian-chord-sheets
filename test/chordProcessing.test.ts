@@ -183,6 +183,11 @@ describe("Alignment: spaces after a chord absorb the symbol's length change", ()
 		const [first] = getChordSymbolRangesForLine("C/E  G");
 		expect(applyToSheet("C/E  G", replaceChordSymbol([first], "C"))).toEqual("C    G");
 	});
+
+	test("replaceChordSymbol leaves user-defined fingerings alone", () => {
+		const line = "C  C[x32010]";
+		expect(applyToSheet(line, replaceChordSymbol(getChordSymbolRangesForLine(line), "C/E"))).toEqual("C/E C[x32010]");
+	});
 });
 
 describe("Enharmonic toggle", () => {
