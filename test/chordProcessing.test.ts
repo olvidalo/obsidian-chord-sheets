@@ -73,6 +73,7 @@ describe('Transposition', () => {
 		expect(changes).toEqual([
 			{ from: 0, to: 3, insert: 'C#/G#' }
 		]);
+		expect(transposeSheet("C6/9/E Cm/maj7/B", "up")).toEqual("C#6/9/F C#m/maj7/C");
 	});
 
 	test('should transpose chords down', () => {

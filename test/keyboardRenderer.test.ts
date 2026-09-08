@@ -1,5 +1,6 @@
 import {Chord} from "tonal";
 import {addCustomChordTypes} from "../src/customChordTypes";
+import {parseChordSymbol} from "../src/chordsUtils";
 import {getKeyboardRange, getKeyboardVoicings, KeyboardDiagramRenderer} from "../src/instruments/keyboardRenderer";
 
 beforeAll(() => {
@@ -85,13 +86,14 @@ describe("getKeyboardVoicings", () => {
 });
 
 describe("KeyboardDiagramRenderer.getDiagram", () => {
-	const diagram = (symbol: string) => new KeyboardDiagramRenderer("piano", "Piano").getDiagram(Chord.get(symbol), symbol)!;
+	const diagram = (symbol: string) => new KeyboardDiagramRenderer("piano", "Piano").getDiagram(parseChordSymbol(symbol), symbol)!;
 
 	test("starts on the voicing written in the sheet", () => {
 		expect(diagram("C").initialVoicing).toBe(0);
 		expect(diagram("C/E").initialVoicing).toBe(1);
 		expect(diagram("C/G").initialVoicing).toBe(2);
 		expect(diagram("C/D").initialVoicing).toBe(0);
+		expect(diagram("C6/9/E").initialVoicing).toBe(1);
 	});
 
 	test("names every voicing as it would be written in the sheet", () => {
@@ -102,7 +104,7 @@ describe("KeyboardDiagramRenderer.getDiagram", () => {
 		expect(names("C")).toEqual(["C", "C/E", "C/G"]);
 		expect(names("C/E")).toEqual(["C", "C/E", "C/G"]);
 		expect(names("Am7/G")).toEqual(["Am7", "Am7/C", "Am7/E", "Am7/G"]);
-		expect(names("C6/9")[0]).toEqual("C6/9");
+		expect(names("C6/9").slice(0, 2)).toEqual(["C6/9", "C6/9/E"]);
 		expect(names("C/D")).toEqual(["C/D"]);
 	});
 });

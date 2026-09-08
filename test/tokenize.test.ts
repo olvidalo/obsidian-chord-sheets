@@ -177,6 +177,17 @@ describe('Parsing / Tokenization', () => {
 					]);
 		});
 
+		test('should handle slash chords whose type contains a slash', () => {
+			const line = 'C6/9/E Cm/maj7/B C6/9/X';
+			const { tokens } = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
+
+			expect(tokens.filter(isChordToken)).toMatchObject<ChordTokenWithPartialChord[]>([
+				{ chord: { tonic: 'C', type: 'sixth added ninth', bass: 'E' }, chordSymbol: { value: 'C6/9/E', range: [0, 6] } },
+				{ chord: { tonic: 'C', type: 'minor/major seventh', bass: 'B' }, chordSymbol: { value: 'Cm/maj7/B', range: [0, 9] } },
+			]);
+			expect(tokens.filter(t => t.type === 'word').map(t => t.value)).toEqual(['C6/9/X']);
+		});
+
 		test('should handle inline chords', () => {
 			const line = 'The [C#/D#] Eastern world, it [F# spec.] is ex-[G#7  ]plodin\'';
 			const result = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);

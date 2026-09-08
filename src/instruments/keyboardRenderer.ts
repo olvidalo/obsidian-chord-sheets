@@ -1,5 +1,5 @@
-import {Chord, Note} from "tonal";
-import {SheetChord} from "../chordsUtils";
+import {Note} from "tonal";
+import {SheetChord, tokenizeChordSymbol} from "../chordsUtils";
 import {ChordDiagram, InstrumentRenderer, KeyboardInstrument} from "./types";
 import {drawKeyboard, drawMissingMark, KeyRange} from "./keyboardSvg";
 
@@ -82,7 +82,7 @@ export class KeyboardDiagramRenderer implements InstrumentRenderer {
 			return null;
 		}
 		const range = getKeyboardRange(voicings.flat().map(note => note.midi));
-		const [tonic, type] = Chord.tokenize(chordName);
+		const [tonic, type] = tokenizeChordSymbol(chordName);
 		const nameWithoutBass = tonic + type;
 
 		return {

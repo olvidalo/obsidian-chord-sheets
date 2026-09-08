@@ -1,4 +1,5 @@
-import {Chord, Note} from "tonal";
+import {Note} from "tonal";
+import {tokenizeChordSymbol} from "./chordsUtils";
 import {ChordSymbolRange} from "./editor-extension/chordSheetsViewPlugin";
 import {ChangeSpec} from "@codemirror/state";
 
@@ -17,7 +18,7 @@ export function processChords(chordRanges: ChordSymbolRange[], processNote: Note
 		}
 
 		const {chordSymbol} = chordRange;
-		const [chordTonic, chordType, bassNote] = Chord.tokenize(chordSymbol);
+		const [chordTonic, chordType, bassNote] = tokenizeChordSymbol(chordSymbol);
 
 		const processedTonic = processNote(chordTonic);
 		const processedChord = bassNote
