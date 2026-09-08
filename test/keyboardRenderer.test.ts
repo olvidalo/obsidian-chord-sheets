@@ -40,7 +40,8 @@ describe("getKeyboardVoicings", () => {
 
 		test("double accidentals are simplified, single ones are kept", () => {
 			// tonal spells Dbdim as Db Fb Abb
-			expect(names("Dbdim")[0]).toEqual(["Db", "E", "G"]);
+			expect(names("Dbdim")[0]).toEqual(["Db", "Fb", "G"]);
+			expect(names("Db7/Cb")[3]).toEqual(["Cb", "Db", "F", "Ab"]);
 		});
 
 		test("chord types that only exist as an alias in tonal are voiced correctly", () => {
@@ -105,6 +106,7 @@ describe("KeyboardDiagramRenderer.getDiagram", () => {
 		expect(names("C/E")).toEqual(["C", "C/E", "C/G"]);
 		expect(names("Am7/G")).toEqual(["Am7", "Am7/C", "Am7/E", "Am7/G"]);
 		expect(names("C6/9").slice(0, 2)).toEqual(["C6/9", "C6/9/E"]);
+		expect(names("Db7/Cb")[3]).toEqual("Db7/Cb");
 		expect(names("C/D")).toEqual(["C/D"]);
 	});
 });

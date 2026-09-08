@@ -53,8 +53,13 @@ function stackUpward(names: readonly string[], root: string): Voicing {
 		// e.g. the C in E G C: not above the G yet, so take the C an octave higher
 		while (midi <= previousMidi) midi += 12;
 		previousMidi = midi;
-		return {midi, name: Note.simplify(name), isRoot: name === root};
+		return {midi, name: readableName(name), isRoot: name === root};
 	});
+}
+
+/** Keeps the chord's spelling (Cb stays Cb); only double accidentals are simplified. */
+function readableName(name: string): string {
+	return Math.abs(Note.get(name).alt) > 1 ? Note.simplify(name) : name;
 }
 
 /** Two octaves, plus one for every octave the given MIDI notes reach beyond them. */
