@@ -1,7 +1,7 @@
 import {EditorView, WidgetType} from "@codemirror/view";
 import {chordSequenceString, uniqueChordTokens} from "../chordsUtils";
 import {makeChordOverview} from "../chordDiagrams";
-import {PersistVoicingEventDetail} from "./chordSheetsViewPlugin";
+import {PersistVoicingEventDetail} from "../chordSheetEvents";
 
 import {ChordToken} from "../sheet-parsing/tokens";
 import {Instrument} from "../instruments/types";

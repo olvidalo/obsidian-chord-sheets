@@ -8,12 +8,14 @@ import {Extension} from "@codemirror/state";
 import {
 	chordSheetEditorPlugin,
 	ChordSheetsViewPlugin,
-	ChordSymbolRange,
+	ChordSymbolRange
+} from "./editor-extension/chordSheetsViewPlugin";
+import {
 	EnharmonicToggleEventDetail,
+	InstrumentChangeEventDetail,
 	PersistVoicingEventDetail,
 	TransposeEventDetail
-} from "./editor-extension/chordSheetsViewPlugin";
-import {InstrumentChangeEventDetail} from "./editor-extension/chordBlockToolsWidget";
+} from "./chordSheetEvents";
 import {AutoscrollControl, SPEED_CHANGED_EVENT} from "./autoscrollControl";
 import {ChordSheetsSettingTab} from "./chordSheetsSettingTab";
 import {IChordSheetsPlugin} from "./chordSheetsPluginInterface";

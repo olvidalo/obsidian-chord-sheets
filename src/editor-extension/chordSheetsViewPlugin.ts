@@ -15,31 +15,7 @@ import {
 } from "./chordBlocksStateField";
 
 import {ChordToken, isChordToken} from "../sheet-parsing/tokens";
-
-export interface TransposeEventDetail {
-	direction: "up" | "down",
-	blockDef: {
-		from: number
-		to: number
-		value: IChordBlockRangeValue
-	}
-}
-
-export interface EnharmonicToggleEventDetail {
-	blockDef: {
-		from: number
-		to: number
-		value: IChordBlockRangeValue
-	}
-}
-
-export interface PersistVoicingEventDetail {
-	pos: number;
-	chordSymbol: string;
-	newSymbol: string;
-	onlyAtPos: boolean;
-}
-
+import {EnharmonicToggleEventDetail, PersistVoicingEventDetail, TransposeEventDetail} from "../chordSheetEvents";
 
 export interface ChordSymbolRange {
 	from: number,

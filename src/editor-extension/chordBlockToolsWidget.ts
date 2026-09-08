@@ -3,11 +3,7 @@ import {chordBlocksStateField} from "./chordBlocksStateField";
 import {setIcon, setTooltip} from "obsidian";
 import {Instrument} from "../instruments/types";
 import {instrumentLabels} from "../instruments/instruments";
-
-export interface InstrumentChangeEventDetail {
-	selectedInstrument: string
-	from: number
-}
+import {InstrumentChangeEventDetail} from "../chordSheetEvents";
 
 
 export class ChordBlockToolsWidget extends WidgetType {
