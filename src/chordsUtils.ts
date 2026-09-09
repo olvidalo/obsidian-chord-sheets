@@ -25,14 +25,15 @@ export function parseChordSymbol(symbol: string): SheetChord {
 
 
 export function uniqueChordTokens(chordTokens: ChordToken[]) {
-	const seenValues = new Set<string>();
+	const seen = new Set<string>();
 
 	return chordTokens.filter(token => {
-		if (!seenValues.has(token.chordSymbol.value)) {
-			seenValues.add(token.chordSymbol.value);
-			return true;
+		const key = token.chordSymbol.value + (token.chord.userDefinedChord || "");
+		if (seen.has(key)) {
+			return false;
 		}
-		return false;
+		seen.add(key);
+		return true;
 	});
 }
 
