@@ -76,7 +76,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			const editor = this.app.workspace.activeEditor?.editor;
 			const { selectedInstrument, from } = event.detail;
 			if (editor) {
-				const editorView = editor.cm as EditorView;
+				const editorView = editor.cm;
 				this.changeInstrument(editorView, selectedInstrument as Instrument, from);
 			}
 		});
@@ -86,8 +86,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			const editor = this.app.workspace.activeEditor?.editor;
 
 			if (editor) {
-				// @ts-ignore
-				const editorView = editor.cm as EditorView;
+				const editorView = editor.cm;
 				const chordPlugin = editorView?.plugin(this.editorPlugin);
 				if (chordPlugin) {
 					const chordTokens = await chordPlugin.getChordSymbolRangesForBlock(blockDef);
@@ -101,8 +100,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			const editor = this.app.workspace.activeEditor?.editor;
 
 			if (editor) {
-				// @ts-ignore
-				const editorView = editor.cm as EditorView;
+				const editorView = editor.cm;
 				const chordPlugin = editorView?.plugin(this.editorPlugin);
 				if (chordPlugin) {
 					const chordTokens = await chordPlugin.getChordSymbolRangesForBlock(blockDef);
@@ -116,7 +114,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			const editor = this.app.workspace.activeEditor?.editor;
 
 			if (editor) {
-				const editorView = editor.cm as EditorView;
+				const editorView = editor.cm;
 				const chordPlugin = editorView?.plugin(this.editorPlugin);
 				const blockDef = chordPlugin?.getChordSheetBlockAt(pos);
 				if (chordPlugin && blockDef) {
@@ -253,22 +251,16 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		this.addSettingTab(new ChordSheetsSettingTab(this.app, this));
 
 		if (this.getMetadataType(AUTOSCROLL_SPEED_PROPERTY) !== "number") {
-			this.app.metadataTypeManager.setType(AUTOSCROLL_SPEED_PROPERTY, "number");
+			void this.app.metadataTypeManager.setType(AUTOSCROLL_SPEED_PROPERTY, "number");
 		}
 	}
 
-	private getMetadataType(property: string) {
-		// old API <= 1.9.1
-		if (this.app.metadataTypeManager.getAssignedType) {
-			return this.app.metadataTypeManager.getAssignedType(property);
-		}
-		// @ts-ignore new API >= 1.9.2
-		const typeInfo = this.app.metadataTypeManager.getTypeInfo(property);
-		return typeInfo.expected.type;
+	private getMetadataType(property: string): string {
+		return this.app.metadataTypeManager.getTypeInfo(property, undefined).expected.type;
 	}
 
 	private changeInstrumentCommand(view: MarkdownView, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean, instrument: Instrument | null) {
-		const editorView = view.editor.cm as EditorView;
+		const editorView = view.editor.cm;
 		const chordPlugin = editorView.plugin(plugin);
 		if (chordPlugin) {
 			const chordSheetBlockAtCursor = chordPlugin.getChordSheetBlockAt();
@@ -285,7 +277,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 	}
 
 	private transposeCommand(editor: Editor, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean, direction: "up" | "down") {
-		const editorView = editor.cm as EditorView;
+		const editorView = editor.cm;
 		const chordPlugin = editorView.plugin(plugin);
 		if (chordPlugin) {
 			const chordSheetBlockAtCursor = chordPlugin.getChordSheetBlockAt();
@@ -304,7 +296,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 	}
 
     private enharmonicToggleCommand(editor: Editor, plugin: ViewPlugin<ChordSheetsViewPlugin>, checking: boolean) {
-		const editorView = editor.cm as EditorView;
+		const editorView = editor.cm;
 		const chordPlugin = editorView.plugin(plugin);
 		if (chordPlugin) {
 			const chordSheetBlockAtCursor = chordPlugin.getChordSheetBlockAt();
@@ -390,7 +382,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 	private updateAutoscrollButton(view: MarkdownView | MarkdownFileInfo) {
 		// @ts-expect-error, not typed
-		const editorView = view.editor.cm as EditorView;
+		const editorView = view.editor.cm;
 		const plugin = editorView.plugin(this.editorPlugin);
 		if (plugin && view instanceof MarkdownView) {
 			const existingEl: HTMLElement | null = view.containerEl.querySelector(".chord-sheet-autoscroll-action");
@@ -468,7 +460,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 	}
 
 	private saveAutoscrollSpeed(file: TFile, newSpeed: number) {
-		this.app.fileManager.processFrontMatter(file, frontmatter => {
+		void this.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
 			frontmatter[AUTOSCROLL_SPEED_PROPERTY] = this.getMetadataType(AUTOSCROLL_SPEED_PROPERTY) === "number"
 				? newSpeed
 				: newSpeed.toString();
