@@ -286,7 +286,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			}
 
 			if (!checking) {
-				chordPlugin.getChordSymbolRangesForBlock(chordSheetBlockAtCursor).then(
+				void chordPlugin.getChordSymbolRangesForBlock(chordSheetBlockAtCursor).then(
 					chordTokens => this.transpose(chordTokens, editorView, direction, chordSheetBlockAtCursor.value.instrument)
 				);
 			}
@@ -305,7 +305,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			}
 
 			if (!checking) {
-				chordPlugin.getChordSymbolRangesForBlock(chordSheetBlockAtCursor).then(
+				void chordPlugin.getChordSymbolRangesForBlock(chordSheetBlockAtCursor).then(
 					chordTokens => this.enharmonicToggle(chordTokens, editorView, chordSheetBlockAtCursor.value.instrument)
 				);
 			}
@@ -413,8 +413,8 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		if (!file) {
 			return null;
 		}
-		const frontmatterSpeedValue = this.app.metadataCache.getFileCache(file)?.frontmatter?.[AUTOSCROLL_SPEED_PROPERTY];
-		const frontmatterSpeedNumber = parseInt(frontmatterSpeedValue);
+		const frontmatterSpeedValue: unknown = this.app.metadataCache.getFileCache(file)?.frontmatter?.[AUTOSCROLL_SPEED_PROPERTY];
+		const frontmatterSpeedNumber = parseInt(String(frontmatterSpeedValue));
 		return frontmatterSpeedNumber && !isNaN(frontmatterSpeedNumber)
 			? frontmatterSpeedNumber
 			: null;
@@ -500,7 +500,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<ChordSheetsSettings>);
 	}
 
 	async saveSettings() {
