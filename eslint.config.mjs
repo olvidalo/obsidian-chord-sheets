@@ -3,6 +3,9 @@ import tseslint from "typescript-eslint";
 import obsidianmd from "eslint-plugin-obsidianmd";
 import globals from "globals";
 
+// personal scratch files go into a gitignored eslint.config.local.mjs: `export default ["temp-*.ts"];`
+const localIgnores = await import("./eslint.config.local.mjs").then(local => local.default, () => []);
+
 export default defineConfig([
 	{
 		ignores: [
@@ -11,8 +14,7 @@ export default defineConfig([
 			"esbuild.config.mjs",
 			"version-bump.mjs",
 			"jest.config.js",
-			"temp-output-debug.ts",
-			"dev-notes/"
+			...localIgnores
 		]
 	},
 	...obsidianmd.configs.recommended,
