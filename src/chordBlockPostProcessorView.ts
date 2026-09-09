@@ -47,8 +47,8 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 			this.containerEl.empty();
 		}
 
+		this.containerEl.toggleClass("chord-sheet-hide-keyboard-note-names", !showKeyboardNoteNames);
 		const codeEl = this.containerEl.createEl("code", {cls: "chord-sheet-chord-block-preview"});
-		codeEl.toggleClass("chord-sheet-hide-keyboard-note-names", !showKeyboardNoteNames);
 
 		const chordTokens: ChordToken[] = [];
 		const lines = this.source.split("\n");
