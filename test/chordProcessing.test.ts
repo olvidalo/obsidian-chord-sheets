@@ -3,6 +3,7 @@ import {ChangeSet, ChangeSpec, Text} from "@codemirror/state";
 import {testingSong} from "./data/testing-song";
 import {testingSongInline} from "./data/testing-song-inline";
 import {ChordSymbolRange} from "../src/editor-extension/chordSheetsViewPlugin";
+import {Instrument} from "../src/instruments/types";
 
 import {isChordToken} from "../src/sheet-parsing/tokens";
 import {tokenizeLine} from "../src/sheet-parsing/tokenizeLine";
@@ -37,19 +38,19 @@ function applyToSheet(sourceSheet: string, changes: ChangeSpec[]) {
 	return ChangeSet.of(changes, sourceSheet.length).apply(Text.of(sourceSheet.split('\n'))).toString();
 }
 
-function enharmonicToggleSheet(sourceSheet: string) {
-	return applyToSheet(sourceSheet, enharmonicToggle(getChordRangesForSheet(sourceSheet).chordRanges));
+function enharmonicToggleSheet(sourceSheet: string, instrument: Instrument = "guitar") {
+	return applyToSheet(sourceSheet, enharmonicToggle(getChordRangesForSheet(sourceSheet).chordRanges, instrument));
 }
 
-function transposeSheet(sourceSheet: string, direction: "up" | "down") {
-	return applyToSheet(sourceSheet, transpose(getChordRangesForSheet(sourceSheet).chordRanges, direction));
+function transposeSheet(sourceSheet: string, direction: "up" | "down", instrument: Instrument = "guitar") {
+	return applyToSheet(sourceSheet, transpose(getChordRangesForSheet(sourceSheet).chordRanges, direction, instrument));
 }
 
 describe('Transposition', () => {
 
 	test('should transpose a simple chord', () => {
 		const chordRanges = getChordSymbolRangesForLine('Am');
-		const changes = transpose(chordRanges, "up");
+		const changes = transpose(chordRanges, "up", "guitar");
 
 		expect(changes).toEqual([
 			{ from: 0, to: 2, insert: 'A#m' }
@@ -58,7 +59,7 @@ describe('Transposition', () => {
 
 	test('should transpose simple chords up', () => {
 		const chordRanges = getChordSymbolRangesForLine('Am C');
-		const changes = transpose(chordRanges, "up");
+		const changes = transpose(chordRanges, "up", "guitar");
 
 		expect(changes).toEqual([
 			{ from: 0, to: 2, insert: 'A#m' },
@@ -68,7 +69,7 @@ describe('Transposition', () => {
 
 	test('should transpose slash chords up', () => {
 		const chordRanges = getChordSymbolRangesForLine('C/G');
-		const changes = transpose(chordRanges, "up");
+		const changes = transpose(chordRanges, "up", "guitar");
 
 		expect(changes).toEqual([
 			{ from: 0, to: 3, insert: 'C#/G#' }
@@ -78,7 +79,7 @@ describe('Transposition', () => {
 
 	test('should transpose chords down', () => {
 		const chordRanges = getChordSymbolRangesForLine('Dm7 Bbmaj7 C/G');
-		const changes = transpose(chordRanges, "down");
+		const changes = transpose(chordRanges, "down", "guitar");
 
 		expect(changes).toEqual([
 			{ from: 0, to: 3, insert: 'C#m7' },
@@ -90,7 +91,7 @@ describe('Transposition', () => {
 
 	test('should transpose inline chords', () => {
 		const chordRanges = getChordSymbolRangesForLine('[Am]Some [Cmaj7/G]text [Dm7/C aux text]');
-		const changes = transpose(chordRanges, "up");
+		const changes = transpose(chordRanges, "up", "guitar");
 		expect(changes).toEqual([
 			{ from: 1, to: 3, insert: 'A#m' },
 			{ from: 10, to: 17, insert: 'C#maj7/G#' },
@@ -100,7 +101,7 @@ describe('Transposition', () => {
 
 	test('should not transpose user-defined chords', () => {
 		const chordRanges = getChordSymbolRangesForLine('Am*[x02210]');
-		const changes = transpose(chordRanges, "up");
+		const changes = transpose(chordRanges, "up", "guitar");
 
 		expect(changes).toEqual([]);
 	});
@@ -138,7 +139,7 @@ describe('Transposition', () => {
 
 describe("Alignment: spaces after a chord absorb the symbol's length change", () => {
 	test("removes as many spaces as the symbol grows", () => {
-		expect(transpose(getChordSymbolRangesForLine("C    G"), "up")).toEqual([
+		expect(transpose(getChordSymbolRangesForLine("C    G"), "up", "guitar")).toEqual([
 			{from: 0, to: 1, insert: "C#"},
 			{from: 1, to: 2},
 			{from: 5, to: 6, insert: "G#"}
@@ -187,6 +188,29 @@ describe("Alignment: spaces after a chord absorb the symbol's length change", ()
 	test("replaceChordSymbol leaves user-defined fingerings alone", () => {
 		const line = "C  C[x32010]";
 		expect(applyToSheet(line, replaceChordSymbol(getChordSymbolRangesForLine(line), "C/E"))).toEqual("C/E C[x32010]");
+	});
+});
+
+describe("Chord definitions in brackets", () => {
+	test("fret shapes do not transpose, but take the enharmonic spelling", () => {
+		expect(transposeSheet("C[x32010] G", "up", "guitar")).toEqual("C[x32010] G#");
+		expect(enharmonicToggleSheet("Ab*[x02210]", "guitar")).toEqual("G#*[x02210]");
+	});
+
+	test("keyboard degrees stay, only the symbol moves", () => {
+		expect(transposeSheet("C7[3 b7 9]", "up", "piano")).toEqual("C#7[3 b7 9]");
+		expect(transposeSheet("C7[1 5 | 3 b7 9]", "down", "piano")).toEqual("B7[1 5 | 3 b7 9]");
+	});
+
+	test("keyboard note names move with the symbol", () => {
+		expect(transposeSheet("Cmaj7[E G B D]", "up", "piano")).toEqual("C#maj7[F G# C D#]");
+		expect(transposeSheet("C[E 5 1]", "up", "piano")).toEqual("C#[F 5 1]");
+		expect(enharmonicToggleSheet("Db[Db F Ab]", "piano")).toEqual("C#[C# F G#]");
+	});
+
+	test("the whole token counts for the alignment", () => {
+		expect(transposeSheet("Cmaj7[E G B D]    G", "up", "piano")).toEqual("C#maj7[F G# C D#] G#");
+		expect(transposeSheet("C#maj7[F G# C D#] G#", "down", "piano")).toEqual("Cmaj7[E G B D]    G");
 	});
 });
 

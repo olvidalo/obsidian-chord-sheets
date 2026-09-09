@@ -2,6 +2,7 @@ import {Note} from "tonal";
 import {tokenizeChordSymbol} from "./chordsUtils";
 import {ChordSymbolRange} from "./editor-extension/chordSheetsViewPlugin";
 import {ChangeSpec} from "@codemirror/state";
+import {Instrument, isKeyboardInstrument} from "./instruments/types";
 
 export type NoteProcessor = (note: string) => string;
 
@@ -10,27 +11,35 @@ function transposeNote(chordTonic: string, direction: "up" | "down"): string {
 	return direction === "up" ? Note.enharmonic(transposedNote) : Note.simplify(transposedNote);
 }
 
-export function processChords(chordRanges: ChordSymbolRange[], processNote: NoteProcessor, skipUserDefinedChords = false) {
+export function processChords(chordRanges: ChordSymbolRange[], processNote: NoteProcessor, instrument: Instrument) {
 	const changes: ChangeSpec[] = [];
 	for (const chordRange of chordRanges) {
-		if (skipUserDefinedChords && chordRange.chord.userDefinedChord) {
-			continue;
-		}
-
-		const {chordSymbol} = chordRange;
-		const [chordTonic, chordType, bassNote] = tokenizeChordSymbol(chordSymbol);
-
-		const processedTonic = processNote(chordTonic);
-		const processedChord = bassNote
-			? processedTonic + chordType + "/" + processNote(bassNote)
-			: processedTonic + chordType;
-
-		if (processedChord !== chordSymbol) {
-			changes.push(...replacementChanges(chordRange, processedChord));
+		const {chordSymbol, chord, tokenTo} = chordRange;
+		const definition = chord.userDefinedChord;
+		const newSymbol = processSymbol(chordSymbol, processNote);
+		if (definition && isKeyboardInstrument(instrument)) {
+			const newDefinition = definition.replace(/[^\s|]+/g, token => isNoteName(token) ? processNote(token) : token);
+			const newToken = `${newSymbol}[${newDefinition}]`;
+			if (newToken !== `${chordSymbol}[${definition}]`) {
+				changes.push(...replacementChanges(chordRange, newToken, tokenTo));
+			}
+		} else if (newSymbol !== chordSymbol) {
+			changes.push(...replacementChanges(chordRange, newSymbol));
 		}
 	}
 
 	return changes;
+}
+
+function processSymbol(chordSymbol: string, processNote: NoteProcessor): string {
+	const [tonic, type, bass] = tokenizeChordSymbol(chordSymbol);
+	return bass ? `${processNote(tonic)}${type}/${processNote(bass)}` : processNote(tonic) + type;
+}
+
+/** "E" or "Bb", but not a degree like "3" or "b7" (which tonal would read as the note B7). */
+function isNoteName(token: string): boolean {
+	const note = Note.get(token);
+	return !note.empty && note.oct === undefined;
 }
 
 export function replaceChordSymbol(chordRanges: ChordSymbolRange[], newSymbol: string): ChangeSpec[] {
@@ -39,9 +48,10 @@ export function replaceChordSymbol(chordRanges: ChordSymbolRange[], newSymbol: s
 		.flatMap(chordRange => replacementChanges(chordRange, newSymbol));
 }
 
-function replacementChanges({from, to, chordSymbol, tokenTo, trailingSpaces}: ChordSymbolRange, newSymbol: string): ChangeSpec[] {
-	const changes: ChangeSpec[] = [{from, to, insert: newSymbol}];
-	const growth = newSymbol.length - chordSymbol.length;
+/** Replaces from the symbol start up to `to` and lets the spaces after the token absorb the length change. */
+function replacementChanges({from, to: symbolTo, tokenTo, trailingSpaces}: ChordSymbolRange, newText: string, to = symbolTo): ChangeSpec[] {
+	const changes: ChangeSpec[] = [{from, to, insert: newText}];
+	const growth = newText.length - (to - from);
 
 	if (growth < 0 && trailingSpaces > 0) {
 		changes.push({from: tokenTo, insert: " ".repeat(-growth)});
@@ -52,10 +62,14 @@ function replacementChanges({from, to, chordSymbol, tokenTo, trailingSpaces}: Ch
 	return changes;
 }
 
-export function transpose(chordRanges: ChordSymbolRange[], direction: "up" | "down") {
-	return processChords(chordRanges, (note) => transposeNote(note, direction), true);
+export function transpose(chordRanges: ChordSymbolRange[], direction: "up" | "down", instrument: Instrument) {
+	// a custom fret shape cannot move with its symbol
+	const movable = isKeyboardInstrument(instrument)
+		? chordRanges
+		: chordRanges.filter(range => !range.chord.userDefinedChord);
+	return processChords(movable, (note) => transposeNote(note, direction), instrument);
 }
 
-export function enharmonicToggle(chordTokenRanges: ChordSymbolRange[]) {
-	return processChords(chordTokenRanges, Note.enharmonic);
+export function enharmonicToggle(chordTokenRanges: ChordSymbolRange[], instrument: Instrument) {
+	return processChords(chordTokenRanges, Note.enharmonic, instrument);
 }

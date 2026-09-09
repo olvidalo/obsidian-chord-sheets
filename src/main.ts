@@ -91,7 +91,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 				const chordPlugin = editorView?.plugin(this.editorPlugin);
 				if (chordPlugin) {
 					const chordTokens = await chordPlugin.getChordSymbolRangesForBlock(blockDef);
-					this.transpose(chordTokens, editorView, direction);
+					this.transpose(chordTokens, editorView, direction, blockDef.value.instrument);
 				}
 			}
 		});
@@ -106,7 +106,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 				const chordPlugin = editorView?.plugin(this.editorPlugin);
 				if (chordPlugin) {
 					const chordTokens = await chordPlugin.getChordSymbolRangesForBlock(blockDef);
-					this.enharmonicToggle(chordTokens, editorView);
+					this.enharmonicToggle(chordTokens, editorView, blockDef.value.instrument);
 				}
 			}
 		});
@@ -295,7 +295,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 			if (!checking) {
 				chordPlugin.getChordSymbolRangesForBlock(chordSheetBlockAtCursor).then(
-					chordTokens => this.transpose(chordTokens, editorView, direction)
+					chordTokens => this.transpose(chordTokens, editorView, direction, chordSheetBlockAtCursor.value.instrument)
 				);
 			}
 		}
@@ -314,7 +314,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 			if (!checking) {
 				chordPlugin.getChordSymbolRangesForBlock(chordSheetBlockAtCursor).then(
-					chordTokens => this.enharmonicToggle(chordTokens, editorView)
+					chordTokens => this.enharmonicToggle(chordTokens, editorView, chordSheetBlockAtCursor.value.instrument)
 				);
 			}
 		}
@@ -361,13 +361,13 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		}
 	}
 
-	private transpose(chordRanges: ChordSymbolRange[], editor: EditorView, direction: "up" | "down") {
-		const changes = transpose(chordRanges, direction);
+	private transpose(chordRanges: ChordSymbolRange[], editor: EditorView, direction: "up" | "down", instrument: Instrument) {
+		const changes = transpose(chordRanges, direction, instrument);
 		editor.plugin(this.editorPlugin)?.applyChanges(changes);
 	}
 
-    private enharmonicToggle(chordTokenRanges: ChordSymbolRange[], editor: EditorView) {
-		const changes = enharmonicToggle(chordTokenRanges);
+    private enharmonicToggle(chordTokenRanges: ChordSymbolRange[], editor: EditorView, instrument: Instrument) {
+		const changes = enharmonicToggle(chordTokenRanges, instrument);
 		if (changes.length === 0) {
 			new Notice("No chords with accidentals were found.");
 			return;

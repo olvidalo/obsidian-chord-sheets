@@ -5,6 +5,10 @@ export type FrettedInstrument = keyof IChordsDB;
 export type KeyboardInstrument = "piano";
 export type Instrument = FrettedInstrument | KeyboardInstrument;
 
+export function isKeyboardInstrument(instrument: Instrument): instrument is KeyboardInstrument {
+	return instrument === "piano";
+}
+
 export class NoDiagramError extends Error {}
 
 export interface ChordDiagram {
