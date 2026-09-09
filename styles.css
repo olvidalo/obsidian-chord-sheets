@@ -253,10 +253,10 @@ settings:
             - inherit
 
     -   id: user-defined-chord-frets-color
-        title: Custom chord fret string color
+        title: Custom chord definition color
         description: |
-        	Highlight color for the bracketed fret string in custom chords. Defaults to the current theme's
-        	normal code color`.
+        	Highlight color for the bracketed definition of custom chords (frets or piano voicing). Defaults to the
+        	current theme's normal code color.
         type: variable-themed-color
         format: hex
         default-light: '#'
@@ -264,8 +264,8 @@ settings:
 
     -
         id: user-defined-chord-frets-font-weight
-        title: Custom chord fret string font weight
-        description: Font weight for the bracketed fret string in custom chords.
+        title: Custom chord definition font weight
+        description: Font weight for the bracketed definition of custom chords (frets or piano voicing).
         type: variable-select
         default: inherit
         options:
