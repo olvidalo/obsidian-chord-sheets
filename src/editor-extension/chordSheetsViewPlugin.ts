@@ -101,7 +101,8 @@ export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsView
 
 								if (isOverEl) {
 									const currentBlock = view.state.field(chordBlocksStateField).ranges.iter(pos);
-									const diagramWidth = view.state.facet(chordSheetsConfigFacet).diagramWidth;
+									const {diagramWidth, showKeyboardNoteNames} = view.state.facet(chordSheetsConfigFacet);
+									this.tooltip.popper.toggleClass("chord-sheet-hide-keyboard-note-names", !showKeyboardNoteNames);
 									if (currentBlock.value) {
 										this.currentDeco = deco;
 										this.currentEl = el;

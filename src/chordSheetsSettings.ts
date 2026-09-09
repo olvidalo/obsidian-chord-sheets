@@ -17,6 +17,7 @@ export interface ChordSheetsSettings {
 	debug: boolean;
 	defaultInstrument: Instrument;
 	diagramWidth: number;
+	showKeyboardNoteNames: boolean;
 	autoscrollDefaultSpeed: number;
 	showAutoscrollButton: ShowAutoscrollButtonSetting;
 	blockLanguageSpecifier: string;
@@ -39,6 +40,7 @@ export const DEFAULT_SETTINGS: ChordSheetsSettings = {
 	debug: false,
 	defaultInstrument: "guitar",
 	diagramWidth: 100,
+	showKeyboardNoteNames: true,
 	autoscrollDefaultSpeed: 10,
 	showAutoscrollButton: "chord-blocks",
 	blockLanguageSpecifier: DEFAULT_BLOCK_LANGUAGE_SPECIFIER,

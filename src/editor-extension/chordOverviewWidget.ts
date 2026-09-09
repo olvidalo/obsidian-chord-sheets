@@ -14,6 +14,7 @@ export class ChordOverviewWidget extends WidgetType {
 	constructor(
 		private instrument: Instrument,
 		private diagramWidth: number,
+		private showKeyboardNoteNames: boolean,
 		chordTokens: ChordToken[],
 	) {
 		super();
@@ -32,6 +33,7 @@ export class ChordOverviewWidget extends WidgetType {
 	eq(other: ChordOverviewWidget): boolean {
 		return this.instrument === other.instrument
 			&& this.diagramWidth === other.diagramWidth
+			&& this.showKeyboardNoteNames === other.showKeyboardNoteNames
 			&& this.uniqueChordTokens.length === other.uniqueChordTokens.length
 			&& this.uniqueChordTokens.every((value, index) => value === other.uniqueChordTokens[index]);
 	}
@@ -41,7 +43,8 @@ export class ChordOverviewWidget extends WidgetType {
 		const {
 			chordSequence: previousChordSequence,
 			instrument: previousInstrument,
-			diagramWidth: previousDiagramWidth
+			diagramWidth: previousDiagramWidth,
+			showKeyboardNoteNames: previousShowKeyboardNoteNames
 		} = chordOverview.dataset;
 
 		const previousDiagramWidthInt = previousDiagramWidth ? parseInt(previousDiagramWidth) : 0;
@@ -49,6 +52,7 @@ export class ChordOverviewWidget extends WidgetType {
 			this.chordSequenceString !== previousChordSequence
 			|| this.instrument !== previousInstrument
 			|| this.diagramWidth !== previousDiagramWidthInt
+			|| String(this.showKeyboardNoteNames) !== previousShowKeyboardNoteNames
 		) {
 			this.updateChordOverview(chordOverview, view);
 			view.requestMeasure();
@@ -68,6 +72,8 @@ export class ChordOverviewWidget extends WidgetType {
 
 	private updateChordOverview(chordOverview: HTMLElement, view: EditorView, instrument: Instrument = this.instrument) {
 		chordOverview.replaceChildren();
+		chordOverview.toggleClass("chord-sheet-hide-keyboard-note-names", !this.showKeyboardNoteNames);
+		chordOverview.dataset.showKeyboardNoteNames = String(this.showKeyboardNoteNames);
 		makeChordOverview(instrument, chordOverview, this.uniqueChordTokens, this.diagramWidth, (chordToken, newSymbol) => {
 			window.dispatchEvent(new CustomEvent<PersistVoicingEventDetail>("chord-sheet-persist-voicing", {
 				detail: {pos: view.posAtDOM(chordOverview), chordSymbol: chordToken.chordSymbol.value, newSymbol, onlyAtPos: false}

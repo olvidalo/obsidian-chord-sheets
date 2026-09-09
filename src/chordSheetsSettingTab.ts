@@ -75,6 +75,16 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 				.setDynamicTooltip()
 				.onChange(value => debouncedChangeDiagramSize(value)));
 
+		new Setting(containerEl)
+			.setName('Show note names under piano keys')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showKeyboardNoteNames)
+				.onChange(async value => {
+					this.plugin.settings.showKeyboardNoteNames = value;
+					await this.plugin.saveSettings();
+					this.plugin.applyNewSettingsToEditors();
+				}));
+
 		const defaultInstrumentDescFrag = createFragment();
 		const defaultInstrumentDescEl = defaultInstrumentDescFrag.createSpan();
 		defaultInstrumentDescEl.append(`

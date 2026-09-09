@@ -36,6 +36,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 			showChordDiagramsOnHover,
 			showChordOverview,
 			diagramWidth,
+			showKeyboardNoteNames,
 			highlightChords,
 			highlightSectionHeaders,
 			highlightRhythmMarkers,
@@ -47,6 +48,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 		}
 
 		const codeEl = this.containerEl.createEl("code", {cls: "chord-sheet-chord-block-preview"});
+		codeEl.toggleClass("chord-sheet-hide-keyboard-note-names", !showKeyboardNoteNames);
 
 		const chordTokens: ChordToken[] = [];
 		const lines = this.source.split("\n");
@@ -213,6 +215,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 
 	private attachChordDiagram(token: ChordToken, tokenEl: HTMLElement) {
 		const popper = createDiv({cls: "chord-sheet-chord-popup"});
+		popper.toggleClass("chord-sheet-hide-keyboard-note-names", !this.settings.showKeyboardNoteNames);
 		const { instrument, settings } = this;
 		const { diagramWidth } = settings;
 

@@ -702,6 +702,10 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 	overflow: visible;
 }
 
+.chord-sheet-hide-keyboard-note-names .chord-sheet-keyboard-labels {
+	display: none;
+}
+
 .theme-dark .chord-sheet-keyboard {
 	--keyboard-white-key: var(--color-base-50);
 	--keyboard-black-key: var(--color-base-10);

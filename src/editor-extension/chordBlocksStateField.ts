@@ -392,7 +392,7 @@ function getChordBlockDecos(config: ChordSheetsSettings, chordBlockRanges: Range
 
 			if (shouldShowChordOverviewInEditor(config)) {
 				builder.add(chordBlockIter.from, chordBlockIter.from, Decoration.widget({
-					widget: new ChordOverviewWidget(chordBlockIter.value.instrument, config.diagramWidth, chordTokens),
+					widget: new ChordOverviewWidget(chordBlockIter.value.instrument, config.diagramWidth, config.showKeyboardNoteNames, chordTokens),
 					side: -1,
 					block: true
 				}));
