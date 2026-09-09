@@ -30,7 +30,7 @@ export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsView
 	eventHandlers: {
 		click: function (event: MouseEvent, view: EditorView) {
 			const target = event.target as HTMLElement;
-			ifDebug(view.state, () => console.log(view.posAtDOM(target)));
+			ifDebug(view.state, () => console.debug(view.posAtDOM(target)));
 			if (target.nodeName === "BUTTON" && target.classList.contains("chord-sheet-transpose")) {
 				event.stopPropagation();
 				const pos = view.posAtDOM(target);
@@ -234,10 +234,10 @@ export class ChordSheetsViewPlugin implements PluginValue {
 
 		if (update.viewportChanged) {
 			const {parsedUntil} = update.state.field(chordBlocksStateField);
-			ifDebug(update.state, () => console.log("Viewport to: " + update.view.viewport.to, "parsedUntil", parsedUntil.from));
+			ifDebug(update.state, () => console.debug("Viewport to: " + update.view.viewport.to, "parsedUntil", parsedUntil.from));
 
 			if (update.view.viewport.to > parsedUntil.from) {
-				ifDebug(update.state, () => console.log("Out of parse"));
+				ifDebug(update.state, () => console.debug("Out of parse"));
 				window.setTimeout(() => update.view.dispatch({effects: chordSheetViewportUpdateEffect.of()}));
 
 			}

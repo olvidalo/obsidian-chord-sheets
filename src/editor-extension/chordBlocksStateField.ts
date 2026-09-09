@@ -155,7 +155,7 @@ export const chordBlocksStateField = StateField.define<ChordBlocksState>({
 				if (effect.is(chordSheetViewportUpdateEffect)) {
 					const config = tr.state.facet(chordSheetsConfigFacet);
 					const parseFrom = danglingBlockDef !== null ? Math.min(parsedUntil.from + 1, danglingBlockDef.from) : parsedUntil.from + 1;
-					ifDebug(tr.state, () => console.log("Update viewport in state field from: ", parseFrom));
+					ifDebug(tr.state, () => console.debug("Update viewport in state field from: ", parseFrom));
 					const greedyParsing = shouldShowChordOverviewInEditor(config);
 					const newBlocks = parseChordBlocks(tr.state, parseFrom, tr.state.doc.length, true, danglingBlockDef, false, greedyParsing);
 					if (newBlocks.chordBlockRanges.length > 0) {
@@ -234,7 +234,7 @@ function updateChordBlocks({changes, state}: Pick<ViewUpdate & Transaction, 'cha
 	const settings = state.facet(chordSheetsConfigFacet);
 
 	let {ranges, chordDecos, parsedUntil, danglingBlockDef} = value;
-	ifDebug(state, () => console.log("updateChordBlocks called"));
+	ifDebug(state, () => console.debug("updateChordBlocks called"));
 
 	// map old ranges and decorations to accommodate changes
 	ranges = ranges.map(changes);
@@ -360,7 +360,7 @@ function updateChordBlocks({changes, state}: Pick<ViewUpdate & Transaction, 'cha
 		});
 	});
 
-	ifDebug(state, () => console.log({
+	ifDebug(state, () => console.debug({
 		"Removed lines": removedLines.map(line => line.number),
 		"Added lines": addedLines.map(line => line.number),
 		"Changed lines": Array.from(changedChordBlockLineNumbers.values())
@@ -439,7 +439,7 @@ function getChordBlockDecos(config: ChordSheetsSettings, chordBlockRanges: Range
 function parseChordBlocks(state: EditorState, from: number, to: number, parseChords: true, openBlockFrom: OpenBlockDef | null, stopAfterFirstBlock: boolean, greedy: boolean): ChordBlocksParseResult<true>;
 function parseChordBlocks(state: EditorState, from: number, to: number, parseChords: false, openBlockFrom: OpenBlockDef | null, stopAfterFirstBlock: boolean, greedy: boolean): ChordBlocksParseResult<false>;
 function parseChordBlocks(state: EditorState, from: number, to: number, parseChords = true, openBlockFrom: OpenBlockDef | null = null, stopAfterFirstBlock = false, greedy = false): ChordBlocksParseResult<boolean> {
-	ifDebug(state, () => console.log("parseChordBlocks", {from, to, parseChords, openBlockFrom}));
+	ifDebug(state, () => console.debug("parseChordBlocks", {from, to, parseChords, openBlockFrom}));
 	const chordBlockRanges: Range<ChordBlockRangeValue>[] = [];
 	const chordDecos: Range<Decoration>[] = [];
 	const settings = state.facet(chordSheetsConfigFacet);
@@ -513,7 +513,7 @@ function parseChordBlocks(state: EditorState, from: number, to: number, parseCho
 		const parseMs = 1;
 		const parseTimeout = 500;
 		while (currentBlockStart !== null && currentTreeLength != state.doc.length && triedMs <= parseTimeout) {
-			ifDebug(state, () => console.log(`Parse forward: ${currentTreeLength + 100}`));
+			ifDebug(state, () => console.debug(`Parse forward: ${currentTreeLength + 100}`));
 			tree = ensureSyntaxTree(state, Math.min(currentTreeLength + 100, state.doc.length), parseMs);
 			triedMs += parseMs;
 			if (tree) {
@@ -522,8 +522,8 @@ function parseChordBlocks(state: EditorState, from: number, to: number, parseCho
 			}
 			if (currentBlockStart === null) {
 				ifDebug(state, () => {
-					console.log("🎉 found end!: " + chordBlockRanges.last()?.to);
-					console.log({currentRealTreeLength: syntaxTree(state).length});
+					console.debug("🎉 found end!: " + chordBlockRanges.last()?.to);
+					console.debug({currentRealTreeLength: syntaxTree(state).length});
 				});
 			}
 		}
@@ -534,9 +534,9 @@ function parseChordBlocks(state: EditorState, from: number, to: number, parseCho
 	// block is still open, so parsing stopped in the middle of a block or block is unclosed
 	if (currentBlockStart !== null) {
 		if (greedy) {
-			ifDebug(state, () => console.log(`Could not find end of block starting at ${currentBlockStart} before timeout.`));
+			ifDebug(state, () => console.debug(`Could not find end of block starting at ${currentBlockStart} before timeout.`));
 		}
-		ifDebug(state, () => console.log(`Dangling block at ${currentBlockStart}`));
+		ifDebug(state, () => console.debug(`Dangling block at ${currentBlockStart}`));
 		danglingBlock = new ChordBlockRangeValue(instrument, true).range(currentBlockStart, currentTreeLength);
 		chordBlockRanges.push(danglingBlock);
 	}
