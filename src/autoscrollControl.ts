@@ -57,7 +57,6 @@ export class AutoscrollControl extends Component {
 		});
 		this.slider = new SliderComponent(this.controlEl)
 			.setLimits(1, AUTOSCROLL_STEPS, 1)
-			.setDynamicTooltip()
 			.setValue(this._speed)
 			.onChange(value => {
 				this.speed = value;
