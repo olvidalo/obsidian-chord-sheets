@@ -561,7 +561,7 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 	font-weight: var(--user-defined-chord-position-separator-font-weight, inherit);
 }
 
-.chord-sheet-user-defined-chord-frets {
+.chord-sheet-user-defined-chord-definition {
 	font-weight: var(--user-defined-chord-frets-font-weight, inherit);
 	color: var(--user-defined-chord-frets-color, var(--code-normal));
 }
@@ -569,7 +569,7 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 .chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-bracket,
 .chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-position,
 .chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-position-separator,
-.chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-frets {
+.chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-definition {
 	color: var(--chord-symbol-color, var(--text-accent));
 	font-weight: var(--chord-highlight-font-weight, bolder);
 }

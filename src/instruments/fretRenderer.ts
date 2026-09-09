@@ -1,5 +1,5 @@
 import {ChordDiagram, FrettedInstrument, InstrumentRenderer} from "./types";
-import {SheetChord, UserDefinedChord} from "../chordsUtils";
+import {SheetChord} from "../chordsUtils";
 import {ChordBox} from "@chordbook/charts";
 import ChordsDB, {ChordDef, InstrumentChords} from "@tombatossals/chords-db";
 import {Note} from "tonal";
@@ -35,7 +35,16 @@ export function dbChordToVexChord(input: ChordDef, positionIndex = 0): ChordBoxP
 	};
 }
 
-export function userDefinedToVexChord({frets, position}: UserDefinedChord, numStrings: number, defaultNumFrets: number = 4): ChordBoxParams & { numFrets: number } {
+// e.g. "x02210", "3|x32010" (position 3), "_224442_" (barre markers), "0 10 10 12 8 8"
+const FRET_DEFINITION = /^(?:(?<position>[0-9]+)\|)?(?<frets>[0-9x_, ]+)$/;
+
+export function userDefinedToVexChord(definition: string, numStrings: number, defaultNumFrets: number = 4): ChordBoxParams & { numFrets: number } {
+	const fretDefinition = FRET_DEFINITION.exec(definition)?.groups;
+	if (!fretDefinition) {
+		throw new Error("Not a fret definition: " + definition);
+	}
+	const {frets} = fretDefinition;
+	const position = fretDefinition.position ? parseInt(fretDefinition.position) : 0;
 	const splitFrets = /[\s,]/.test(frets) ? frets.match(/\d+|x|_/g) : frets.split('');
 
 	if (!splitFrets) {
@@ -187,7 +196,7 @@ export class FretDiagramRenderer implements InstrumentRenderer {
 
 	getDiagram(chord: SheetChord): ChordDiagram | null {
 		if (chord.userDefinedChord) {
-			return this.userDefinedChordDiagram(chord.userDefinedChord);
+			return FRET_DEFINITION.test(chord.userDefinedChord) ? this.userDefinedChordDiagram(chord.userDefinedChord) : null;
 		}
 
 		const dbChord = findDbChord(chord, this.chordDb);
@@ -218,11 +227,11 @@ export class FretDiagramRenderer implements InstrumentRenderer {
 		};
 	}
 
-	private userDefinedChordDiagram(userChord: UserDefinedChord): ChordDiagram {
+	private userDefinedChordDiagram(definition: string): ChordDiagram {
 		return {
 			numVoicings: 1,
 			render: (_index, width: number) => {
-				const vexChord = userDefinedToVexChord(userChord, this.numStrings, this.numFrets);
+				const vexChord = userDefinedToVexChord(definition, this.numStrings, this.numFrets);
 				return this.drawVexChord(vexChord, width, vexChord.numFrets);
 			}
 		};

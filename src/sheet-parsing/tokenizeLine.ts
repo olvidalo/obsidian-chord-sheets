@@ -59,11 +59,12 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 		// [Am]Some [Dm aux. text]lyrics
 		inlineChord: /^(?<open>\[)(?<chordSymbol>[^\s\]]+)(?<auxText>[^[()]*)(?<close>])/d,
 
-		// Chord symbol with custom shape definition in brackets, optionally barre position:
-		// Bbadd13[x13333], Dm6[4|x2x132] (with barree position), B*[_224442_] (with barre markers).
+		// Chord symbol with a definition in brackets of how to play it, read by the instrument's renderer:
+		// frets like Bbadd13[x13333], Dm6[4|x2x132] (with position), B*[_224442_] (with barre markers),
+		// or keys like Cmaj7[E G B D], C7[1 5 | 3 b7 9].
 		// The chord symbol is free-form after an uppercase letter (e.g. Bø, BΔ, B*),
-		// disambiguated by the frets pattern from regular bracketed text.
-		userDefinedChord: /^(?<chordSymbol>[A-Z][^\s[\]]*)(?<open>\[)(?:(?<pos>[0-9]+)(?<posSep>\|))?(?<frets>[0-9x_, ]+)(?<close>])/d,
+		// disambiguated by the definition pattern from regular bracketed text.
+		userDefinedChord: /^(?<chordSymbol>[A-Z][^\s[\]]*)(?<open>\[)(?<content>(?:(?<pos>[0-9]+)(?<posSep>\|))?(?<def>[0-9A-Gb#x_,| ]+))(?<close>])/d,
 
 		// Possible rhythm markers: bar lines (|), strums (/), repeats (%), etc.
 		// Also matches the no-chord marker NC, N.C., N. C.
@@ -152,12 +153,12 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 
 					case "userDefinedChord": {
 							const {
-								chordSymbol, open: openingBracket, pos: position, posSep: positionSeparator,
-								close: closingBracket, frets
+								chordSymbol, open: openingBracket, content, pos: position, posSep: positionSeparator,
+								close: closingBracket, def
 							} = match.groups!;
 							const {
 								chordSymbol: chordSymbolRange, open: openingBracketRange, pos: positionRange,
-								posSep: positionSeparatorRange,	close: closingBracketRange, frets: fretsRange
+								posSep: positionSeparatorRange,	close: closingBracketRange, def: defRange
 							} = match.indices!.groups!;
 
 							const chordToken: ChordToken = {
@@ -165,7 +166,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 								type: "chord",
 								chord: {
 									...parseChordSymbol(chordSymbol),
-									userDefinedChord: { frets, position: position ? parseInt(position) : 0}
+									userDefinedChord: content
 								},
 								chordSymbol: { value: chordSymbol, range: chordSymbolRange },
 								userDefinedChord: {
@@ -174,7 +175,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 										position: { value: position, range: positionRange },
 										positionSeparator: { value: positionSeparator, range: positionSeparatorRange }
 									}),
-									frets: {value: frets, range: fretsRange},
+									definition: {value: def, range: defRange},
 									closingBracket: {value: closingBracket, range: closingBracketRange},
 								}
 							};

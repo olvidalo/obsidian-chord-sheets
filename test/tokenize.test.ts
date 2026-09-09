@@ -253,46 +253,31 @@ describe('Parsing / Tokenization', () => {
 			const chordTokens = tokens.filter(t => isChordToken(t)) as ChordToken[];
 			expect(chordTokens[0]).toMatchObject<ChordTokenWithPartialChord> ({
 				range: [5, 15],
-				chord: {
-					userDefinedChord: {
-						"frets": "x02210",
-						"position": 0,
-					}
-				},
+				chord: { userDefinedChord: "x02210" },
 				chordSymbol: { value: "Am", range: [0, 2] },
 				userDefinedChord: {
 					openingBracket: { value: '[', range: [2, 3] },
-					frets: { value: 'x02210', range: [3, 9] },
+					definition: { value: 'x02210', range: [3, 9] },
 					closingBracket: { value: ']', range: [9, 10] }
 				}
 			});
 
 			expect(chordTokens[1]).toMatchObject<ChordTokenWithPartialChord>({
 				range: [29, 42],
-				chord: {
-					userDefinedChord: {
-						frets: 'x32010',
-						position: 3
-					}
-				},
+				chord: { userDefinedChord: "3|x32010" },
 				chordSymbol: { value: "C*4", range: [0, 3]},
 				userDefinedChord: {
 					openingBracket: { value: '[', range: [3, 4] },
 					position: { value: '3', range: [4, 5] },
 					positionSeparator: { value: '|', range: [5, 6] },
-					frets: { value: 'x32010', range: [6, 12] },
+					definition: { value: 'x32010', range: [6, 12] },
 					closingBracket: { value: ']', range: [12, 13] }
 				}
 			});
 
 			expect(chordTokens[2]).toMatchObject<ChordTokenWithPartialChord>({
 				range: [50, 61],
-				chord: {
-					userDefinedChord: {
-						frets: 'x34_24_',
-						position: 0
-					}
-				},
+				chord: { userDefinedChord: "x34_24_" },
 				chordSymbol: { value: "C°", range: [0, 2] },
 			});
 		});
@@ -305,14 +290,15 @@ describe('Parsing / Tokenization', () => {
 			expect(chordTokens.map(t => t.chordSymbol.value)).toEqual(['Bø', 'BΔ', 'B♭', 'C#m7(b5)']);
 			expect(chordTokens[0]).toMatchObject<ChordTokenWithPartialChord>({
 				range: [0, 14],
-				chord: {
-					userDefinedChord: {
-						frets: '_12x231_',
-						position: 2
-					}
-				},
+				chord: { userDefinedChord: "2|_12x231_" },
 				chordSymbol: { value: 'Bø', range: [0, 2] }
 			});
+		});
+
+		test('should handle keyboard voicing definitions', () => {
+			const line = 'Cmaj7[E G B D] C7[1 5 | 3 b7 9]';
+			const { tokens } = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
+			expect(tokens.filter(isChordToken).map(t => t.chord.userDefinedChord)).toEqual(['E G B D', '1 5 | 3 b7 9']);
 		});
 
 		test('should not treat bracketed text without valid frets as user-defined chord', () => {
@@ -331,16 +317,11 @@ describe('Parsing / Tokenization', () => {
 			expect(chordTokens).toHaveLength(1);
 			expect(chordTokens[0]).toMatchObject<ChordTokenWithPartialChord>({
 				range: [0, 19],
-				chord: {
-					userDefinedChord: {
-						frets: "8 10 x 12 12 12",
-						position: 0
-					}
-				},
+				chord: { userDefinedChord: "8 10 x 12 12 12" },
 				chordSymbol: { value: "Db", range: [0, 2] },
 				userDefinedChord: {
 					openingBracket: { value: '[', range: [2, 3] },
-					frets: { value: '8 10 x 12 12 12', range: [3, 18] },
+					definition: { value: '8 10 x 12 12 12', range: [3, 18] },
 					closingBracket: { value: ']', range: [18, 19] }
 				}
 			});
@@ -354,16 +335,11 @@ describe('Parsing / Tokenization', () => {
 			expect(chordTokens).toHaveLength(1);
 			expect(chordTokens[0]).toMatchObject<ChordTokenWithPartialChord>({
 				range: [0, 15],
-				chord: {
-					userDefinedChord: {
-						frets: "9,8,8,8,9,8",
-						position: 0
-					}
-				},
+				chord: { userDefinedChord: "9,8,8,8,9,8" },
 				chordSymbol: { value: "Bb", range: [0, 2] },
 				userDefinedChord: {
 					openingBracket: { value: '[', range: [2, 3] },
-					frets: { value: '9,8,8,8,9,8', range: [3, 14] },
+					definition: { value: '9,8,8,8,9,8', range: [3, 14] },
 					closingBracket: { value: ']', range: [14, 15] }
 				}
 			});

@@ -27,7 +27,7 @@ export interface ChordInfo {
 		closingBracket: SubToken
 		position?: SubToken
 		positionSeparator?: SubToken
-		frets: SubToken
+		definition: SubToken
 	}
 }
 

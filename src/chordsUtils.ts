@@ -2,13 +2,8 @@ import {ChordToken} from "./sheet-parsing/tokens";
 import {Chord, ChordType} from "tonal";
 
 
-export interface UserDefinedChord {
-	frets: string;
-	position: number;
-}
-
 export type SheetChord = ReturnType<typeof Chord.get> & {
-	userDefinedChord?: UserDefinedChord
+	userDefinedChord?: string
 };
 
 

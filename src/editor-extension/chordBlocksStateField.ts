@@ -608,8 +608,8 @@ function chordDecosForLine(line: Line, {
 						.range(...resolveIndex(userDefinedChord.positionSeparator.range, token)));
 
 				chordDecos.push(Decoration
-						.mark({ class: `chord-sheet-user-defined-chord-frets` })
-						.range(...resolveIndex(userDefinedChord.frets.range, token)),
+						.mark({ class: `chord-sheet-user-defined-chord-definition` })
+						.range(...resolveIndex(userDefinedChord.definition.range, token)),
 					Decoration
 						.mark({ class: `chord-sheet-user-defined-chord-bracket` })
 						.range(...resolveIndex(userDefinedChord.closingBracket.range, token))

@@ -113,8 +113,8 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 							text: userDefinedChord.positionSeparator.value
 						});
 						chordSpan.createSpan({
-							cls: 'chord-sheet-user-defined-chord-frets',
-							text: userDefinedChord.frets.value
+							cls: 'chord-sheet-user-defined-chord-definition',
+							text: userDefinedChord.definition.value
 						});
 						chordSpan.createSpan({
 							cls: 'chord-sheet-user-defined-chord-bracket',

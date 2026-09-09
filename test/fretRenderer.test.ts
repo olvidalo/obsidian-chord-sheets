@@ -14,7 +14,7 @@ function testDbChord(instrument: keyof typeof ChordsDB, key: string, suffix: str
 }
 
 function testUserChord(frets: string, position: number, numStrings: number, expectedResult: Omit<ReturnType<typeof userDefinedToVexChord>, 'tuning'>) {
-	const result = userDefinedToVexChord({frets, position}, numStrings);
+	const result = userDefinedToVexChord(position ? `${position}|${frets}` : frets, numStrings);
 	
 	// tuning array is always empty strings so chord box height won't extend down
 	expect(result.tuning).toEqual(new Array(numStrings).fill(''));
