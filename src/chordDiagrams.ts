@@ -1,6 +1,6 @@
 import {chordSequenceString} from "./chordsUtils";
 import {ChordToken} from "./sheet-parsing/tokens";
-import {Instrument} from "./instruments/types";
+import {ChordDiagram, Instrument, NoDiagramError} from "./instruments/types";
 import {getRenderer} from "./instruments/instruments";
 import {setIcon, setTooltip} from "obsidian";
 
@@ -23,32 +23,46 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 	diagramContainer.setAttribute("data-tooltip-position", "top");
 
 	const renderer = getRenderer(instrument);
+	const symbol = chordToken.chordSymbol.value;
 
-	const chordDiagram = renderer.getDiagram(chordToken.chord, chordToken.chordSymbol.value);
-	if (!chordDiagram) {
+	const showMissing = (error: unknown) => {
+		if (!(error instanceof NoDiagramError)) {
+			console.error(`Chord Sheets: cannot draw ${symbol}`, error);
+		}
 		const missingEl = renderer.renderMissing(width);
 		missingEl.addClass("chord-sheet-no-diagram");
 		diagramContainer.replaceChildren(missingEl);
-		diagramContainer.setAttribute("aria-label", `No diagram found for ${chordToken.chordSymbol.value}`);
+		diagramContainer.setAttribute("aria-label", error instanceof Error ? error.message : `Cannot draw ${symbol}`);
+	};
 
+	let chordDiagram: ChordDiagram;
+	try {
+		chordDiagram = renderer.getDiagram(chordToken.chord, symbol);
+	} catch (error) {
+		showMissing(error);
 		return containerEl;
 	}
+	const diagram = chordDiagram;
 
-	let currentPosition = chordDiagram.initialVoicing ?? 0;
+	let currentPosition = diagram.initialVoicing ?? 0;
 
 	let updateChooser: VoicingChooserUpdateFn = (_position: number) => {};
 
 	const renderCurrentVoicing = () => {
-		diagramContainer.replaceChildren(chordDiagram.render(currentPosition, width));
+		try {
+			diagramContainer.replaceChildren(diagram.render(currentPosition, width));
+		} catch (error) {
+			showMissing(error);
+		}
 		updateChooser(currentPosition);
 	};
 
-	if (chordDiagram.numVoicings > 1) {
-		const voicingName = (index: number) => chordDiagram.voicingName?.(index);
+	if (diagram.numVoicings > 1) {
+		const voicingName = (index: number) => diagram.voicingName?.(index);
 		const persistable = persistVoicing && !chordToken.chord.userDefinedChord ? persistVoicing : undefined;
-		updateChooser = createVoicingChooser(containerEl, chordDiagram.numVoicings, voicingName, (delta: -1 | 1) => {
+		updateChooser = createVoicingChooser(containerEl, diagram.numVoicings, voicingName, (delta: -1 | 1) => {
 			const next = currentPosition + delta;
-			if (next < 0 || next >= chordDiagram.numVoicings) return;
+			if (next < 0 || next >= diagram.numVoicings) return;
 			currentPosition = next;
 
 			renderCurrentVoicing();

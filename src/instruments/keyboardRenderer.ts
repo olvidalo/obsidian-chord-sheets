@@ -1,13 +1,14 @@
-import {Note} from "tonal";
+import {accToAlt, altToAcc, Interval, Note, Scale} from "tonal";
 import {SheetChord, tokenizeChordSymbol} from "../chordsUtils";
-import {ChordDiagram, InstrumentRenderer, KeyboardInstrument} from "./types";
-import {drawKeyboard, drawMissingMark, KeyRange} from "./keyboardSvg";
+import {ChordDiagram, InstrumentRenderer, KeyboardInstrument, NoDiagramError} from "./types";
+import {drawKeyboard, drawMissingMark, Hand, KeyRange} from "./keyboardSvg";
 
 export interface KeyboardNote {
 	readonly midi: number;
 	/** Name as spelled in the chord, without octave, no double accidentals. */
 	readonly name: string;
 	readonly isRoot: boolean;
+	readonly hand?: Hand;
 }
 
 /** Ordered keyboard notes, lowest note first. The first note is the bass. */
@@ -27,6 +28,44 @@ export function getKeyboardVoicings(chord: SheetChord): Voicing[] {
 	}
 	const rootPosition = rotate(chord.notes, chord.notes.indexOf(root));
 	return inversions(rootPosition).map(names => stackUpward(names, root));
+}
+
+export function userDefinedVoicing(definition: string, chord: SheetChord): Voicing {
+	const hands = definition.split("|").map(hand => hand.trim().split(/\s+/).filter(Boolean));
+	if (hands.length > 2 || hands.some(hand => hand.length === 0)) {
+		throw new NoDiagramError(`A voicing has one or two hands, separated by "|": ${definition}`);
+	}
+	const names = hands.flat().map(token => noteName(token, chord));
+	const voicing = stackUpward(names, chord.tonic ?? "");
+	return hands.length === 1 ? voicing
+		: voicing.map((note, index) => ({...note, hand: index < hands[0].length ? "left" : "right"}));
+}
+
+/** A degree like "3", "b7" or "#11" resolved against the chord, or a note name. */
+function noteName(token: string, chord: SheetChord): string {
+	const degree = /^(?<accidentals>[#b]*)(?<number>\d+)$/.exec(token)?.groups;
+	if (degree) {
+		const number = parseInt(degree.number);
+		// chord degrees end at the 13th
+		if (!chord.tonic || number < 1 || number > 13) {
+			throw new NoDiagramError(`Not a chord degree (1 to 13): ${token}`);
+		}
+		return degreeName(number, degree.accidentals, chord);
+	}
+	const note = Note.get(token);
+	if (note.empty || note.oct !== undefined) {
+		throw new NoDiagramError(`Not a note name or chord degree: ${token}`);
+	}
+	return note.name;
+}
+
+function degreeName(number: number, accidentals: string, chord: SheetChord): string {
+	const ownInterval = accidentals === "" && chord.intervals.find(interval => Interval.get(interval).num === number);
+	if (ownInterval) {
+		return Note.transpose(chord.tonic!, ownInterval);
+	}
+	const scaleTone = Note.get(Scale.degrees(`${chord.tonic} major`)(number));
+	return scaleTone.letter + altToAcc(scaleTone.alt + accToAlt(accidentals));
 }
 
 /** Yields the root position, then each inversion. */
@@ -81,10 +120,19 @@ function whiteKeyWidth(diagramWidth: number): number {
 export class KeyboardDiagramRenderer implements InstrumentRenderer {
 	constructor(readonly instrument: KeyboardInstrument, readonly label: string) {}
 
-	getDiagram(chord: SheetChord, chordName: string): ChordDiagram | null {
+	getDiagram(chord: SheetChord, chordName: string): ChordDiagram {
+		if (chord.userDefinedChord) {
+			const voicing = userDefinedVoicing(chord.userDefinedChord, chord);
+			const range = getKeyboardRange(voicing.map(note => note.midi));
+			return {
+				numVoicings: 1,
+				render: (_index: number, width: number) => this.draw(voicing, range, width)
+			};
+		}
+
 		const voicings = getKeyboardVoicings(chord);
 		if (voicings.length === 0) {
-			return null;
+			throw new NoDiagramError(`Unknown chord: ${chordName}`);
 		}
 		const range = getKeyboardRange(voicings.flat().map(note => note.midi));
 		const [tonic, type] = tokenizeChordSymbol(chordName);
@@ -102,11 +150,11 @@ export class KeyboardDiagramRenderer implements InstrumentRenderer {
 	}
 
 	renderMissing(width: number): HTMLDivElement {
-		const svg = drawKeyboard({range: getKeyboardRange([]), markers: [], whiteKeyWidth: whiteKeyWidth(width)});
-		drawMissingMark(svg);
+		const keyboard = drawKeyboard({range: getKeyboardRange([]), markers: [], whiteKeyWidth: whiteKeyWidth(width)});
+		drawMissingMark(keyboard);
 
 		const el = createDiv();
-		el.appendChild(svg);
+		el.appendChild(keyboard);
 		return el;
 	}
 
@@ -114,7 +162,7 @@ export class KeyboardDiagramRenderer implements InstrumentRenderer {
 		const el = createDiv();
 		el.appendChild(drawKeyboard({
 			range,
-			markers: voicing.map(note => ({midi: note.midi, label: note.name, emphasized: note.isRoot})),
+			markers: voicing.map(note => ({midi: note.midi, label: note.name, emphasized: note.isRoot, hand: note.hand})),
 			whiteKeyWidth: whiteKeyWidth(width)
 		}));
 		return el;

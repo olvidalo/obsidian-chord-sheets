@@ -5,6 +5,8 @@ export type FrettedInstrument = keyof IChordsDB;
 export type KeyboardInstrument = "piano";
 export type Instrument = FrettedInstrument | KeyboardInstrument;
 
+export class NoDiagramError extends Error {}
+
 export interface ChordDiagram {
 	readonly numVoicings: number;
 	readonly initialVoicing?: number;
@@ -16,7 +18,7 @@ export interface InstrumentRenderer {
 	readonly instrument: Instrument;
 	readonly label: string;
 
-	getDiagram(chord: SheetChord, chordName: string): ChordDiagram | null;
+	getDiagram(chord: SheetChord, chordName: string): ChordDiagram;
 	renderMissing(width: number): HTMLDivElement;
 }
 

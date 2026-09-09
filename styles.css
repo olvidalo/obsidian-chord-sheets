@@ -694,16 +694,20 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 	--keyboard-chord-color: var(--chord-symbol-color, var(--text-accent));
 
 	display: block;
-	overflow: visible;
 	margin: 0.25em 0 0.35em;
 }
 
+.chord-sheet-keyboard svg {
+	display: block;
+	overflow: visible;
+}
+
 .theme-dark .chord-sheet-keyboard {
-	--keyboard-white-key: var(--color-base-100);
-	--keyboard-black-key: var(--color-base-00);
-	--keyboard-key-border: var(--color-base-50);
-	--keyboard-marker: var(--color-base-40);
-	--keyboard-root-marker: var(--color-base-00);
+	--keyboard-white-key: var(--color-base-50);
+	--keyboard-black-key: var(--color-base-10);
+	--keyboard-key-border: var(--color-base-60);
+	--keyboard-marker: var(--color-base-70);
+	--keyboard-root-marker: var(--color-base-100);
 }
 
 .chord-sheet-keyboard-white-key,
@@ -728,6 +732,17 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 	fill: var(--keyboard-marker);
 	stroke: var(--keyboard-white-key);
 	stroke-width: 0.07;
+}
+
+.chord-sheet-keyboard-hand-divider {
+	stroke: var(--keyboard-root-marker);
+	stroke-width: 0.08;
+	stroke-dasharray: 0.25 0.2;
+}
+
+.chord-sheet-keyboard-hand-divider-halo {
+	stroke: var(--keyboard-white-key);
+	stroke-width: 0.2;
 }
 
 .chord-sheet-keyboard-marker-emphasized {

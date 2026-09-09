@@ -1,4 +1,4 @@
-import {ChordDiagram, FrettedInstrument, InstrumentRenderer} from "./types";
+import {ChordDiagram, FrettedInstrument, InstrumentRenderer, NoDiagramError} from "./types";
 import {SheetChord} from "../chordsUtils";
 import {ChordBox} from "@chordbook/charts";
 import ChordsDB, {ChordDef, InstrumentChords} from "@tombatossals/chords-db";
@@ -40,16 +40,12 @@ const FRET_DEFINITION = /^(?:(?<position>[0-9]+)\|)?(?<frets>[0-9x_, ]+)$/;
 
 export function userDefinedToVexChord(definition: string, numStrings: number, defaultNumFrets: number = 4): ChordBoxParams & { numFrets: number } {
 	const fretDefinition = FRET_DEFINITION.exec(definition)?.groups;
-	if (!fretDefinition) {
-		throw new Error("Not a fret definition: " + definition);
-	}
-	const {frets} = fretDefinition;
-	const position = fretDefinition.position ? parseInt(fretDefinition.position) : 0;
+	const frets = fretDefinition?.frets ?? "";
 	const splitFrets = /[\s,]/.test(frets) ? frets.match(/\d+|x|_/g) : frets.split('');
-
-	if (!splitFrets) {
-		throw new Error("Could not parse fret string: " + frets);
+	if (!fretDefinition || !splitFrets) {
+		throw new NoDiagramError(`Not a fret definition: ${definition}`);
 	}
+	const position = fretDefinition.position ? parseInt(fretDefinition.position) : 0;
 
 
 	const barres: ChordBoxParams["barres"] = [];
@@ -194,13 +190,20 @@ export class FretDiagramRenderer implements InstrumentRenderer {
 	private get numStrings(): number { return this.chordDb.main.strings; }
 	private get numFrets(): number { return this.chordDb.main.fretsOnChord; }
 
-	getDiagram(chord: SheetChord): ChordDiagram | null {
+	getDiagram(chord: SheetChord, chordName: string): ChordDiagram {
 		if (chord.userDefinedChord) {
-			return FRET_DEFINITION.test(chord.userDefinedChord) ? this.userDefinedChordDiagram(chord.userDefinedChord) : null;
+			const vexChord = userDefinedToVexChord(chord.userDefinedChord, this.numStrings, this.numFrets);
+			return {
+				numVoicings: 1,
+				render: (_index: number, width: number) => this.drawVexChord(vexChord, width, vexChord.numFrets)
+			};
 		}
 
 		const dbChord = findDbChord(chord, this.chordDb);
-		return dbChord ? this.dbChordDiagram(dbChord) : null;
+		if (!dbChord) {
+			throw new NoDiagramError(`${chordName} is not in the ${this.label} chord database`);
+		}
+		return this.dbChordDiagram(dbChord);
 	}
 
 	renderMissing(width: number): HTMLDivElement {
@@ -224,16 +227,6 @@ export class FretDiagramRenderer implements InstrumentRenderer {
 			render: (index: number, width: number) => this.drawVexChord(
 				dbChordToVexChord(dbChord, index), width
 			)
-		};
-	}
-
-	private userDefinedChordDiagram(definition: string): ChordDiagram {
-		return {
-			numVoicings: 1,
-			render: (_index, width: number) => {
-				const vexChord = userDefinedToVexChord(definition, this.numStrings, this.numFrets);
-				return this.drawVexChord(vexChord, width, vexChord.numFrets);
-			}
 		};
 	}
 

@@ -1,5 +1,6 @@
 import ChordsDB from "@tombatossals/chords-db";
 import {dbChordToVexChord, userDefinedToVexChord} from "../src/instruments/fretRenderer";
+import {NoDiagramError} from "../src/instruments/types";
 
 function findChord(instrument: keyof typeof ChordsDB, key: string, suffix: string) {
 	return ChordsDB[instrument].chords[key].find(chord => chord.suffix === suffix);
@@ -205,6 +206,12 @@ describe("Conversion of chords to vexchord format", () => {
 	});
 
 	describe("userDefinedToVexChord", () => {
+		test("rejects definitions that are not frets, saying why", () => {
+			expect(() => userDefinedToVexChord("E G B D", 6)).toThrow(NoDiagramError);
+			expect(() => userDefinedToVexChord(",", 6)).toThrow("Not a fret definition: ,");
+			expect(() => userDefinedToVexChord(" ", 6)).toThrow(NoDiagramError);
+		});
+
 		test("basic fret pattern", () => {
 			testUserChord("320013", 1, 6, {
 				chord: [
