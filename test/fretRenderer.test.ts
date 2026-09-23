@@ -341,6 +341,28 @@ describe("Conversion of chords to vexchord format", () => {
 			});
 		});
 
+		test("barre is shifted along with auto-positioned frets (#58)", () => {
+			testUserChord("_575555_", 0, 6, {
+				chord: [
+					[6, 1],
+					[5, 3],
+					[4, 1],
+					[3, 1],
+					[2, 1],
+					[1, 1]
+				],
+				position: 5,
+				barres: [
+					{
+						fromString: 6,
+						toString: 1,
+						fret: 1
+					}
+				],
+				numFrets: 4
+			});
+		});
+
 		test("explicit position with relative frets", () => {
 			testUserChord("x2x132", 4, 6, {
 				chord: [

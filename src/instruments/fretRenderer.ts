@@ -48,7 +48,7 @@ export function userDefinedToVexChord(definition: string, numStrings: number, de
 	const position = fretDefinition.position ? parseInt(fretDefinition.position) : 0;
 
 
-	const barres: ChordBoxParams["barres"] = [];
+	let barres: ChordBoxParams["barres"] = [];
 
 	const barrePositions = splitFrets
 		.map((fret, index) => (fret === '_' ? index : -1))
@@ -98,6 +98,7 @@ export function userDefinedToVexChord(definition: string, numStrings: number, de
 				chordFrets = chordFrets.map(fretDef =>
 					typeof fretDef[1] === 'number' && fretDef[1] > 0 ? [fretDef[0], fretDef[1] - finalPosition + 1] : fretDef
 				);
+				barres = barres.map(barre => ({...barre, fret: barre.fret - finalPosition + 1}));
 			}
 			// else: position remains 0
 		}
