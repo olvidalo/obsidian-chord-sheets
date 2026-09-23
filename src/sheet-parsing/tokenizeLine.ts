@@ -64,7 +64,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 		// or keys like Cmaj7[E G B D], C7[1 5 | 3 b7 9].
 		// The chord symbol is free-form after an uppercase letter (e.g. Bø, BΔ, B*),
 		// disambiguated by the definition pattern from regular bracketed text.
-		userDefinedChord: /^(?<chordSymbol>[A-Z][^\s[\]]*)(?<open>\[)(?<content>(?:(?<pos>[0-9]+)(?<posSep>\|))?(?<def>[0-9A-Gb#x_,| ]+))(?<close>])/d,
+		userDefinedChord: /^(?<chordSymbol>[A-Z][^\s[\]]*)(?<open>\[)(?<content>(?:(?<pos>[0-9]+)(?<posSep>\|))?(?<def>[0-9A-Gb#x_,| ]+))(?<close>\])(?!\p{L})/du,
 
 		// Possible rhythm markers: bar lines (|), strums (/), repeats (%), etc.
 		// Also matches the no-chord marker NC, N.C., N. C.

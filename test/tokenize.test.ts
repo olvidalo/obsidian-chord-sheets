@@ -301,6 +301,28 @@ describe('Parsing / Tokenization', () => {
 			expect(tokens.filter(isChordToken).map(t => t.chord.userDefinedChord)).toEqual(['E G B D', '1 5 | 3 b7 9']);
 		});
 
+		test('should treat inline chords inside words as inline chords, not as definitions (#61)', () => {
+			const inlineChords = (line: string) => tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker)
+				.tokens.filter(isChordToken).map(t => [t.value, t.chord.userDefinedChord]);
+
+			expect(inlineChords('Cr[D]own Him with m[Bm]any cr[G]owns,'))
+				.toEqual([['[D]', undefined], ['[Bm]', undefined], ['[G]', undefined]]);
+			expect(inlineChords('Of H[E]im who died for th[A]ee,'))
+				.toEqual([['[E]', undefined], ['[A]', undefined]]);
+			expect(inlineChords('C[F#]ome to Gr[C]ün'))
+				.toEqual([['[F#]', undefined], ['[C]', undefined]]);
+
+			const {tokens, isChordLine} = tokenizeLine('A[D]men', lineIndex, chordLineMarker, textLineMarker);
+			expect(isChordLine).toBe(false);
+			expect(tokens.map(t => [t.type, t.value])).toEqual([['word', 'A'], ['chord', '[D]'], ['word', 'men']]);
+		});
+
+		test('should keep definitions that are not followed by a letter', () => {
+			const line = 'Am[x02210], Cmaj7[E G B D]| G[D] and';
+			const {tokens} = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
+			expect(tokens.filter(isChordToken).map(t => t.chord.userDefinedChord)).toEqual(['x02210', 'E G B D', 'D']);
+		});
+
 		test('should not treat bracketed text without valid frets as user-defined chord', () => {
 			const line = 'Test[abc] lyrics';
 			const { tokens, isChordLine } = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
