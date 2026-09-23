@@ -967,20 +967,45 @@ svg.enharmonic-toggle {
 }
 
 /* Autoscroll controls */
+/* desktop: speed icon and slider in the view header */
 .chord-sheet-autoscroll-control {
 	display: flex;
-	justify-content: flex-end;
 	align-items: center;
-	padding-right: var(--size-4-5);
-	border-bottom: 1px solid var(--divider-color);
-    border-top: 1px solid var(--divider-color);
-	height: 1.6rem;
-
+	gap: var(--size-4-2);
+	padding-inline: var(--size-4-1);
+	/* icon and value are labels, not buttons */
 	color: var(--text-muted);
-	font-size: var(--file-header-font-size);
 
-	.slider {
-		margin-inline-start: 0.4rem;
+	.slider-value {
+		color: inherit;
+	}
+}
+
+.chord-sheet-autoscroll-icon {
+	display: flex;
+	/* same as the icons of the neighbouring buttons */
+	opacity: var(--icon-opacity);
+}
+
+.chord-sheet-autoscroll-speed {
+	align-self: center;
+	min-width: 2.5ch;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	font-weight: var(--font-medium);
+	color: var(--text-normal);
+}
+
+:is(.chord-sheet-autoscroll-control, .chord-sheet-autoscroll-speed) ~ .chord-sheet-autoscroll-action {
+	position: relative;
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset-inline-end: -1.5px;
+		top: 25%;
+		height: 50%;
+		border-inline-end: 1px solid var(--background-modifier-border);
 	}
 }
 

@@ -155,6 +155,14 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 			})
 		);
 
+		// a note that is already open when the plugin loads gets no active-leaf-change
+		this.app.workspace.onLayoutReady(() => {
+			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (view) {
+				this.updateAutoscrollButton(view);
+			}
+		});
+
 
 		// Register editor commands
 
@@ -396,12 +404,12 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 				const autoscrollControl = this.viewAutoscrollControlMap.get(view);
 				const icon = autoscrollControl?.isRunning ? "pause-circle" : "play-circle";
 				if (!existingEl || icon !== existingEl.dataset.icon) {
-					existingEl?.remove();
 					const viewEl = view.addAction(icon, "Toggle autoscroll", () => {
 						this.toggleAutoscroll(view);
 					});
 					viewEl.addClass("chord-sheet-autoscroll-action");
 					viewEl.dataset.icon = icon;
+					existingEl?.replaceWith(viewEl);
 				}
 			} else if (existingEl) {
 				existingEl.remove();
@@ -497,6 +505,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 
 	onunload() {
 		this.stopAllAutoscrolls();
+		this.app.workspace.iterateAllLeaves(leaf => leaf.view.containerEl.querySelector(".chord-sheet-autoscroll-action")?.remove());
 	}
 
 	async loadSettings() {

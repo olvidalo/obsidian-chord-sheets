@@ -1,12 +1,13 @@
-import {Component, Events, MarkdownView, SliderComponent} from "obsidian";
+import {Component, Events, MarkdownView, Platform, setIcon, setTooltip, SliderComponent} from "obsidian";
 
 export const AUTOSCROLL_STEPS = 20;
 export const SPEED_CHANGED_EVENT = "speed-changed";
 
 export class AutoscrollControl extends Component {
-	private controlEl: HTMLElement | null;
+	private controlEls: HTMLElement[] = [];
 	private intervalId: number | null;
 	private slider: SliderComponent | null;
+	private speedEl: HTMLElement | null;
 
 	readonly events = new Events();
 
@@ -37,6 +38,7 @@ export class AutoscrollControl extends Component {
 			if (this.slider?.getValue() != speedValue) {
 				this.slider?.setValue(speedValue);
 			}
+			this.speedEl?.setText(`${speedValue}`);
 		}
 	}
 
@@ -45,33 +47,58 @@ export class AutoscrollControl extends Component {
 	}
 
 	onunload() {
-		this.controlEl?.remove();
+		this.removeControls();
 		super.onunload();
 	}
 
 	start() {
-		this.controlEl = this.view.contentEl.createDiv({
-			prepend: true,
-			text: "Autoscroll speed",
-			cls: "chord-sheet-autoscroll-control"
-		});
-		this.slider = new SliderComponent(this.controlEl)
-			.setLimits(1, AUTOSCROLL_STEPS, 1)
-			.setValue(this._speed)
-			.onChange(value => {
-				this.speed = value;
-			});
+		if (Platform.isMobile) {
+			this.addSpeedStepper();
+		} else {
+			this.addSpeedSlider();
+		}
 
 		this.startInterval();
 	}
 
 	stop() {
 		this.stopInterval();
+		this.removeControls();
+	}
 
-		if (this.controlEl) {
-			this.controlEl.remove();
-			this.controlEl = null;
+	// Mobile: −/+ buttons around the speed number
+	private addSpeedStepper() {
+		const increaseEl = this.view.addAction("plus", "Increase autoscroll speed", () => this.increaseSpeed());
+		this.speedEl = createSpan({cls: "chord-sheet-autoscroll-speed", text: `${this._speed}`});
+		increaseEl.before(this.speedEl);
+		const decreaseEl = this.view.addAction("minus", "Decrease autoscroll speed", () => this.decreaseSpeed());
+		this.controlEls = [decreaseEl, this.speedEl, increaseEl];
+	}
+
+	// Desktop: speed icon and slider
+	private addSpeedSlider() {
+		const actionsEl = this.view.containerEl.querySelector(".view-actions");
+		if (!actionsEl) {
+			throw new Error("Autoscroll: view header actions not found");
 		}
+		const controlEl = createDiv({cls: "chord-sheet-autoscroll-control"});
+		setTooltip(controlEl, "Autoscroll speed");
+		setIcon(controlEl.createSpan({cls: "chord-sheet-autoscroll-icon"}), "circle-gauge");
+		actionsEl.prepend(controlEl);
+		this.slider = new SliderComponent(controlEl)
+			.setLimits(1, AUTOSCROLL_STEPS, 1)
+			.setValue(this._speed)
+			.onChange(value => {
+				this.speed = value;
+			});
+		this.controlEls = [controlEl];
+	}
+
+	private removeControls() {
+		this.controlEls.forEach(el => el.remove());
+		this.controlEls = [];
+		this.slider = null;
+		this.speedEl = null;
 	}
 
 	increaseSpeed() {
