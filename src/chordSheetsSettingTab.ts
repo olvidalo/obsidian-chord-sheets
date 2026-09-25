@@ -377,6 +377,20 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName('Advanced').setHeading();
 
 		new Setting(containerEl)
+			.setName('Use German/Russian notation')
+			.setDesc(
+				'Enable support for German/Russian chord notation where "H" = B natural and "B" = B flat. ' +
+				'When enabled, chords like "Hm" will be interpreted as B minor, and "B" as B flat major.'
+			)
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.useGermanNotation)
+				.onChange(async (value) => {
+					this.plugin.settings.useGermanNotation = value;
+					await this.plugin.saveSettings();
+					this.plugin.applyNewSettingsToEditors();
+				}));
+
+		new Setting(containerEl)
 			.setName('Debug mode')
 			.setDesc('Enables verbose logging and a debug gutter in the editor.')
 			.addToggle(toggle => toggle

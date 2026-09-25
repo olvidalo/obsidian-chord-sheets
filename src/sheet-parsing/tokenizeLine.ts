@@ -1,6 +1,7 @@
 import {ChordInfo, ChordToken, HeaderToken, isChordToken, MarkerToken, Token, TokenizedLine} from "./tokens";
 import escapeStringRegexp from "escape-string-regexp";
 import {parseChordSymbol} from "../chordsUtils";
+import {IChordSheetsPlugin} from "../chordSheetsPluginInterface";
 
 const CHORD_LINE_PROBABILITY_THRESHOLD = 0.5;
 
@@ -8,7 +9,13 @@ function offsetRange(range: [number, number], offset: number): [number, number] 
 	return range && [range[0] + offset, range[1] + offset];
 }
 
-export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: string, textLineMarker: string): TokenizedLine {
+export function tokenizeLine(
+	line: string, 
+	lineIndex: number, 
+	chordLineMarker: string, 
+	textLineMarker: string,
+	plugin?: IChordSheetsPlugin
+): TokenizedLine {
 	const tokens: Token[] = [];
 
 	const headerPattern = /(?<leadingWs>^\s*)(?<open>\[)(?<name>[^\]]+)(?<close>])(?<trailingWs>\s*$)/d;
@@ -129,7 +136,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 							auxText: auxTextRange, close: closingBracketRange
 						} = match.indices!.groups!;
 
-						const chord = parseChordSymbol(chordSymbol);
+						const chord = parseChordSymbol(chordSymbol, plugin);
 
 						if (chord.tonic) {
 							const chordToken: ChordToken = {
@@ -165,7 +172,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 								...baseToken,
 								type: "chord",
 								chord: {
-									...parseChordSymbol(chordSymbol),
+									...parseChordSymbol(chordSymbol, plugin),
 									userDefinedChord: content
 								},
 								chordSymbol: { value: chordSymbol, range: chordSymbolRange },
@@ -190,7 +197,7 @@ export function tokenizeLine(line: string, lineIndex: number, chordLineMarker: s
 							...baseToken, type: "word"
 						};
 
-						const chord = parseChordSymbol(matchValue);
+						const chord = parseChordSymbol(matchValue, plugin);
 						if (chord.tonic) {
 							tokensPendingReclassification.set(resultToken, {
 								chord,

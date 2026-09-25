@@ -7,6 +7,7 @@ import {ChordSheetsSettings} from "./chordSheetsSettings";
 import {ChordToken, isChordToken, isHeaderToken, isMarkerToken, isRhythmToken} from "./sheet-parsing/tokens";
 import {tokenizeLine} from "./sheet-parsing/tokenizeLine";
 import {Instrument} from "./instruments/types";
+import {IChordSheetsPlugin} from "./chordSheetsPluginInterface";
 
 export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 	source: string;
@@ -14,7 +15,8 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 	constructor(
 		containerEl: HTMLElement,
 		private instrument: Instrument,
-		private settings: ChordSheetsSettings
+		private settings: ChordSheetsSettings,
+		private plugin?: IChordSheetsPlugin
 	) {
 		super(containerEl);
 	}
@@ -54,7 +56,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 		const lines = this.source.split("\n");
 		let currentIndex = 0;
 		for (const line of lines) {
-			const tokenizedLine = tokenizeLine(line, currentIndex, chordLineMarker, textLineMarker);
+			const tokenizedLine = tokenizeLine(line, currentIndex, chordLineMarker, textLineMarker, this.plugin);
 
 			const lineDiv = codeEl.createDiv({
 				cls: "chord-sheet-chord-line"

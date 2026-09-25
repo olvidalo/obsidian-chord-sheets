@@ -22,6 +22,7 @@ import {ChordToken, isChordToken, isHeaderToken, isMarkerToken, isRhythmToken, T
 import {tokenizeLine} from "../sheet-parsing/tokenizeLine";
 import {Instrument} from "../instruments/types";
 import {instruments} from "../instruments/instruments";
+import {IChordSheetsPlugin} from "../chordSheetsPluginInterface";
 
 class ParsedUntilRangeValue extends RangeValue {
 	endSide = -1;
@@ -557,17 +558,11 @@ function resolveIndex(indexTuple: [number, number], token: Token): [from: number
 	return indexTuple && [position + indexTuple[0], position + indexTuple[1]];
 }
 
-function chordDecosForLine(line: Line, {
-	chordLineMarker,
-	textLineMarker,
-	highlightChords,
-	highlightSectionHeaders,
-	highlightRhythmMarkers
-}: ChordSheetsSettings) {
+function chordDecosForLine(line: Line, settings: ChordSheetsSettings, plugin?: IChordSheetsPlugin) {
 	const chordDecos = [];
-	const tokenizedLine = tokenizeLine(line.text, line.from, chordLineMarker, textLineMarker);
+	const tokenizedLine = tokenizeLine(line.text, line.from, settings.chordLineMarker, settings.textLineMarker, plugin);
 
-	if (tokenizedLine.isChordLine && highlightChords) {
+	if (tokenizedLine.isChordLine && settings.highlightChords) {
 		const lineDeco = Decoration.line({
 			type: "line",
 			class: "chord-sheet-chord-line"
@@ -589,7 +584,7 @@ function chordDecosForLine(line: Line, {
 
 
 			chordDecos.push(Decoration
-					.mark({ class:`chord-sheet-chord-name${highlightChords ? " chord-sheet-chord-highlight" : ""}` })
+					.mark({ class:`chord-sheet-chord-name${settings.highlightChords ? " chord-sheet-chord-highlight" : ""}` })
 					.range(...resolveIndex(token.chordSymbol.range, token)));
 
 			if (token.userDefinedChord) {
