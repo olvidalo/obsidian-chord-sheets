@@ -3,6 +3,7 @@ import {tokenizeChordSymbol} from "./chordsUtils";
 import {ChordSymbolRange} from "./editor-extension/chordSheetsViewPlugin";
 import {ChangeSpec} from "@codemirror/state";
 import {Instrument, isKeyboardInstrument} from "./instruments/types";
+import {FRET_DEFINITION} from "./instruments/fretRenderer";
 
 export type NoteProcessor = (note: string) => string;
 
@@ -63,11 +64,54 @@ function replacementChanges({from, to: symbolTo, tokenTo, trailingSpaces}: Chord
 }
 
 export function transpose(chordRanges: ChordSymbolRange[], direction: "up" | "down", instrument: Instrument) {
-	// a custom fret shape cannot move with its symbol
-	const movable = isKeyboardInstrument(instrument)
-		? chordRanges
-		: chordRanges.filter(range => !range.chord.userDefinedChord);
-	return processChords(movable, (note) => transposeNote(note, direction), instrument);
+	const processNote: NoteProcessor = (note) => transposeNote(note, direction);
+	if (isKeyboardInstrument(instrument)) {
+		return processChords(chordRanges, processNote, instrument);
+	}
+
+	const changes: ChangeSpec[] = [];
+	for (const chordRange of chordRanges) {
+		const {chordSymbol, chord, tokenTo} = chordRange;
+		const definition = chord.userDefinedChord;
+		if (!definition) {
+			changes.push(...processChords([chordRange], processNote, instrument));
+			continue;
+		}
+		const newDefinition = shiftFretDefinition(definition, direction === "up" ? 1 : -1);
+		if (newDefinition === null) continue;
+		const newToken = `${processSymbol(chordSymbol, processNote)}[${newDefinition}]`;
+		changes.push(...replacementChanges(chordRange, newToken, tokenTo));
+	}
+	return changes;
+}
+
+/** Moves a fret shape like "x_24432_", "4|x2x132" or "0 10 10 12 8 8" by `delta` frets; null if not a fret shape. */
+export function shiftFretDefinition(definition: string, delta: number): string | null {
+	const groups = FRET_DEFINITION.exec(definition)?.groups;
+	if (!groups) return null;
+	const spaced = /[\s,]/.test(groups.frets);
+	const symbols = spaced ? groups.frets.match(/\d+|x|_/g) : groups.frets.split("");
+	if (!symbols) return null;
+
+	const position = groups.position ? parseInt(groups.position) : 0;
+	let frets = symbols.map(symbol => /\d/.test(symbol) ? parseInt(symbol) : symbol);
+
+	// positioned shapes move by changing the position unless it would drop below 1
+	if (position > 0 && position + delta >= 1) {
+		return `${position + delta}|${groups.frets}`;
+	}
+	if (position > 0) {
+		frets = frets.map(fret => typeof fret === "number" && fret > 0 ? fret + position - 1 : fret);
+	}
+
+	frets = frets.map(fret => typeof fret === "number" ? fret + delta : fret);
+	// wrap an octave up when moving below the nut
+	if (frets.some(fret => typeof fret === "number" && fret < 0)) {
+		frets = frets.map(fret => typeof fret === "number" ? fret + 12 : fret);
+	}
+
+	const needsSeparator = spaced || frets.some(fret => typeof fret === "number" && fret > 9);
+	return frets.join(needsSeparator ? " " : "");
 }
 
 export function enharmonicToggle(chordTokenRanges: ChordSymbolRange[], instrument: Instrument) {
