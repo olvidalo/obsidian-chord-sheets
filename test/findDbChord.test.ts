@@ -35,10 +35,9 @@ describe("findDbChord", () => {
 			expect(findDbChord(Chord.get(symbol), guitar)?.suffix).toBe(expectedSuffix);
 		});
 
-		test("with multiple alias matches, the first db entry wins", () => {
-			// "sus" and "sus4" both exist in chords-db and both are aliases of
-			// "suspended fourth" — the db's array order decides ("sus" comes first)
-			expect(findDbChord(Chord.get("Csus4"), guitar)?.suffix).toBe("sus");
+		test.each(["Csus4", "Csus", "C4"])("%s resolves to the single sus4 entry", (symbol) => {
+			// the db used to carry a second "sus" list of the same chord; now only sus4 exists
+			expect(findDbChord(Chord.get(symbol), guitar)?.suffix).toBe("sus4");
 		});
 
 		test.each([
