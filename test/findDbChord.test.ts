@@ -79,6 +79,12 @@ describe("findDbChord", () => {
 			// chords-db has no "/D#" suffix for C
 			expect(findDbChord(Chord.get("C/D#"), guitar)).toBeNull();
 		});
+
+		test("a chord type without a name doesn't resolve to the major chord over the bass", () => {
+			// tonal's madd9 has no name, "" + "/G" would be the db's A/G
+			expect(Chord.get("Amadd9/G").type).toBe("");
+			expect(findDbChord(Chord.get("Amadd9/G"), guitar)).toBeNull();
+		});
 	});
 
 	describe("not found", () => {

@@ -155,10 +155,11 @@ export function findDbChord(chord: SheetChord, instrumentChords: InstrumentChord
 	}
 
 	if (chord.bass) {
-		// First priority: Exact match with bass note
+		// First priority: Exact match with bass note. Some tonal types have no name, and "" + "/G" would be the
+		// major chord over the bass.
 		const bassSuffix = `/${chord.bass}`;
 		dbChord = instrumentChords.chords[tonicKey].find(
-			testChord => testChord.suffix === chord.type + bassSuffix
+			testChord => chord.type !== "" && testChord.suffix === chord.type + bassSuffix
 		);
 		if (dbChord) return dbChord;
 
