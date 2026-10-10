@@ -117,6 +117,17 @@ describe("parseChordSymbol", () => {
 		expect(parseChordSymbol("Am(b6)").notes).toEqual(["A", "C", "E", "F"]);
 	});
 
+	test("recognizes the chord types of the chord database that tonal spells differently or lacks", () => {
+		expectSameChord("Cmmaj9", "CmMaj9");
+		expectSameChord("Cmaj7b5", "CM7b5");
+		expectSameChord("Caug9", "C9b13");
+		expectSameChord("Cmmaj7b5", "CoM7");
+		expectSameChord("Csus2sus4", "Csus24");
+		expect(parseChordSymbol("Cmaj11").intervals).toEqual(["1P", "3M", "5P", "7M", "9M", "11P"]);
+		expect(parseChordSymbol("Cmmaj11").intervals).toEqual(["1P", "3m", "5P", "7M", "9M", "11P"]);
+		expect(parseChordSymbol("Cmaj7sus2").intervals).toEqual(["1P", "2M", "5P", "7M"]);
+	});
+
 	test("recognizes a degree after a slash as an extension", () => {
 		expectSameChord("Bm7/b5", "Bm7b5");
 		expectSameChord("E7/b9", "E7b9");

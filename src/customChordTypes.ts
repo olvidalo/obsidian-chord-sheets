@@ -30,6 +30,27 @@ const customChordTypes: CustomChordType[] = [
 		aliases: ["sus4#5"]
 	},
 	extendChordType("madd4", { aliases: ["madd11"] }),
+	// chord types the chord database (chords-db) has, spelled as it spells them
+	extendChordType("mMaj9", { aliases: ["mmaj9"] }),
+	extendChordType("M7b5", { aliases: ["maj7b5"] }),
+	extendChordType("9b13", { aliases: ["aug9", "9#5"] }),
+	extendChordType("oM7", { aliases: ["mmaj7b5"] }),
+	extendChordType("sus24", { aliases: ["sus2sus4"] }),
+	{
+		name: "major eleventh",
+		intervals: ["1P", "3M", "5P", "7M", "9M", "11P"],
+		aliases: ["maj11", "M11"]
+	},
+	{
+		name: "minor/major eleventh",
+		intervals: ["1P", "3m", "5P", "7M", "9M", "11P"],
+		aliases: ["mmaj11", "mMaj11"]
+	},
+	{
+		name: "suspended second major seventh",
+		intervals: ["1P", "2M", "5P", "7M"],
+		aliases: ["maj7sus2", "M7sus2"]
+	},
 	{
 		name: "added eleventh",
 		intervals: ["1P", "3M", "5P", "11P"],

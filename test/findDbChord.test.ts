@@ -41,6 +41,16 @@ describe("findDbChord", () => {
 			expect(findDbChord(Chord.get("Csus4"), guitar)?.suffix).toBe("sus");
 		});
 
+		test.each([
+			["Cmaj11", "maj11"],
+			["Cmaj7sus2", "maj7sus2"],
+			["Cmmaj9", "mmaj9"],
+			["Caug9", "aug9"],
+			["Cmaj7b5", "maj7b5"],
+		])("%s resolves to the db suffix %s, which tonal doesn't know", (symbol, expectedSuffix) => {
+			expect(findDbChord(Chord.get(symbol), guitar)?.suffix).toBe(expectedSuffix);
+		});
+
 		test("Cmmaj7 resolves via the custom chord type alias", () => {
 			expect(findDbChord(Chord.get("Cmmaj7"), guitar)?.suffix).toBe("mmaj7");
 		});
