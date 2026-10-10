@@ -317,10 +317,22 @@ describe('Parsing / Tokenization', () => {
 			expect(tokens.map(t => [t.type, t.value])).toEqual([['word', 'A'], ['chord', '[D]'], ['word', 'men']]);
 		});
 
+		test('should read a word followed by a bracketed chord symbol as an inline chord, not a definition', () => {
+			// a definition is never a single chord symbol, whether or not the word before it looks like a chord
+			for (const word of ['Des-', 'D', 'Eve']) {
+				const {tokens, isChordLine} = tokenizeLine(`Eve of ${word}[D] truction`, lineIndex, chordLineMarker, textLineMarker);
+				expect(isChordLine).toBe(false);
+				expect(tokens.map(t => [t.type, t.value])).toEqual([
+					['word', 'Eve'], ['whitespace', ' '], ['word', 'of'], ['whitespace', ' '],
+					['word', word], ['chord', '[D]'], ['whitespace', ' '], ['word', 'truction']
+				]);
+			}
+		});
+
 		test('should keep definitions that are not followed by a letter', () => {
-			const line = 'Am[x02210], Cmaj7[E G B D]| G[D] and';
+			const line = 'Am[x02210], Cmaj7[E G B D]| G[320003] and';
 			const {tokens} = tokenizeLine(line, lineIndex, chordLineMarker, textLineMarker);
-			expect(tokens.filter(isChordToken).map(t => t.chord.userDefinedChord)).toEqual(['x02210', 'E G B D', 'D']);
+			expect(tokens.filter(isChordToken).map(t => t.chord.userDefinedChord)).toEqual(['x02210', 'E G B D', '320003']);
 		});
 
 		test('should not treat bracketed text without valid frets as user-defined chord', () => {
