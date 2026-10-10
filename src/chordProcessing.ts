@@ -1,5 +1,5 @@
 import {Note} from "tonal";
-import {tokenizeChordSymbol} from "./chordsUtils";
+import {isNoteName, tokenizeChordSymbol} from "./chordsUtils";
 import {ChordSymbolRange} from "./editor-extension/chordSheetsViewPlugin";
 import {ChangeSpec} from "@codemirror/state";
 import {Instrument, isKeyboardInstrument} from "./instruments/types";
@@ -34,12 +34,6 @@ export function processChords(chordRanges: ChordSymbolRange[], processNote: Note
 function processSymbol(chordSymbol: string, processNote: NoteProcessor): string {
 	const [tonic, type, bass] = tokenizeChordSymbol(chordSymbol);
 	return bass ? `${processNote(tonic)}${type}/${processNote(bass)}` : processNote(tonic) + type;
-}
-
-/** "E" or "Bb", but not a degree like "3" or "b7" (which tonal would read as the note B7). */
-function isNoteName(token: string): boolean {
-	const note = Note.get(token);
-	return !note.empty && note.oct === undefined;
 }
 
 export function replaceChordSymbol(chordRanges: ChordSymbolRange[], newSymbol: string): ChangeSpec[] {

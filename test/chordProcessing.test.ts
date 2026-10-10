@@ -7,6 +7,12 @@ import {Instrument} from "../src/instruments/types";
 
 import {isChordToken} from "../src/sheet-parsing/tokens";
 import {tokenizeLine} from "../src/sheet-parsing/tokenizeLine";
+import {addCustomChordTypes} from "../src/customChordTypes";
+
+// as on plugin load
+beforeAll(() => {
+	addCustomChordTypes();
+});
 
 export function getChordSymbolRangesForLine(line: string, lineIndex = 0): ChordSymbolRange[] {
 	const {tokens} = tokenizeLine(line, lineIndex, '%c', '%t');
@@ -75,6 +81,8 @@ describe('Transposition', () => {
 			{ from: 0, to: 3, insert: 'C#/G#' }
 		]);
 		expect(transposeSheet("C6/9/E Cm/maj7/B", "up")).toEqual("C#6/9/F C#m/maj7/C");
+		expect(transposeSheet("A7(4/9)/C# D7/4 Bm7(5-)", "up")).toEqual("A#7(4/9)/D D#7/4 Cm7(5-)");
+		expect(transposeSheet("Bm7/b5 E7/b9 G/ Em7/", "up")).toEqual("Cm7/b5 F7/b9 G#/ Fm7/");
 	});
 
 	test('should transpose chords down', () => {
