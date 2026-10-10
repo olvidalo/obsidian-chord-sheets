@@ -35,7 +35,7 @@
 		"@codemirror/state": "^6.5.0",
 		"@codemirror/view": "^6.38.6",
 		"@lezer/common": "^1.5.2",
-		"@tombatossals/chords-db": "https://github.com/olvidalo/chords-db#acfd2aa5f2793bc1a6e18aeda1d19af84c689909",
+		"@tombatossals/chords-db": "https://github.com/olvidalo/chords-db#37511aee4d41d50b23bdeb29c47a83db435be8f0",
 		"escape-string-regexp": "^5.0.0",
 		"tippy.js": "^6.3.7",
 		"tonal": "^6.2.0"
