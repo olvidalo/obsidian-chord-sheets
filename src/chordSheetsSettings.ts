@@ -29,6 +29,7 @@ export interface ChordSheetsSettings {
 	highlightRhythmMarkers: boolean;
 	displayInlineChordsOverLyrics: boolean;
 	showLineMarkersInReadingMode: boolean;
+	showChordDefinitionsInReadingMode: boolean;
 }
 
 export const DEFAULT_SETTINGS: ChordSheetsSettings = {
@@ -51,5 +52,6 @@ export const DEFAULT_SETTINGS: ChordSheetsSettings = {
 	highlightSectionHeaders: true,
 	highlightRhythmMarkers: true,
 	displayInlineChordsOverLyrics: false,
-	showLineMarkersInReadingMode: false
+	showLineMarkersInReadingMode: false,
+	showChordDefinitionsInReadingMode: true
 };

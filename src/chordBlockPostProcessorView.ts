@@ -40,7 +40,8 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 			highlightChords,
 			highlightSectionHeaders,
 			highlightRhythmMarkers,
-			showLineMarkersInReadingMode
+			showLineMarkersInReadingMode,
+			showChordDefinitionsInReadingMode
 		} = this.settings;
 
 		if (this.containerEl.children.length > 0) {
@@ -48,6 +49,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 		}
 
 		this.containerEl.toggleClass("chord-sheet-hide-keyboard-note-names", !showKeyboardNoteNames);
+		this.containerEl.toggleClass("chord-sheet-hide-chord-definitions", !showChordDefinitionsInReadingMode);
 		const codeEl = this.containerEl.createEl("code", {cls: "chord-sheet-chord-block-preview"});
 
 		const chordTokens: ChordToken[] = [];

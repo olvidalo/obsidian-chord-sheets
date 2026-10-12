@@ -566,6 +566,13 @@ code.chord-sheet-chord-block-preview > .chord-sheet-section-header,
 	color: var(--user-defined-chord-frets-color, var(--code-normal));
 }
 
+.chord-sheet-hide-chord-definitions .chord-sheet-user-defined-chord-bracket,
+.chord-sheet-hide-chord-definitions .chord-sheet-user-defined-chord-position,
+.chord-sheet-hide-chord-definitions .chord-sheet-user-defined-chord-position-separator,
+.chord-sheet-hide-chord-definitions .chord-sheet-user-defined-chord-definition {
+	visibility: hidden;
+}
+
 .chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-bracket,
 .chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-position,
 .chord-sheet-uniform-user-defined-style .chord-sheet-user-defined-chord-position-separator,

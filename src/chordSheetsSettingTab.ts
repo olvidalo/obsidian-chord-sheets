@@ -200,6 +200,17 @@ export class ChordSheetsSettingTab extends PluginSettingTab {
 					this.plugin.applyNewSettingsToEditors();
 				}));
 
+		new Setting(containerEl)
+			.setName('Show chord definitions in reading mode')
+			.setDesc('Show the bracketed definitions of custom chords, like [x02210].')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showChordDefinitionsInReadingMode)
+				.onChange(async (value) => {
+					this.plugin.settings.showChordDefinitionsInReadingMode = value;
+					await this.plugin.saveSettings();
+					this.plugin.applyNewSettingsToEditors();
+				}));
+
 
 		new Setting(containerEl).setName('Live preview / edit mode').setHeading();
 
