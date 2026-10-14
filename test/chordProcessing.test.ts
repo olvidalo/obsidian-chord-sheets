@@ -107,11 +107,8 @@ describe('Transposition', () => {
 		]);
 	});
 
-	test('should not transpose user-defined chords', () => {
-		const chordRanges = getChordSymbolRangesForLine('Am*[x02210]');
-		const changes = transpose(chordRanges, "up", "guitar");
-
-		expect(changes).toEqual([]);
+	test('should move user-defined fret shapes with their symbol', () => {
+		expect(transposeSheet('Am*[x02210]', "up")).toEqual('A#m*[x13321]');
 	});
 
 
@@ -200,9 +197,24 @@ describe("Alignment: spaces after a chord absorb the symbol's length change", ()
 });
 
 describe("Chord definitions in brackets", () => {
-	test("fret shapes do not transpose, but take the enharmonic spelling", () => {
-		expect(transposeSheet("C[x32010] G", "up", "guitar")).toEqual("C[x32010] G#");
+	test("fret shapes move with the symbol, enharmonic toggle keeps the shape", () => {
+		expect(transposeSheet("C[x32010] G", "up", "guitar")).toEqual("C#[x43121] G#");
 		expect(enharmonicToggleSheet("Ab*[x02210]", "guitar")).toEqual("G#*[x02210]");
+	});
+
+	test("barre markers stay in place", () => {
+		expect(transposeSheet("Bm[x_24432_]", "up")).toEqual("Cm[x_35543_]");
+		expect(transposeSheet("G[_355433_]", "down")).toEqual("F#[_244322_]");
+	});
+
+	test("positioned shapes move by position", () => {
+		expect(transposeSheet("Dm6[4|x2x132]", "up")).toEqual("D#m6[5|x2x132]");
+		expect(transposeSheet("C#m[1|x13321]", "down")).toEqual("Cm[x02210]");
+	});
+
+	test("switches to spaced frets above fret 9 and wraps below the nut", () => {
+		expect(transposeSheet("A[x_79997_]", "up")).toEqual("A#[x _ 8 10 10 10 8 _]");
+		expect(transposeSheet("E[022100]", "down")).toEqual("D#[11 13 13 12 11 11]");
 	});
 
 	test("keyboard degrees stay, only the symbol moves", () => {
