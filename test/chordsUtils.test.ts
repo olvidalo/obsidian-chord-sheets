@@ -1,6 +1,9 @@
-import {parseChordSymbol, tokenizeChordSymbol, uniqueChordTokens} from "../src/chordsUtils";
+import {
+	chordSequenceString, parseChordSymbol, resolveChordReferences, splitChordVariant, tokenizeChordSymbol,
+	uniqueChordTokens
+} from "../src/chordsUtils";
 import {tokenizeLine} from "../src/sheet-parsing/tokenizeLine";
-import {isChordToken} from "../src/sheet-parsing/tokens";
+import {ChordToken, isChordToken} from "../src/sheet-parsing/tokens";
 import {addCustomChordTypes} from "../src/customChordTypes";
 
 describe("tokenizeChordSymbol", () => {
@@ -153,6 +156,37 @@ describe("parseChordSymbol", () => {
 	});
 });
 
+describe("chord variant labels", () => {
+	beforeAll(() => {
+		addCustomChordTypes();
+	});
+
+	test("splits a * or : label off the end of a symbol", () => {
+		expect(splitChordVariant("C*")).toEqual(["C", "*"]);
+		expect(splitChordVariant("C*4")).toEqual(["C", "*4"]);
+		expect(splitChordVariant("Fm:2")).toEqual(["Fm", ":2"]);
+		expect(splitChordVariant("Fm7:jazz")).toEqual(["Fm7", ":jazz"]);
+		expect(splitChordVariant("C/E*")).toEqual(["C/E", "*"]);
+		expect(splitChordVariant("C")).toEqual(["C", ""]);
+		expect(splitChordVariant("Am:")).toEqual(["Am:", ""]);
+		expect(splitChordVariant("*")).toEqual(["*", ""]);
+	});
+
+	test("a labelled symbol is the chord without its label", () => {
+		for (const [symbol, base] of [["C*", "C"], ["C*4", "C"], ["Fm:2", "Fm"], ["Fm7:jazz", "Fm7"], ["C/E*", "C/E"]]) {
+			const chord = parseChordSymbol(symbol);
+			const expected = parseChordSymbol(base);
+			expect([chord.empty, chord.tonic, chord.chroma, chord.bass]).toEqual([false, expected.tonic, expected.chroma, expected.bass]);
+		}
+	});
+
+	test("a colon without a label, or a label on no chord, is not a chord", () => {
+		for (const symbol of ["Am:", "I*", "Ah:", "*"]) {
+			expect(parseChordSymbol(symbol).empty).toBe(true);
+		}
+	});
+});
+
 describe("uniqueChordTokens", () => {
 	const unique = (line: string) => uniqueChordTokens(tokenizeLine(line, 0, "%c", "%t").tokens.filter(isChordToken)).map(t => t.value);
 
@@ -166,5 +200,78 @@ describe("uniqueChordTokens", () => {
 
 	test("inline chords count by symbol, whatever the brackets contain", () => {
 		expect(unique("[Am]Some [Am aux]text [Am]")).toEqual(["[Am]"]);
+	});
+});
+
+describe("resolveChordReferences", () => {
+	beforeAll(() => {
+		addCustomChordTypes();
+	});
+
+	const chordTokensOfBlock = (block: string): ChordToken[] =>
+		block.split("\n").flatMap(line => tokenizeLine(line, 0, "%c", "%t").tokens.filter(isChordToken));
+
+	// [written symbol, definition it is drawn with] for every chord of the block
+	const resolve = (block: string) => resolveChordReferences(chordTokensOfBlock(block))
+		.map(token => [token.chordSymbol.value, token.chord.userDefinedChord ?? null]);
+
+	test("a bare symbol reuses the definition above it", () => {
+		expect(resolve("Bbadd13[x13333] C\nBbadd13 C")).toEqual([
+			["Bbadd13", "x13333"], ["C", null], ["Bbadd13", "x13333"], ["C", null]
+		]);
+	});
+
+	test("or the one below it", () => {
+		expect(resolve("Bbadd13 C\nBbadd13[x13333]")).toEqual([
+			["Bbadd13", "x13333"], ["C", null], ["Bbadd13", "x13333"]
+		]);
+	});
+
+	test("the nearest definition above wins", () => {
+		expect(resolve("G G[320003] G G[320033] G")).toEqual([
+			["G", "320003"], ["G", "320003"], ["G", "320003"], ["G", "320033"], ["G", "320033"]
+		]);
+	});
+
+	test("labelled symbols are reused by their full name only", () => {
+		expect(resolve("C*[x35553] Fm:2[xx3564] C Fm C* Fm:2 C*4")).toEqual([
+			["C*", "x35553"], ["Fm:2", "xx3564"], ["C", null], ["Fm", null],
+			["C*", "x35553"], ["Fm:2", "xx3564"], ["C*4", null]
+		]);
+	});
+
+	test("inline chords reuse definitions too", () => {
+		expect(resolve("Bbadd13[x13333]\n[Bbadd13]Some [C]lyrics")).toEqual([
+			["Bbadd13", "x13333"], ["Bbadd13", "x13333"], ["C", null]
+		]);
+	});
+
+	test("leaves chords without a definition untouched", () => {
+		const tokens = chordTokensOfBlock("C[x32010] G Am");
+		const resolved = resolveChordReferences(tokens);
+		resolved.forEach((token, index) => expect(token).toBe(tokens[index]));
+	});
+
+	test("copies the reusing token instead of changing it", () => {
+		const tokens = chordTokensOfBlock("G[320003] G");
+		const [definition, reuse] = resolveChordReferences(tokens);
+		expect(reuse).not.toBe(tokens[1]);
+		expect(reuse.value).toEqual("G");
+		expect(reuse.definedBy).toBe(definition);
+		expect(tokens[1].chord.userDefinedChord).toBeUndefined();
+	});
+
+	test("the chord overview shows a definition once, with its reuses", () => {
+		const unique = (block: string) => uniqueChordTokens(resolveChordReferences(chordTokensOfBlock(block)))
+			.map(token => token.value);
+		expect(unique("Bbadd13[x13333] C Bbadd13 C")).toEqual(["Bbadd13[x13333]", "C"]);
+		expect(unique("Bbadd13 C Bbadd13[x13333]")).toEqual(["Bbadd13", "C"]);
+	});
+
+	test("the chord overview redraws when only a definition changes", () => {
+		const sequence = (block: string) => chordSequenceString(
+			uniqueChordTokens(resolveChordReferences(chordTokensOfBlock(block)))
+		);
+		expect(sequence("G C\nG[320003]")).not.toEqual(sequence("G C\nG[320033]"));
 	});
 });

@@ -376,18 +376,25 @@ function updateChordBlocks({changes, state}: Pick<ViewUpdate & Transaction, 'cha
 	};
 }
 
+/** The chord tokens of a block in document order, with the current positions of their decorations. */
+export function chordTokensInBlock(chordDecos: DecorationSet, blockFrom: number, blockTo: number) {
+	const chordTokens: {from: number, to: number, token: ChordToken}[] = [];
+	chordDecos.between(blockFrom, blockTo, (from, to, value) => {
+		if (value.spec.type === "chord") {
+			chordTokens.push({from, to, token: value.spec.token as ChordToken});
+		}
+	});
+	return chordTokens;
+}
+
 function getChordBlockDecos(config: ChordSheetsSettings, chordBlockRanges: RangeSet<ChordBlockRangeValue>, chordDecoRanges: DecorationSet): RangeSet<Decoration> {
 	const builder = new RangeSetBuilder<Decoration>();
 
 	try {
 		const chordBlockIter = chordBlockRanges.iter();
 		while (chordBlockIter.value) {
-			const chordTokens: ChordToken[] = [];
-			chordDecoRanges.between(chordBlockIter.from, chordBlockIter.to, (_from, _to, value) => {
-				if (value.spec.type === "chord") {
-					chordTokens.push(value.spec.token);
-				}
-			});
+			const chordTokens = chordTokensInBlock(chordDecoRanges, chordBlockIter.from, chordBlockIter.to)
+				.map(({token}) => token);
 
 
 			if (shouldShowChordOverviewInEditor(config)) {

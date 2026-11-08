@@ -1,5 +1,5 @@
 import {EditorView, WidgetType} from "@codemirror/view";
-import {chordSequenceString, uniqueChordTokens} from "../chordsUtils";
+import {chordSequenceString, resolveChordReferences, uniqueChordTokens} from "../chordsUtils";
 import {makeChordOverview} from "../chordDiagrams";
 import {PersistVoicingEventDetail} from "../chordSheetEvents";
 
@@ -18,7 +18,7 @@ export class ChordOverviewWidget extends WidgetType {
 		chordTokens: ChordToken[],
 	) {
 		super();
-		this.uniqueChordTokens = uniqueChordTokens(chordTokens);
+		this.uniqueChordTokens = uniqueChordTokens(resolveChordReferences(chordTokens));
 		this.chordSequenceString = chordSequenceString(this.uniqueChordTokens);
 	}
 
@@ -34,8 +34,7 @@ export class ChordOverviewWidget extends WidgetType {
 		return this.instrument === other.instrument
 			&& this.diagramWidth === other.diagramWidth
 			&& this.showKeyboardNoteNames === other.showKeyboardNoteNames
-			&& this.uniqueChordTokens.length === other.uniqueChordTokens.length
-			&& this.uniqueChordTokens.every((value, index) => value === other.uniqueChordTokens[index]);
+			&& this.chordSequenceString === other.chordSequenceString;
 	}
 
 	updateDOM(dom: HTMLElement, view: EditorView): boolean {

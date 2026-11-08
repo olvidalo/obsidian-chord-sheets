@@ -1,10 +1,9 @@
 import {MarkdownRenderChild} from "obsidian";
-import {uniqueChordTokens} from "./chordsUtils";
+import {resolveChordReferences, uniqueChordTokens} from "./chordsUtils";
 import tippy from "tippy.js/headless";
 import {makeChordDiagram, makeChordOverview} from "./chordDiagrams";
 import {ChordSheetsSettings} from "./chordSheetsSettings";
-
-import {ChordToken, isChordToken, isHeaderToken, isMarkerToken, isRhythmToken} from "./sheet-parsing/tokens";
+import {ChordToken, isChordToken, isHeaderToken, isMarkerToken, isRhythmToken, TokenizedLine} from "./sheet-parsing/tokens";
 import {tokenizeLine} from "./sheet-parsing/tokenizeLine";
 import {Instrument} from "./instruments/types";
 
@@ -52,12 +51,18 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 		this.containerEl.toggleClass("chord-sheet-hide-chord-definitions", !showChordDefinitionsInReadingMode);
 		const codeEl = this.containerEl.createEl("code", {cls: "chord-sheet-chord-block-preview"});
 
-		const chordTokens: ChordToken[] = [];
-		const lines = this.source.split("\n");
+		const tokenizedLines: TokenizedLine[] = [];
 		let currentIndex = 0;
-		for (const line of lines) {
-			const tokenizedLine = tokenizeLine(line, currentIndex, chordLineMarker, textLineMarker);
+		for (const line of this.source.split("\n")) {
+			tokenizedLines.push(tokenizeLine(line, currentIndex, chordLineMarker, textLineMarker));
+			currentIndex = currentIndex + line.length;
+		}
 
+		const chordTokens = tokenizedLines.flatMap(tokenizedLine => tokenizedLine.tokens.filter(isChordToken));
+		const resolvedTokens = resolveChordReferences(chordTokens);
+		const resolvedByToken = new Map(chordTokens.map((token, index) => [token, resolvedTokens[index]]));
+
+		for (const tokenizedLine of tokenizedLines) {
 			const lineDiv = codeEl.createDiv({
 				cls: "chord-sheet-chord-line"
 			});
@@ -66,8 +71,6 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 				const token = tokenizedLine.tokens[i];
 
 				if (isChordToken(token)) {
-					chordTokens.push(token);
-
 					let nextToken = tokenizedLine.tokens[i + 1];
 					const isTokenPair =
 						this.settings.displayInlineChordsOverLyrics &&
@@ -167,7 +170,7 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 
 
 					if (showChordDiagramsOnHover === "always" || showChordDiagramsOnHover === "preview") {
-						this.attachChordDiagram(token, chordSpan);
+						this.attachChordDiagram(resolvedByToken.get(token) ?? token, chordSpan);
 					}
 				} else if (highlightRhythmMarkers && isRhythmToken(token)) {
 					lineDiv.createSpan({
@@ -202,12 +205,10 @@ export class ChordBlockPostProcessorView extends MarkdownRenderChild {
 					lineDiv.append(token.value);
 				}
 			}
-
-			currentIndex = currentIndex + line.length;
 		}
 
 		if (showChordOverview === "always" || showChordOverview === "preview") {
-			const uniqueTokens = uniqueChordTokens(chordTokens);
+			const uniqueTokens = uniqueChordTokens(resolvedTokens);
 			const overviewContainerEl = createDiv({cls: "chord-sheet-chord-overview-container"});
 			const overviewEl = overviewContainerEl.createDiv({cls: "chord-sheet-chord-overview"});
 			makeChordOverview(this.instrument, overviewEl, uniqueTokens, diagramWidth);

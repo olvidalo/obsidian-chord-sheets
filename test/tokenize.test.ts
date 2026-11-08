@@ -632,6 +632,19 @@ describe('Parsing / Tokenization', () => {
 				"[text!]");
 			expect(result.tokens.filter(t => t.type === 'chord')).toHaveLength(0);
 		});
+
+		test('should detect chords with a variant label', () => {
+			const result = tokenizeLine("C*   Fm:2   G   [C*4]", lineIndex, chordLineMarker, textLineMarker);
+			expect(result.isChordLine).toBe(true);
+			expect(result.tokens.filter(isChordToken).map(t => [t.chordSymbol.value, t.chord.tonic]))
+				.toEqual([["C*", "C"], ["Fm:2", "F"], ["G", "G"], ["C*4", "C"]]);
+		});
+
+		test('should not take words with a colon or asterisk for chords', () => {
+			const result = tokenizeLine("Ah: I* said it", lineIndex, chordLineMarker, textLineMarker);
+			expect(result.isChordLine).toBe(false);
+			expect(result.tokens.filter(isChordToken)).toHaveLength(0);
+		});
 	});
 
 	describe('edge cases', () => {

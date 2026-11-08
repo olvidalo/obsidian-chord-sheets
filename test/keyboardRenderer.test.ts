@@ -125,6 +125,10 @@ describe("userDefinedVoicing", () => {
 
 describe("KeyboardDiagramRenderer.getDiagram", () => {
 	const diagram = (symbol: string) => new KeyboardDiagramRenderer("piano", "Piano").getDiagram(parseChordSymbol(symbol), symbol);
+	const names = (symbol: string) => {
+		const chordDiagram = diagram(symbol);
+		return Array.from({length: chordDiagram.numVoicings}, (_, i) => chordDiagram.voicingName!(i));
+	};
 
 	test("starts on the voicing written in the sheet", () => {
 		expect(diagram("C").initialVoicing).toBe(0);
@@ -135,16 +139,20 @@ describe("KeyboardDiagramRenderer.getDiagram", () => {
 	});
 
 	test("names every voicing as it would be written in the sheet", () => {
-		const names = (symbol: string) => {
-			const {numVoicings, voicingName} = diagram(symbol);
-			return Array.from({length: numVoicings}, (_, i) => voicingName!(i));
-		};
 		expect(names("C")).toEqual(["C", "C/E", "C/G"]);
 		expect(names("C/E")).toEqual(["C", "C/E", "C/G"]);
 		expect(names("Am7/G")).toEqual(["Am7", "Am7/C", "Am7/E", "Am7/G"]);
 		expect(names("C6/9").slice(0, 2)).toEqual(["C6/9", "C6/9/E"]);
 		expect(names("Db7/Cb")[3]).toEqual("Db7/Cb");
 		expect(names("C/D")).toEqual(["C/D"]);
+	});
+
+	test("keeps a variant label at the end of every voicing name", () => {
+		expect(names("C*")).toEqual(["C*", "C/E*", "C/G*"]);
+		expect(names("Am7:2")[1]).toEqual("Am7/C:2");
+		for (const name of names("C*")) {
+			expect(parseChordSymbol(name).empty).toBe(false);
+		}
 	});
 });
 

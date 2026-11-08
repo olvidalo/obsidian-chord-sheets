@@ -1,5 +1,5 @@
 import {Decoration, EditorView, PluginValue, ViewPlugin, ViewUpdate} from "@codemirror/view";
-import {SheetChord} from "../chordsUtils";
+import {resolveChordReferences, SheetChord} from "../chordsUtils";
 import {ChordTooltip} from "./chordTooltip";
 import {ChordSheetsSettings} from "../chordSheetsSettings";
 import {ChangeSet, ChangeSpec} from "@codemirror/state";
@@ -9,6 +9,7 @@ import {
 	chordSheetsConfig,
 	chordSheetsConfigFacet,
 	chordSheetViewportUpdateEffect,
+	chordTokensInBlock,
 	finishParsingIncompleteBlockEffect,
 	IChordBlockRangeValue,
 	ifDebug
@@ -23,7 +24,9 @@ export interface ChordSymbolRange {
 	chord: SheetChord,
 	chordSymbol: string,
 	tokenTo: number,
-	trailingSpaces: number
+	trailingSpaces: number,
+	/** The chord carries a definition written elsewhere in the block, not its own. */
+	isReference?: boolean
 }
 
 export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsViewPlugin, {
@@ -100,13 +103,17 @@ export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsView
 								isOverEl = event.clientX >= elRect.left && event.clientX <= elRect.right && event.clientY >= elRect.top && event.clientY <= elRect.bottom;
 
 								if (isOverEl) {
-									const currentBlock = view.state.field(chordBlocksStateField).ranges.iter(pos);
+									const {ranges, chordDecos} = view.state.field(chordBlocksStateField);
+									const currentBlock = ranges.iter(pos);
 									const {diagramWidth, showKeyboardNoteNames} = view.state.facet(chordSheetsConfigFacet);
 									this.tooltip.popper.toggleClass("chord-sheet-hide-keyboard-note-names", !showKeyboardNoteNames);
 									if (currentBlock.value) {
+										const blockTokens = chordTokensInBlock(chordDecos, currentBlock.from, currentBlock.to)
+											.map(({token}) => token);
+										const resolvedToken = resolveChordReferences(blockTokens)[blockTokens.indexOf(chordToken)] ?? chordToken;
 										this.currentDeco = deco;
 										this.currentEl = el;
-										this.tooltip.show(el, currentBlock.value.instrument, chordToken, diagramWidth, {scope: "chord", persist: newSymbol => {
+										this.tooltip.show(el, currentBlock.value.instrument, resolvedToken, diagramWidth, {scope: "chord", persist: newSymbol => {
 											this.hideTooltip();
 											window.dispatchEvent(new CustomEvent<PersistVoicingEventDetail>("chord-sheet-persist-voicing", {
 												detail: {
@@ -186,8 +193,6 @@ export class ChordSheetsViewPlugin implements PluginValue {
 	}
 
 	async getChordSymbolRangesForBlock(blockDef: { from: number, to: number, value: IChordBlockRangeValue }): Promise<ChordSymbolRange[]>  {
-		const chordRanges: ChordSymbolRange[] = [];
-
 		let chordBlocksState: ChordBlocksState;
 		let chordBlockEnd: number;
 		if (blockDef.value.partiallyParsed) {
@@ -204,21 +209,21 @@ export class ChordSheetsViewPlugin implements PluginValue {
 			chordBlockEnd = blockDef.to;
 		}
 
-		chordBlocksState.chordDecos.between(blockDef.from, chordBlockEnd, (tokenFrom, tokenTo, value) => {
-			if (value.spec.type === "chord") {
-				const chordToken = value.spec.token as ChordToken;
-				chordRanges.push({
-					from: tokenFrom + chordToken.chordSymbol.range[0],
-					to: tokenFrom + chordToken.chordSymbol.range[1],
-					chordSymbol: chordToken.chordSymbol.value,
-					chord: chordToken.chord,
-					tokenTo,
-					trailingSpaces: chordToken.trailingSpaces ?? 0
-				});
-			}
-		});
+		const blockTokens = chordTokensInBlock(chordBlocksState.chordDecos, blockDef.from, chordBlockEnd);
+		const resolvedTokens = resolveChordReferences(blockTokens.map(({token}) => token));
 
-		return chordRanges;
+		return blockTokens.map(({from: tokenFrom, to: tokenTo}, index): ChordSymbolRange => {
+			const chordToken = resolvedTokens[index];
+			return {
+				from: tokenFrom + chordToken.chordSymbol.range[0],
+				to: tokenFrom + chordToken.chordSymbol.range[1],
+				chordSymbol: chordToken.chordSymbol.value,
+				chord: chordToken.chord,
+				tokenTo,
+				trailingSpaces: chordToken.trailingSpaces ?? 0,
+				isReference: !!chordToken.definedBy
+			};
+		});
 	}
 
 	hasChordBlocks(): boolean {
