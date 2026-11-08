@@ -36,7 +36,7 @@ export function dbChordToVexChord(input: ChordDef, positionIndex = 0): ChordBoxP
 }
 
 // e.g. "x02210", "3|x32010" (position 3), "_224442_" (barre markers), "0 10 10 12 8 8"
-const FRET_DEFINITION = /^(?:(?<position>[0-9]+)\|)?(?<frets>[0-9x_, ]+)$/;
+export const FRET_DEFINITION = /^(?:(?<position>[0-9]+)\|)?(?<frets>[0-9x_, ]+)$/;
 
 export function userDefinedToVexChord(definition: string, numStrings: number, defaultNumFrets: number = 4): ChordBoxParams & { numFrets: number } {
 	const fretDefinition = FRET_DEFINITION.exec(definition)?.groups;
@@ -58,14 +58,14 @@ export function userDefinedToVexChord(definition: string, numStrings: number, de
 		barres.push({
 			fromString: numStrings - barrePositions[0],
 			toString: numStrings - barrePositions[1] + 2,
-			fret: parseInt(frets[barrePositions[0] + 1])
+			fret: parseInt(splitFrets[barrePositions[0] + 1])
 		});
 	}
 	if (barrePositions.length === 4) {
 		barres.push({
 			fromString: numStrings - barrePositions[2] + 2,
 			toString: numStrings - barrePositions[3] + 4,
-			fret: parseInt(frets[barrePositions[2] + 1])
+			fret: parseInt(splitFrets[barrePositions[2] + 1])
 		});
 	}
 

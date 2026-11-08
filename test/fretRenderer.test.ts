@@ -363,6 +363,28 @@ describe("Conversion of chords to vexchord format", () => {
 			});
 		});
 
+		test("barre in space-separated frets above fret 9", () => {
+			testUserChord("x _ 8 10 10 10 8 _", 0, 6, {
+				chord: [
+					[6, "x"],
+					[5, 1],
+					[4, 3],
+					[3, 3],
+					[2, 3],
+					[1, 1]
+				],
+				position: 8,
+				barres: [
+					{
+						fromString: 5,
+						toString: 1,
+						fret: 1
+					}
+				],
+				numFrets: 4
+			});
+		});
+
 		test("explicit position with relative frets", () => {
 			testUserChord("x2x132", 4, 6, {
 				chord: [
