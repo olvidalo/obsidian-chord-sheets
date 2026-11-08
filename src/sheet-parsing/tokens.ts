@@ -29,6 +29,9 @@ export interface ChordInfo {
 		positionSeparator?: SubToken
 		definition: SubToken
 	}
+
+	/** The chord in the same block whose bracketed definition this bare chord symbol reuses. */
+	definedBy?: ChordToken
 }
 
 export type ChordToken = Token & ChordInfo & {

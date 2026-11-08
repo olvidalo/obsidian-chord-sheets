@@ -1,5 +1,5 @@
 import {Note} from "tonal";
-import {isNoteName, tokenizeChordSymbol} from "./chordsUtils";
+import {isNoteName, splitChordVariant, tokenizeChordSymbol} from "./chordsUtils";
 import {ChordSymbolRange} from "./editor-extension/chordSheetsViewPlugin";
 import {ChangeSpec} from "@codemirror/state";
 import {Instrument, isKeyboardInstrument} from "./instruments/types";
@@ -14,10 +14,10 @@ function transposeNote(chordTonic: string, direction: "up" | "down"): string {
 export function processChords(chordRanges: ChordSymbolRange[], processNote: NoteProcessor, instrument: Instrument) {
 	const changes: ChangeSpec[] = [];
 	for (const chordRange of chordRanges) {
-		const {chordSymbol, chord, tokenTo} = chordRange;
+		const {chordSymbol, chord, tokenTo, isReference} = chordRange;
 		const definition = chord.userDefinedChord;
 		const newSymbol = processSymbol(chordSymbol, processNote);
-		if (definition && isKeyboardInstrument(instrument)) {
+		if (definition && !isReference && isKeyboardInstrument(instrument)) {
 			const newDefinition = definition.replace(/[^\s|]+/g, token => isNoteName(token) ? processNote(token) : token);
 			const newToken = `${newSymbol}[${newDefinition}]`;
 			if (newToken !== `${chordSymbol}[${definition}]`) {
@@ -32,8 +32,9 @@ export function processChords(chordRanges: ChordSymbolRange[], processNote: Note
 }
 
 function processSymbol(chordSymbol: string, processNote: NoteProcessor): string {
-	const [tonic, type, bass] = tokenizeChordSymbol(chordSymbol);
-	return bass ? `${processNote(tonic)}${type}/${processNote(bass)}` : processNote(tonic) + type;
+	const [base, variant] = splitChordVariant(chordSymbol);
+	const [tonic, type, bass] = tokenizeChordSymbol(base);
+	return (bass ? `${processNote(tonic)}${type}/${processNote(bass)}` : processNote(tonic) + type) + variant;
 }
 
 export function replaceChordSymbol(chordRanges: ChordSymbolRange[], newSymbol: string): ChangeSpec[] {

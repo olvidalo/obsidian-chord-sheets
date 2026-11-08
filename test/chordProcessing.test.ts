@@ -5,39 +5,42 @@ import {testingSongInline} from "./data/testing-song-inline";
 import {ChordSymbolRange} from "../src/editor-extension/chordSheetsViewPlugin";
 import {Instrument} from "../src/instruments/types";
 
-import {isChordToken} from "../src/sheet-parsing/tokens";
+import {ChordToken, isChordToken} from "../src/sheet-parsing/tokens";
 import {tokenizeLine} from "../src/sheet-parsing/tokenizeLine";
 import {addCustomChordTypes} from "../src/customChordTypes";
+import {resolveChordReferences} from "../src/chordsUtils";
 
 // as on plugin load
 beforeAll(() => {
 	addCustomChordTypes();
 });
 
-export function getChordSymbolRangesForLine(line: string, lineIndex = 0): ChordSymbolRange[] {
-	const {tokens} = tokenizeLine(line, lineIndex, '%c', '%t');
-
-	return tokens
-		.filter(isChordToken)
-		.map(token => ({
-			from: token.range[0] + token.chordSymbol.range[0],
-			to: token.range[0] + token.chordSymbol.range[1],
-			chordSymbol: token.chordSymbol.value,
-			chord: token.chord,
-			tokenTo: token.range[1],
-			trailingSpaces: token.trailingSpaces ?? 0
-		}));
+function toChordSymbolRange(token: ChordToken): ChordSymbolRange {
+	return {
+		from: token.range[0] + token.chordSymbol.range[0],
+		to: token.range[0] + token.chordSymbol.range[1],
+		chordSymbol: token.chordSymbol.value,
+		chord: token.chord,
+		tokenTo: token.range[1],
+		trailingSpaces: token.trailingSpaces ?? 0,
+		...(token.definedBy && {isReference: true})
+	};
 }
 
+export function getChordSymbolRangesForLine(line: string, lineIndex = 0): ChordSymbolRange[] {
+	const {tokens} = tokenizeLine(line, lineIndex, '%c', '%t');
+	return tokens.filter(isChordToken).map(toChordSymbolRange);
+}
+
+// the whole sheet is one chord block
 export function getChordRangesForSheet(sheet: string) {
 	const text = Text.of(sheet.split('\n'));
-	const chordRanges: ChordSymbolRange[] = [];
+	const chordTokens: ChordToken[] = [];
 	for (let i = 1; i <= text.lines; i++) {
 		const line = text.line(i);
-		const chordRangesForLine = getChordSymbolRangesForLine(line.text, line.from);
-		chordRanges.push(...chordRangesForLine);
+		chordTokens.push(...tokenizeLine(line.text, line.from, '%c', '%t').tokens.filter(isChordToken));
 	}
-	return {text, chordRanges};
+	return {text, chordRanges: resolveChordReferences(chordTokens).map(toChordSymbolRange)};
 }
 
 function applyToSheet(sourceSheet: string, changes: ChangeSpec[]) {
@@ -219,6 +222,34 @@ describe("Chord definitions in brackets", () => {
 	test("the whole token counts for the alignment", () => {
 		expect(transposeSheet("Cmaj7[E G B D]    G", "up", "piano")).toEqual("C#maj7[F G# C D#] G#");
 		expect(transposeSheet("C#maj7[F G# C D#] G#", "down", "piano")).toEqual("Cmaj7[E G B D]    G");
+	});
+});
+
+describe("Reused chord definitions", () => {
+	test("fret shapes stay, and so do the chords reusing them", () => {
+		expect(transposeSheet("Bbadd13[x13333] C\nBbadd13 G Bbadd13", "up", "guitar"))
+			.toEqual("Bbadd13[x13333] C#\nBbadd13 G# Bbadd13");
+	});
+
+	test("on piano, a reuse moves with its definition without copying it", () => {
+		expect(transposeSheet("Cmaj7[E G B D]\nCmaj7 G", "up", "piano")).toEqual("C#maj7[F G# C D#]\nC#maj7 G#");
+		expect(transposeSheet("Cmaj7\nCmaj7[E G B D]", "up", "piano")).toEqual("C#maj7\nC#maj7[F G# C D#]");
+	});
+
+	test("the enharmonic toggle respells a definition and its reuses alike", () => {
+		expect(enharmonicToggleSheet("Ab*[x02210] Ab*", "guitar")).toEqual("G#*[x02210] G#*");
+	});
+
+	test("persisting a voicing leaves reuses alone", () => {
+		const sheet = "C[x32010]\nC   G";
+		const {chordRanges} = getChordRangesForSheet(sheet);
+		const changes = replaceChordSymbol(chordRanges.filter(range => range.chordSymbol === "C"), "C/E");
+		expect(applyToSheet(sheet, changes)).toEqual(sheet);
+	});
+
+	test("a label without a definition moves like any chord, keeping the label last", () => {
+		expect(transposeSheet("C*   Fm:2   C/E*", "up", "guitar")).toEqual("C#*  F#m:2  C#/F*");
+		expect(transposeSheet("C#*  F#m:2  C#/F*", "down", "guitar")).toEqual("C*   Fm:2   C/E*");
 	});
 });
 

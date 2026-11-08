@@ -96,6 +96,16 @@ and the right hand: `C7[1 5 | 3 b7 9]`
 Custom fretted chord shapes and symbols are never transposed. For piano, note names are transposed along with the chord
 symbol.
 
+Define a shape once and reuse it by name: after `Bbadd13[x13333]`, every plain `Bbadd13` in the same chord block uses
+that shape. The definition can be anywhere in the block, e.g. on a line of its own at the top. If a name is defined more
+than once, a chord uses the nearest definition above it. To keep the standard voicing next to your own, give yours a
+label: a `*` or `:` suffix, as in `C*[x35553]` or `G:1[320033]`, and write `C*` or `G:1` where you want it. Without a
+definition in the block, a labelled chord shows the diagrams of the chord without the label. Reused chords are
+transposed like their definition, so they stay linked to it.
+
+In edit / live preview mode with the chord overview turned off, a definition further down a long block may only be
+picked up once you have scrolled to it.
+
 
 ### ⌨️  Editor Commands
 

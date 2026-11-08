@@ -1,5 +1,5 @@
 import {accToAlt, altToAcc, Interval, Note, Scale} from "tonal";
-import {SheetChord, tokenizeChordSymbol} from "../chordsUtils";
+import {SheetChord, splitChordVariant, tokenizeChordSymbol} from "../chordsUtils";
 import {ChordDiagram, InstrumentRenderer, KeyboardInstrument, NoDiagramError} from "./types";
 import {drawKeyboard, drawMissingMark, Hand, KeyRange} from "./keyboardSvg";
 
@@ -135,7 +135,8 @@ export class KeyboardDiagramRenderer implements InstrumentRenderer {
 			throw new NoDiagramError(`Unknown chord: ${chordName}`);
 		}
 		const range = getKeyboardRange(voicings.flat().map(note => note.midi));
-		const [tonic, type] = tokenizeChordSymbol(chordName);
+		const [base, variant] = splitChordVariant(chordName);
+		const [tonic, type] = tokenizeChordSymbol(base);
 		const nameWithoutBass = tonic + type;
 
 		return {
@@ -144,7 +145,7 @@ export class KeyboardDiagramRenderer implements InstrumentRenderer {
 			render: (index: number, width: number) => this.draw(voicings[index], range, width),
 			voicingName: (index: number) => {
 				const bass = voicings[index][0];
-				return bass.isRoot ? nameWithoutBass : `${nameWithoutBass}/${bass.name}`;
+				return (bass.isRoot ? nameWithoutBass : `${nameWithoutBass}/${bass.name}`) + variant;
 			}
 		};
 	}

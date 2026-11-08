@@ -21,7 +21,21 @@ export function tokenizeChordSymbol(symbol: string): [tonic: string, type: strin
 	return [tonic, type.slice(0, lastSlash), afterLastSlash];
 }
 
+// A variant label at the end of a chord symbol names a voicing of that chord: C*, C*4, Fm:2, C/E*.
+const CHORD_VARIANT = /(?:\*\w*|:[\w-]+)$/;
+
+export function splitChordVariant(symbol: string): [base: string, variant: string] {
+	const match = symbol.match(CHORD_VARIANT);
+	return match && match.index ? [symbol.slice(0, match.index), match[0]] : [symbol, ""];
+}
+
 export function parseChordSymbol(symbol: string): SheetChord {
+	const chord = parsePlainChordSymbol(symbol);
+	const [base, variant] = splitChordVariant(symbol);
+	return chord.empty && variant ? parsePlainChordSymbol(base) : chord;
+}
+
+function parsePlainChordSymbol(symbol: string): SheetChord {
 	const [tonic, symbolType, bass] = tokenizeChordSymbol(symbol);
 	// a trailing slash is a rhythm mark, as in "G/ / /", not a bass
 	const type = symbolType.endsWith("/") ? symbolType.slice(0, -1) : symbolType;
@@ -41,6 +55,39 @@ export function isNoteName(token: string): boolean {
 }
 
 
+/**
+ * Lets a bare chord symbol reuse a definition written elsewhere in its chord block, e.g. Bbadd13 after
+ * Bbadd13[x13333]. The nearest definition above the chord wins, otherwise the first one below it.
+ * Expects all chord tokens of one block in document order; returns them in the same order, replacing
+ * each reference with a copy that carries the definition.
+ */
+export function resolveChordReferences(chordTokens: readonly ChordToken[]): ChordToken[] {
+	const definitions = new Map<string, {index: number, token: ChordToken}[]>();
+	chordTokens.forEach((token, index) => {
+		if (token.chord.userDefinedChord) {
+			const symbol = token.chordSymbol.value;
+			definitions.set(symbol, [...definitions.get(symbol) ?? [], {index, token}]);
+		}
+	});
+
+	const resolveReference = (token: ChordToken, index: number): ChordToken => {
+		const candidates = token.chord.userDefinedChord ? undefined : definitions.get(token.chordSymbol.value);
+		if (!candidates) {
+			return token;
+		}
+
+		const above = candidates.filter(candidate => candidate.index < index);
+		const definition = above[above.length - 1] ?? candidates[0];
+		return {
+			...token,
+			chord: {...token.chord, userDefinedChord: definition.token.chord.userDefinedChord},
+			definedBy: definition.token
+		};
+	};
+
+	return chordTokens.map(resolveReference);
+}
+
 export function uniqueChordTokens(chordTokens: ChordToken[]) {
 	const seen = new Set<string>();
 
@@ -55,5 +102,5 @@ export function uniqueChordTokens(chordTokens: ChordToken[]) {
 }
 
 export function chordSequenceString(chordTokens: ChordToken[]) {
-	return JSON.stringify(chordTokens.map(token => token.value));
+	return JSON.stringify(chordTokens.map(token => [token.value, token.chord.userDefinedChord ?? null]));
 }
