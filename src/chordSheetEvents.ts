@@ -31,6 +31,7 @@ export interface PersistVoicingEventDetail {
 	pos: number;
 	chordSymbol: string;
 	newSymbol: string;
+	newChordToken?: string;
 	onlyAtPos: boolean;
 }
 

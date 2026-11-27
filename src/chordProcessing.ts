@@ -36,10 +36,26 @@ function processSymbol(chordSymbol: string, processNote: NoteProcessor): string 
 	return bass ? `${processNote(tonic)}${type}/${processNote(bass)}` : processNote(tonic) + type;
 }
 
-export function replaceChordSymbol(chordRanges: ChordSymbolRange[], newSymbol: string): ChangeSpec[] {
-	return chordRanges
-		.filter(chordRange => !chordRange.chord.userDefinedChord)
-		.flatMap(chordRange => replacementChanges(chordRange, newSymbol));
+export function replaceChordSymbol(
+	chordRanges: ChordSymbolRange[],
+	newSymbol: string,
+	newChordToken?: string
+): ChangeSpec[] {
+	return chordRanges.flatMap(chordRange => {
+		if (newChordToken) {
+			return replacementChanges(
+				chordRange,
+				newChordToken,
+				chordRange.tokenTo
+			);
+		}
+
+		if (chordRange.chord.userDefinedChord) {
+			return [];
+		}
+
+		return replacementChanges(chordRange, newSymbol);
+	});
 }
 
 /** Replaces from the symbol start up to `to` and lets the spaces after the token absorb the length change. */

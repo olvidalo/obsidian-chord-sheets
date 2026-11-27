@@ -110,7 +110,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 		});
 
 		this.registerDomEvent(window, "chord-sheet-persist-voicing", async (event: CustomEvent<PersistVoicingEventDetail>) => {
-			const {pos, chordSymbol, newSymbol, onlyAtPos} = event.detail;
+			const {pos, chordSymbol, newSymbol, newChordToken, onlyAtPos} = event.detail;
 			const editor = this.app.workspace.activeEditor?.editor;
 
 			if (editor) {
@@ -120,7 +120,7 @@ export default class ChordSheetsPlugin extends Plugin implements IChordSheetsPlu
 				if (chordPlugin && blockDef) {
 					const chordRanges = (await chordPlugin.getChordSymbolRangesForBlock(blockDef))
 						.filter(range => range.chordSymbol === chordSymbol && (!onlyAtPos || range.from === pos));
-					const changes = replaceChordSymbol(chordRanges, newSymbol);
+					const changes = replaceChordSymbol(chordRanges, newSymbol, newChordToken);
 					if (changes.length === 0) {
 						new Notice(`${chordSymbol} was not found in the chord block, nothing written.`);
 						return;

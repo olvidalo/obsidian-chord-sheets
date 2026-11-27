@@ -125,6 +125,51 @@ export function userDefinedToVexChord(definition: string, numStrings: number, de
 	};
 }
 
+export function getFretValues(definition: string): number[] | null {
+	const fretDefinition = FRET_DEFINITION.exec(definition)?.groups;
+	if (!fretDefinition) return null;
+
+	const frets = fretDefinition.frets;
+	const symbols = /[\s,]/.test(frets)
+		? frets.match(/\d+|x|_/g)
+		: frets.split('');
+
+	if (!symbols) return null;
+
+	return symbols
+		.filter(symbol => symbol !== "_")
+		.map(symbol => symbol === "x" ? -1 : Number(symbol));
+}
+
+export function findMatchingVoicingIndex(definition: string, dbChord: ChordDef): number {
+	const frets = getFretValues(definition);
+	if (!frets) return -1;
+
+	return dbChord.positions.findIndex(position =>
+		position.frets.length === frets.length &&
+		position.frets.every((fret, index) => fret === frets[index])
+	);
+}
+
+export function dbVoicingToDefinition(dbChord: ChordDef, index: number): string {
+	const position = dbChord.positions[index];
+	const frets = position.frets;
+
+	const definition = frets.map(fret =>
+		fret === -1 ? "x" : String(fret)
+	);
+
+	const hasDoubleDigitFrets = frets.some(fret => fret >= 10);
+
+	const fretString = hasDoubleDigitFrets
+		? definition.join(",")
+		: definition.join("");
+
+	return position.baseFret > 1
+		? `${position.baseFret}|${fretString}`
+		: fretString;
+}
+
 export function getTonicVariations(tonic: string) {
 	const tonicVariations = [
 		tonic, Note.simplify(tonic), Note.enharmonic(tonic)
@@ -194,17 +239,41 @@ export class FretDiagramRenderer implements InstrumentRenderer {
 
 	getDiagram(chord: SheetChord, chordName: string): ChordDiagram {
 		if (chord.userDefinedChord) {
-			const vexChord = userDefinedToVexChord(chord.userDefinedChord, this.numStrings, this.numFrets);
+			const dbChord = findDbChord(chord, this.chordDb);
+
+			if (dbChord) {
+				const matchingIndex = findMatchingVoicingIndex(
+					chord.userDefinedChord,
+					dbChord
+				);
+
+				if (matchingIndex !== -1) {
+					return this.dbChordDiagram(dbChord, matchingIndex);
+				}
+			}
+
+			// No matching database voicing: render as a fixed custom chord.
+			const vexChord = userDefinedToVexChord(
+				chord.userDefinedChord,
+				this.numStrings,
+				this.numFrets
+			);
+
 			return {
 				numVoicings: 1,
-				render: (_index: number, width: number) => this.drawVexChord(vexChord, width, vexChord.numFrets)
+				render: (_index: number, width: number) =>
+					this.drawVexChord(vexChord, width, vexChord.numFrets)
 			};
 		}
 
 		const dbChord = findDbChord(chord, this.chordDb);
+
 		if (!dbChord) {
-			throw new NoDiagramError(`${chordName} is not in the ${this.label} chord database`);
+			throw new NoDiagramError(
+				`${chordName} is not in the ${this.label} chord database`
+			);
 		}
+
 		return this.dbChordDiagram(dbChord);
 	}
 
@@ -223,12 +292,17 @@ export class FretDiagramRenderer implements InstrumentRenderer {
 		return missingChordContainer;
 	}
 
-	private dbChordDiagram(dbChord: ChordDef): ChordDiagram {
+	private dbChordDiagram(
+		dbChord: ChordDef,
+		initialVoicing = 0
+	): ChordDiagram {
 		return {
 			numVoicings: dbChord.positions.length,
-			render: (index: number, width: number) => this.drawVexChord(
-				dbChordToVexChord(dbChord, index), width
-			)
+			initialVoicing,
+			voicingDefinition: (index: number) =>
+				dbVoicingToDefinition(dbChord, index),
+			render: (index: number, width: number) =>
+				this.drawVexChord(dbChordToVexChord(dbChord, index), width)
 		};
 	}
 
