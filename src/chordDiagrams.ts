@@ -9,6 +9,7 @@ export interface PersistVoicing {
 	/** "block": every occurrence of the written symbol in the chord block; "chord": only this one. */
 	scope: "block" | "chord";
 	persist(newSymbol: string): void;
+	persistChordToken?(newChordToken: string): void;
 }
 
 export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken, width = 100, persistVoicing?: PersistVoicing) {
@@ -59,14 +60,22 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 
 	if (diagram.numVoicings > 1) {
 		const voicingName = (index: number) => diagram.voicingName?.(index);
-		const persistable = persistVoicing && !chordToken.chord.userDefinedChord ? persistVoicing : undefined;
-		updateChooser = createVoicingChooser(containerEl, diagram.numVoicings, voicingName, (delta: -1 | 1) => {
-			const next = currentPosition + delta;
-			if (next < 0 || next >= diagram.numVoicings) return;
-			currentPosition = next;
-
-			renderCurrentVoicing();
-		}, {voicing: currentPosition, symbol: chordToken.chordSymbol.value}, persistable);
+		const persistable = persistVoicing;
+		updateChooser = createVoicingChooser(
+			containerEl,
+			diagram.numVoicings,
+			voicingName,
+			(delta: -1 | 1) => {
+				const next = currentPosition + delta;
+				if (next < 0 || next >= diagram.numVoicings) return;
+				currentPosition = next;
+				renderCurrentVoicing();
+			},
+			{voicing: currentPosition, symbol: chordToken.chordSymbol.value},
+			persistable,
+			diagram,
+			chordToken
+		);
 	}
 
 	renderCurrentVoicing();
@@ -75,12 +84,18 @@ export function makeChordDiagram(instrument: Instrument, chordToken: ChordToken,
 
 export function makeChordOverview(
 	instrument: Instrument, container: HTMLElement, chordTokens: ChordToken[], width?: number,
-	persistVoicing?: (chordToken: ChordToken, newSymbol: string) => void
+	persistVoicing?: (
+		chordToken: ChordToken,
+		newSymbol: string,
+		newChordToken?: string
+	) => void
 ) {
 	for (const chordToken of chordTokens) {
 		const persistInBlock: PersistVoicing | undefined = persistVoicing && {
 			scope: "block",
-			persist: newSymbol => persistVoicing(chordToken, newSymbol)
+			persist: newSymbol => persistVoicing(chordToken, newSymbol),
+			persistChordToken: newChordToken =>
+				persistVoicing(chordToken, chordToken.chordSymbol.value, newChordToken)
 		};
 		container.appendChild(makeChordDiagram(instrument, chordToken, width, persistInBlock));
 	}
@@ -91,8 +106,14 @@ export function makeChordOverview(
 
 
 function createVoicingChooser(
-	parent: HTMLElement, numVoicings: number, voicingName: (index: number) => string | undefined,
-	onChange: (delta: -1 | 1) => void, written: {voicing: number, symbol: string}, persistVoicing?: PersistVoicing
+	parent: HTMLElement,
+	numVoicings: number,
+	voicingName: (index: number) => string | undefined,
+	onChange: (delta: -1 | 1) => void,
+	written: {voicing: number, symbol: string},
+	persistVoicing?: PersistVoicing,
+	diagram?: ChordDiagram,
+	chordToken?: ChordToken
 ): VoicingChooserUpdateFn {
 	const chooserDiv = parent.createDiv({cls: "chord-sheet-position-chooser"});
 	const prevBtn = chooserDiv.createSpan({cls: "chord-sheet-btn-prev-position", text: "<"});
@@ -109,21 +130,54 @@ function createVoicingChooser(
 	nextBtn.addEventListener("click", () => { onChange(1); });
 
 	let updatePersistControl = (_index: number, _name: string | undefined) => {};
+
 	if (persistVoicing) {
 		const icon = createSpan({cls: "chord-sheet-persist-voicing-icon"});
 		setIcon(icon, "pin");
+
 		let persistableName: string | null = null;
+		let persistableToken: string | null = null;
+
 		nameSpan.addEventListener("click", () => {
-			if (persistableName) persistVoicing.persist(persistableName);
+			if (persistableToken && persistVoicing.persistChordToken) {
+				persistVoicing.persistChordToken(persistableToken);
+			} else if (persistableName) {
+				persistVoicing.persist(persistableName);
+			}
 		});
-		const describe = (newSymbol: string) => persistVoicing.scope === "block"
-			? `Change all ${written.symbol} in this block to ${newSymbol}`
-			: `Change this ${written.symbol} to ${newSymbol}`;
+
+		const describe = (newValue: string) => persistVoicing.scope === "block"
+			? `Change all ${written.symbol} in this block to ${newValue}`
+			: `Change this ${written.symbol} to ${newValue}`;
+
 		updatePersistControl = (index, name) => {
-			persistableName = name && index !== written.voicing ? name : null;
-			nameSpan.toggleClass("chord-sheet-voicing-name-persistable", persistableName !== null);
-			setTooltip(nameSpan, persistableName ? describe(persistableName) : "");
-			if (persistableName) nameSpan.appendChild(icon);
+			persistableName = null;
+			persistableToken = null;
+
+			if (persistVoicing.persistChordToken && diagram?.voicingDefinition && chordToken) {
+				const currentDefinition = chordToken.chord.userDefinedChord;
+				const isAlreadyPersisted =
+					index === written.voicing && !(index === 0 && currentDefinition);
+
+				if (!isAlreadyPersisted) {
+					persistableToken = index === 0
+						? written.symbol
+						: `${written.symbol}[${diagram.voicingDefinition(index)}]`;
+				}
+			} else if (name && index !== written.voicing) {
+				persistableName = name;
+			}
+
+			const persistable = persistableToken !== null || persistableName !== null;
+
+			nameSpan.toggleClass("chord-sheet-voicing-name-persistable", persistable);
+
+			const newValue = persistableToken ?? persistableName;
+			setTooltip(nameSpan, newValue ? describe(newValue) : "");
+
+			if (persistable) {
+				nameSpan.appendChild(icon);
+			}
 		};
 	}
 
@@ -137,4 +191,3 @@ function createVoicingChooser(
 		nextBtn.toggleClass("chord-sheet-pos-btn-enabled", index < numVoicings - 1);
 	};
 }
-

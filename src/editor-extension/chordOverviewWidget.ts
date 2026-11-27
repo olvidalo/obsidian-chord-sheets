@@ -74,9 +74,15 @@ export class ChordOverviewWidget extends WidgetType {
 		chordOverview.replaceChildren();
 		chordOverview.toggleClass("chord-sheet-hide-keyboard-note-names", !this.showKeyboardNoteNames);
 		chordOverview.dataset.showKeyboardNoteNames = String(this.showKeyboardNoteNames);
-		makeChordOverview(instrument, chordOverview, this.uniqueChordTokens, this.diagramWidth, (chordToken, newSymbol) => {
+		makeChordOverview(instrument, chordOverview, this.uniqueChordTokens, this.diagramWidth, (chordToken, newSymbol, newChordToken) => {
 			window.dispatchEvent(new CustomEvent<PersistVoicingEventDetail>("chord-sheet-persist-voicing", {
-				detail: {pos: view.posAtDOM(chordOverview), chordSymbol: chordToken.chordSymbol.value, newSymbol, onlyAtPos: false}
+				detail: {
+					pos: view.posAtDOM(chordOverview),
+					chordSymbol: chordToken.chordSymbol.value,
+					newSymbol,
+					newChordToken,
+					onlyAtPos: false
+				}
 			}));
 		});
 	}

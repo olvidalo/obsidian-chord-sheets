@@ -66,7 +66,6 @@ export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsView
 				}
 			}
 		},
-        
 		mousemove: function (event: MouseEvent, view: EditorView) {
 			const {showChordDiagramsOnHover} = view.state.facet(chordSheetsConfigFacet);
 			if (
@@ -106,17 +105,32 @@ export const chordSheetEditorPlugin = () => ViewPlugin.fromClass(ChordSheetsView
 									if (currentBlock.value) {
 										this.currentDeco = deco;
 										this.currentEl = el;
-										this.tooltip.show(el, currentBlock.value.instrument, chordToken, diagramWidth, {scope: "chord", persist: newSymbol => {
-											this.hideTooltip();
-											window.dispatchEvent(new CustomEvent<PersistVoicingEventDetail>("chord-sheet-persist-voicing", {
-												detail: {
-													pos: from + chordToken.chordSymbol.range[0],
-													chordSymbol: chordToken.chordSymbol.value,
-													newSymbol,
-													onlyAtPos: true
-												}
-											}));
-										}});
+										this.tooltip.show(el, currentBlock.value.instrument, chordToken, diagramWidth, {
+											scope: "chord",
+											persist: newSymbol => {
+												this.hideTooltip();
+												window.dispatchEvent(new CustomEvent<PersistVoicingEventDetail>("chord-sheet-persist-voicing", {
+													detail: {
+														pos: from + chordToken.chordSymbol.range[0],
+														chordSymbol: chordToken.chordSymbol.value,
+														newSymbol,
+														onlyAtPos: true
+													}
+												}));
+											},
+											persistChordToken: newChordToken => {
+												this.hideTooltip();
+												window.dispatchEvent(new CustomEvent<PersistVoicingEventDetail>("chord-sheet-persist-voicing", {
+													detail: {
+														pos: from + chordToken.chordSymbol.range[0],
+														chordSymbol: chordToken.chordSymbol.value,
+														newSymbol: chordToken.chordSymbol.value,
+														newChordToken,
+														onlyAtPos: true
+													}
+												}));
+											}
+										});
 									}
 								}
 							}

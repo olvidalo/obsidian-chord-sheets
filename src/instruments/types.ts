@@ -16,6 +16,7 @@ export interface ChordDiagram {
 	readonly initialVoicing?: number;
 	render(index: number, width: number): HTMLDivElement;
 	voicingName?(index: number): string;
+	voicingDefinition?(index: number): string;
 }
 
 export interface InstrumentRenderer {
@@ -25,4 +26,3 @@ export interface InstrumentRenderer {
 	getDiagram(chord: SheetChord, chordName: string): ChordDiagram;
 	renderMissing(width: number): HTMLDivElement;
 }
-
